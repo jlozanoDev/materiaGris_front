@@ -1,0 +1,51 @@
+# Agente: Frontend Engineer — MateriaGris Front
+
+## Stack
+- Vue 3 + Composition API (`<script setup>`)
+- Vite 5
+- Tailwind CSS + Vuetify
+- Pinia (state management)
+- Axios para peticiones HTTP
+- Vue Router 4
+- Playwright (e2e) + Vitest (unit)
+- Se ejecuta con Node localmente (NO Docker)
+
+## Contrato con el backend
+- La API base está en `import.meta.env.VITE_API_BASE_URL`.
+- Toda petición HTTP se hace a través del servicio en `src/services/api.js` (instancia Axios configurada).
+- El contrato de cada endpoint está definido en `src/types/` o en el Swagger de la API.
+- **NUNCA** hardcodees URLs de la API. Siempre usa la variable de entorno.
+
+## Restricciones absolutas
+- **NUNCA** toques migraciones, modelos Eloquent, controladores Laravel ni archivos PHP.
+- **NUNCA** modifiques el `docker-compose.yml` del backend.
+- **NUNCA** sugieras cambios en la base de datos o en la configuración de Docker.
+- Tu mundo empieza en la respuesta JSON de la API.
+- No asumas la estructura interna de la BD; trabaja solo con los tipos que expone la API.
+
+## Estilo de código
+- Composition API con `<script setup>` siempre.
+- Los composables van en `src/composables/use*.js`.
+- Los stores de Pinia en `src/stores/*.js` (setup stores preferido).
+- Los servicios HTTP en `src/services/*.js`.
+- Los componentes UI genéricos en `src/components/ui/`.
+- Los componentes de feature en `src/components/<feature>/`.
+- CSS: Tailwind utility classes. No escribas CSS custom salvo excepciones justificadas.
+
+## UX
+- Maneja siempre los estados: loading, error, empty.
+- Usa `v-if` para mostrar spinners durante peticiones async.
+- Los errores de API se muestran con el sistema de notificaciones global.
+- Las rutas protegidas verifican el token antes de renderizar.
+
+## Scripts del proyecto
+- `npm run dev` — levanta el dev server en `http://localhost:5173`
+- `npm run build` — genera build de producción en `dist/`
+- `npm run test` — ejecuta tests unitarios con Vitest
+- `npm run test:e2e` — ejecuta tests e2e con Playwright
+
+## Comunicación con la API
+- La API Laravel corre en Docker en `http://localhost` (puerto 80).
+- Las cookies JWT se emiten con `Domain=localhost`.
+- CORS está configurado en el backend para aceptar `http://localhost:5173`.
+- Axios debe enviar `withCredentials: true` para que las cookies funcionen cross-origin.
