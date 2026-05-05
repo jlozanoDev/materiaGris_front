@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/core/store/auth'
 import DashboardPage from '@/modules/dashboard/presentation/pages/DashboardPage.vue'
 import LoginView from '@/modules/auth/presentation/pages/LoginView.vue'
+import LandingPage from '@/modules/auth/presentation/pages/LandingPage.vue'
 import ForgotPasswordPage from '@/modules/auth/presentation/pages/ForgotPasswordPage.vue'
 import ResetPasswordPage from '@/modules/auth/presentation/pages/ResetPasswordPage.vue'
 import UsersPage from '@/modules/admin/users/presentation/pages/UsersPage.vue'
@@ -16,6 +17,7 @@ const routes = [
   { path: '/admin/permissions', name: 'AdminPermissions', component: PermissionsPage, meta: { requiresAuth: true } },
   { path: '/patients', name: 'Patients', component: PatientsPage, meta: { requiresAuth: true } },
   { path: '/login', name: 'Login', component: LoginView },
+  { path: '/welcome', name: 'Landing', component: LandingPage },
   { path: '/forgot-password', name: 'ForgotPassword', component: ForgotPasswordPage },
   { path: '/reset-password', name: 'ResetPassword', component: ResetPasswordPage },
 ]
@@ -29,9 +31,14 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const isAuthenticated = !!localStorage.getItem('access_token')
   if (to.meta && to.meta.requiresAuth && !isAuthenticated) {
+    // Raíz sin auth → landing page; resto → login directo
+    if (to.path === '/') return next({ name: 'Landing' })
     return next({ name: 'Login', query: { redirect: to.fullPath } })
   }
   if (to.name === 'Login' && isAuthenticated) {
+    return next({ name: 'Dashboard' })
+  }
+  if (to.name === 'Landing' && isAuthenticated) {
     return next({ name: 'Dashboard' })
   }
 
