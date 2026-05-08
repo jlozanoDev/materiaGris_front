@@ -7,11 +7,15 @@ import Modal from "@/shared/components/Modal.vue";
 import EditUserModal from "@/modules/admin/users/presentation/components/EditUserModal.vue";
 import { useAuthStore } from "@/core/store/auth";
 import { useUsers } from "@/modules/admin/users/presentation/composables/useUsers";
+import { useRoles } from "@/modules/admin/roles/presentation/composables/useRoles";
+import { usePermissions } from "@/modules/admin/permissions/presentation/composables/usePermissions";
 import UiVuetifyDataTable from "@/shared/components/UiVuetifyDataTable.vue";
 
 // Composables
 const authStore = useAuthStore();
 const { users, loading, fetchUsers, createUser, updateUser, deleteUser } = useUsers();
+const { roles: allRoles, fetchRoles: loadRoles } = useRoles();
+const { permissions: allPermissionsList, fetchPermissions: loadPerms, loading: loadingPerms } = usePermissions();
 
 // Filters and global search for DataTable
 const globalFilter = ref("");
@@ -151,6 +155,8 @@ const breadcrumb = [
 onMounted(async () => {
   await authStore.fetchUser();
   fetchUsers();
+  loadRoles();
+  loadPerms();
 });
 </script>
 
@@ -281,6 +287,9 @@ onMounted(async () => {
             <EditUserModal
               :show="editing"
               :user="form"
+              :roles="allRoles"
+              :permissions="allPermissionsList"
+              :loading-permissions="loadingPerms"
               @close="cancelEditUser"
               @save="handleSaveUser"
             />

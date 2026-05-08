@@ -13,12 +13,16 @@ import router from "@/core/router/index.js";
 import toastPlugin from "@/shared/plugins/toastPlugin";
 import { setUnauthorizedHandler, setTokenGetter } from "@/core/api/httpClient";
 import { provideAuthService } from "@/modules/auth/application/containers/authContainer";
+import { setAuthService, setStorageGateway } from "@/core/services/serviceRegistry";
 import { useToast } from "@/shared/composables/useToast";
 import { useAuthStore } from "@/core/store/auth";
 import vHasPermission from "@/shared/directives/v-has-permission";
 
 (async () => {
   const authService = provideAuthService();
+
+  setAuthService(authService);
+  setStorageGateway(authService.storageGateway);
 
   setTokenGetter(() => authService.storageGateway.get("access_token"));
 

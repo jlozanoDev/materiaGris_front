@@ -1,30 +1,21 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "@/core/store/auth";
-import DashboardPage from "@/modules/dashboard/presentation/pages/DashboardPage.vue";
-import LoginView from "@/modules/auth/presentation/pages/LoginView.vue";
-import LandingPage from "@/modules/auth/presentation/pages/LandingPage.vue";
-import ForgotPasswordPage from "@/modules/auth/presentation/pages/ForgotPasswordPage.vue";
-import ResetPasswordPage from "@/modules/auth/presentation/pages/ResetPasswordPage.vue";
-import UsersPage from "@/modules/admin/users/presentation/pages/UsersPage.vue";
-import RolesPage from "@/modules/admin/roles/presentation/pages/RolesPage.vue";
-import PermissionsPage from "@/modules/admin/permissions/presentation/pages/PermissionsPage.vue";
-import PatientsPage from "@/modules/patients/presentation/pages/PatientsPage.vue";
 
 const routes = [
-  { path: "/", name: "Dashboard", component: DashboardPage, meta: { requiresAuth: true } },
-  { path: "/admin/users", name: "AdminUsers", component: UsersPage, meta: { requiresAuth: true } },
-  { path: "/admin/roles", name: "AdminRoles", component: RolesPage, meta: { requiresAuth: true } },
+  { path: "/", name: "Dashboard", component: () => import("@/modules/dashboard/presentation/pages/DashboardPage.vue"), meta: { requiresAuth: true } },
+  { path: "/admin/users", name: "AdminUsers", component: () => import("@/modules/admin/users/presentation/pages/UsersPage.vue"), meta: { requiresAuth: true } },
+  { path: "/admin/roles", name: "AdminRoles", component: () => import("@/modules/admin/roles/presentation/pages/RolesPage.vue"), meta: { requiresAuth: true } },
   {
     path: "/admin/permissions",
     name: "AdminPermissions",
-    component: PermissionsPage,
+    component: () => import("@/modules/admin/permissions/presentation/pages/PermissionsPage.vue"),
     meta: { requiresAuth: true },
   },
-  { path: "/patients", name: "Patients", component: PatientsPage, meta: { requiresAuth: true } },
-  { path: "/login", name: "Login", component: LoginView },
-  { path: "/welcome", name: "Landing", component: LandingPage },
-  { path: "/forgot-password", name: "ForgotPassword", component: ForgotPasswordPage },
-  { path: "/reset-password", name: "ResetPassword", component: ResetPasswordPage },
+  { path: "/patients", name: "Patients", component: () => import("@/modules/patients/presentation/pages/PatientsPage.vue"), meta: { requiresAuth: true } },
+  { path: "/login", name: "Login", component: () => import("@/modules/auth/presentation/pages/LoginView.vue") },
+  { path: "/welcome", name: "Landing", component: () => import("@/modules/auth/presentation/pages/LandingPage.vue") },
+  { path: "/forgot-password", name: "ForgotPassword", component: () => import("@/modules/auth/presentation/pages/ForgotPasswordPage.vue") },
+  { path: "/reset-password", name: "ResetPassword", component: () => import("@/modules/auth/presentation/pages/ResetPasswordPage.vue") },
 ];
 
 const router = createRouter({

@@ -1,9 +1,9 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import { provideAuthService } from "@/modules/auth/application/containers/authContainer";
+import { getStorageGateway, getAuthService } from "@/core/services/serviceRegistry";
 
 export const useAuthStore = defineStore("auth", () => {
-  const _storage = provideAuthService().storageGateway;
+  const _storage = getStorageGateway();
 
   const initialUser = (() => {
     try {
@@ -18,8 +18,7 @@ export const useAuthStore = defineStore("auth", () => {
 
   async function fetchUser() {
     try {
-      const authService = provideAuthService();
-      const data = await authService.userRepository.me();
+      const data = await getAuthService().userRepository.me();
       user.value = data;
       _storage.set("user", JSON.stringify(data));
       return data;

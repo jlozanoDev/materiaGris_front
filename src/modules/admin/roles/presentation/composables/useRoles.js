@@ -6,9 +6,8 @@ import {
   provideUpdateRoleUseCase,
   provideDeleteRoleUseCase,
 } from "@/modules/admin/roles/application/containers/rolesContainer";
-import { provideGetAllPermissionsUseCase } from "@/modules/admin/permissions/application/containers/permissionsContainer";
 
-export function useRoles() {
+export function useRoles(fetchPermissionsFn) {
   const roles = ref([]);
   const loading = ref(false);
   const error = ref(null);
@@ -91,9 +90,9 @@ export function useRoles() {
   };
 
   const fetchAvailablePermissions = async () => {
+    if (!fetchPermissionsFn) return [];
     try {
-      const useCase = provideGetAllPermissionsUseCase();
-      const data = await useCase.execute();
+      const data = await fetchPermissionsFn();
       availablePermissions.value = data;
       return data;
     } catch (e) {

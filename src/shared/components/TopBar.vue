@@ -136,10 +136,9 @@
             <li aria-hidden="true">
               <div class="mx-3 my-1 border-t border-slate-100"></div>
             </li>
-            <!-- Direcciones (solo etiqueta que abre la modal) -->
             <li>
               <button
-                @click="manageAddresses"
+                @click="onManageAddresses"
                 class="group w-full text-right px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 justify-end whitespace-nowrap"
               >
                 <span>Direcciones</span>
@@ -161,38 +160,18 @@
         </div>
       </transition>
     </div>
+
+    <slot name="modals" />
   </header>
-  <!-- Modales gestionados internamente por TopBar -->
-  <EditUserModal
-    :show="showEditModal"
-    :user="user"
-    @close="showEditModal = false"
-    @save="handleEditSave"
-  />
-  <ChangePasswordModal
-    :show="showChangePasswordModal"
-    @close="showChangePasswordModal = false"
-    @save="handlePasswordSave"
-  />
-  <AddressesModal
-    :show="showAddressesModal"
-    :addresses="addresses"
-    @close="showAddressesModal = false"
-    @save="handleAddressesSave"
-  />
 </template>
 
 <script setup>
 import { computed, ref, onMounted, onUnmounted } from "vue";
-import EditUserModal from "@/modules/admin/users/presentation/components/EditUserModal.vue";
-import ChangePasswordModal from "@/modules/admin/users/presentation/components/ChangePasswordModal.vue";
-import AddressesModal from "@/modules/admin/users/presentation/components/AddressesModal.vue";
 
 const props = defineProps({ user: { type: Object, default: null } });
 const emit = defineEmits([
   "open-edit",
   "open-change-password",
-  "select-address",
   "manage-addresses",
   "admin.user.updated",
   "password-changed",
@@ -203,67 +182,21 @@ const menuOpen = ref(false);
 const userRef = ref(null);
 const menuRef = ref(null);
 
-const showEditModal = ref(false);
-const showChangePasswordModal = ref(false);
-const showAddressesModal = ref(false);
-
-// Carga las direcciones (localStorage fallback a datos de ejemplo)
-function loadAddresses() {
-  try {
-    const stored = localStorage.getItem("addresses");
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed)) return parsed;
-    }
-  } catch (e) {}
-  return [
-    {
-      id: 1,
-      alias: "Casa",
-      street: "C. Falsa",
-      number: "123",
-      postal_code: "28001",
-      mobile_phone: "600123456",
-      is_primary: true,
-    },
-    {
-      id: 2,
-      alias: "Oficina",
-      street: "Av. Siempre Viva",
-      number: "742",
-      postal_code: "28002",
-      mobile_phone: "600654321",
-      is_primary: false,
-    },
-  ];
-}
-
-const addresses = ref(loadAddresses());
-
 const toggleMenu = () => {
   menuOpen.value = !menuOpen.value;
 };
 const onEdit = () => {
   menuOpen.value = false;
-  showEditModal.value = true;
   emit("open-edit");
 };
 const onChangePassword = () => {
   menuOpen.value = false;
-  showChangePasswordModal.value = true;
   emit("open-change-password");
 };
-const selectAddress = (addr) => {
-  menuOpen.value = false;
-  emit("select-address", addr);
-};
-
-const manageAddresses = (e) => {
+const onManageAddresses = (e) => {
   if (e && e.preventDefault) e.preventDefault();
   menuOpen.value = false;
-  addresses.value = loadAddresses();
-  showAddressesModal.value = true;
-  emit("manage-addresses", addresses.value);
+  emit("manage-addresses");
 };
 
 const displayName = computed(() => props.user?.name || props.user?.email || "Usuario");
@@ -276,26 +209,6 @@ const initials = computed(() => {
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 });
-
-function handleEditSave(payload) {
-  showEditModal.value = false;
-  const updatedUser = { ...(props.user || {}), name: payload.name };
-  emit("admin.user.updated", updatedUser);
-}
-
-function handlePasswordSave(payload) {
-  showChangePasswordModal.value = false;
-  emit("password-changed", payload);
-}
-
-function handleAddressesSave(payload) {
-  try {
-    localStorage.setItem("addresses", JSON.stringify(payload));
-  } catch (e) {}
-  addresses.value = payload;
-  showAddressesModal.value = false;
-  emit("addresses-saved", payload);
-}
 
 function onClickOutside(e) {
   if (!menuOpen.value) return;

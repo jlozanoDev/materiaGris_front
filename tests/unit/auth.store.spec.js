@@ -1,10 +1,16 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useAuthStore } from '@/core/store/auth'
+import { setStorageGateway } from '@/core/services/serviceRegistry'
 
 describe('auth store', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
+    setStorageGateway({
+      get: () => null,
+      set: () => {},
+      remove: () => {},
+    })
   })
 
   it('hasPermission/hasPermissions work when user is set directly', () => {

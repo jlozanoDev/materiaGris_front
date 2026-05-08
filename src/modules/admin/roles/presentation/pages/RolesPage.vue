@@ -6,12 +6,14 @@ import Breadcrumb from "@/shared/components/Breadcrumb.vue";
 import Modal from "@/shared/components/Modal.vue";
 import { useAuthStore } from "@/core/store/auth";
 import { useRoles } from "@/modules/admin/roles/presentation/composables/useRoles";
+import { usePermissions } from "@/modules/admin/permissions/presentation/composables/usePermissions";
 import UiVuetifyDataTable from "@/shared/components/UiVuetifyDataTable.vue";
 import RolePermissionsEditor from "@/modules/admin/roles/presentation/components/RolePermissionsEditor.vue";
 import { useToast } from "@/shared/composables/useToast";
 
 // Composables
 const authStore = useAuthStore();
+const { fetchPermissions: fetchAllPermissions } = usePermissions();
 const {
   roles,
   loading,
@@ -22,7 +24,7 @@ const {
   deleteRole,
   availablePermissions,
   fetchAvailablePermissions,
-} = useRoles();
+} = useRoles(fetchAllPermissions);
 const { show: showToast } = useToast();
 
 // Filters and global search

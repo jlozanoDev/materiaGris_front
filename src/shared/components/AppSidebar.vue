@@ -2,7 +2,7 @@
 import { ref, onMounted, onUnmounted, watch } from "vue";
 import { useToast } from "@/shared/composables/useToast";
 import { useRouter, useRoute } from "vue-router";
-import { provideAuthService } from "@/modules/auth/application/containers/authContainer";
+import { getAuthService } from "@/core/services/serviceRegistry";
 import { useAuthStore } from "@/core/store/auth";
 
 const authStore = useAuthStore();
@@ -104,8 +104,7 @@ async function logout() {
   if (loading.value) return;
   loading.value = true;
   try {
-    const authService = provideAuthService();
-    await authService.logout();
+    await getAuthService().logout();
     const { show } = useToast();
     show("Sesión cerrada", "success", 900);
     setTimeout(() => router.replace({ name: "Login" }), 900);

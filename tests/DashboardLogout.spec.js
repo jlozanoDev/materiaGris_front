@@ -9,6 +9,7 @@ vi.mock('vue-router', () => ({
 }))
 
 import AppSidebar from '@/shared/components/AppSidebar.vue'
+import { setAuthService, setStorageGateway } from '@/core/services/serviceRegistry'
 import apiBase from '@/core/config/env'
 
 describe('AppSidebar logout', () => {
@@ -17,6 +18,24 @@ describe('AppSidebar logout', () => {
     localStorage.setItem('access_token', 'tok')
     localStorage.setItem('refresh_token', 'ref')
     global.fetch = undefined
+
+    const mockStorage = {
+      get: (key) => localStorage.getItem(key),
+      set: (key, val) => localStorage.setItem(key, val),
+      remove: (key) => localStorage.removeItem(key),
+    }
+
+    setStorageGateway(mockStorage)
+
+    setAuthService({
+      async logout() {
+        await global.fetch(`${apiBase}/auth/logout`, { method: 'POST', credentials: 'include' })
+        mockStorage.remove('access_token')
+        mockStorage.remove('refresh_token')
+        mockStorage.remove('user')
+      },
+      storageGateway: mockStorage,
+    })
   })
 
   it('calls logout API, clears storage and redirects', async () => {

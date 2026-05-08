@@ -217,21 +217,18 @@
 <script setup>
 import { ref, watch, computed, onMounted } from "vue";
 import Modal from "@/shared/components/Modal.vue";
-import { useRoles } from "@/modules/admin/roles/presentation/composables/useRoles";
-import { usePermissions } from "@/modules/admin/permissions/presentation/composables/usePermissions";
 
 const props = defineProps({
   show: { type: Boolean, default: false },
   user: { type: Object, default: null },
+  roles: { type: Array, default: () => [] },
+  permissions: { type: Array, default: () => [] },
+  loadingPermissions: { type: Boolean, default: false },
 });
 const emit = defineEmits(["close", "save"]);
 
-const { roles: allRoles, fetchRoles } = useRoles();
-const {
-  permissions: allPermissionsList,
-  fetchPermissions,
-  loading: loadingPermissions,
-} = usePermissions();
+const allRoles = computed(() => props.roles);
+const allPermissionsList = computed(() => props.permissions);
 
 const name = ref(props.user?.name || "");
 const email = ref(props.user?.email || "");
@@ -473,19 +470,7 @@ watch(
   { immediate: true }
 );
 
-watch(
-  () => props.show,
-  async (val) => {
-    if (val) {
-      if (availableRoles.value.length === 0) {
-        await fetchRoles();
-      }
-      if (allPermissionsList.value.length === 0) {
-        await fetchPermissions();
-      }
-    }
-  }
-);
+
 
 const canSave = computed(() => name.value.trim().length > 0);
 
