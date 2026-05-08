@@ -1,16 +1,16 @@
 <script setup>
-import { ref } from 'vue'
+import { ref } from "vue";
 
 const patient = ref({
-  initials: 'DW',
-  color: 'bg-teal-500',
-  name: 'Denzel White',
-  info: 'Masculino · 28 años 3 meses',
+  initials: "DW",
+  color: "bg-teal-500",
+  name: "Denzel White",
+  info: "Masculino · 28 años 3 meses",
   symptoms: [],
-  lastChecked:   'Dr Everly el 21 de abril de 2021 · Prescripción #ZJ953K10',
-  observation:   'Fiebre alta y tos con niveles normales de hemoglobina.',
-  prescription:  'Paracetamol · 2×/día\nDiazepam · Día y noche antes de comer\nWikoryl',
-})
+  lastChecked: "Dr Everly el 21 de abril de 2021 · Prescripción #ZJ953K10",
+  observation: "Fiebre alta y tos con niveles normales de hemoglobina.",
+  prescription: "Paracetamol · 2×/día\nDiazepam · Día y noche antes de comer\nWikoryl",
+});
 </script>
 
 <template>
@@ -19,7 +19,12 @@ const patient = ref({
 
     <!-- Patient card -->
     <div class="flex items-center gap-3 rounded-2xl border border-slate-100 p-3 mb-4">
-      <div :class="['h-10 w-10 flex-shrink-0 rounded-full flex items-center justify-center text-white text-sm font-bold select-none', patient.color]">
+      <div
+        :class="[
+          'h-10 w-10 flex-shrink-0 rounded-full flex items-center justify-center text-white text-sm font-bold select-none',
+          patient.color,
+        ]"
+      >
         {{ patient.initials }}
       </div>
       <div>
@@ -27,9 +32,18 @@ const patient = ref({
         <p class="text-xs text-slate-400">{{ patient.info }}</p>
       </div>
       <button class="ml-auto text-slate-400 hover:text-slate-600 transition">
-        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-             stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>
+        <svg
+          class="h-4 w-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="12" cy="12" r="1" />
+          <circle cx="19" cy="12" r="1" />
+          <circle cx="5" cy="12" r="1" />
         </svg>
       </button>
     </div>
@@ -48,7 +62,9 @@ const patient = ref({
       </div>
       <div class="grid grid-cols-[7rem_1fr] gap-2">
         <dt class="text-slate-400 font-medium">Prescripción</dt>
-        <dd class="text-slate-700 leading-snug text-xs whitespace-pre-line">{{ patient.prescription }}</dd>
+        <dd class="text-slate-700 leading-snug text-xs whitespace-pre-line">
+          {{ patient.prescription }}
+        </dd>
       </div>
     </dl>
   </div>

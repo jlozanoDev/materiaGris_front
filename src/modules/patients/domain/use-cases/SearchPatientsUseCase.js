@@ -3,7 +3,7 @@ export default class SearchPatientsUseCase {
    * @param {import('../repositories/PatientRepository').default} patientRepository
    */
   constructor(patientRepository) {
-    this.patientRepository = patientRepository
+    this.patientRepository = patientRepository;
   }
 
   /**
@@ -11,6 +11,6 @@ export default class SearchPatientsUseCase {
    * @returns {Promise<import('../entities/Patient').default[]>}
    */
   async execute(filters = {}) {
-    return this.patientRepository.search(filters)
+    return this.patientRepository.search(filters);
   }
 }

@@ -1,16 +1,20 @@
 <script setup>
-import { computed } from 'vue'
+import { computed } from "vue";
 
-const props = defineProps({ user: { type: Object, default: null } })
+const props = defineProps({ user: { type: Object, default: null } });
 
-const displayName = computed(() => props.user?.name || props.user?.email || 'Usuario')
+const displayName = computed(() => props.user?.name || props.user?.email || "Usuario");
 </script>
 
 <template>
   <div class="hero-card relative overflow-hidden p-6 text-white min-h-[200px] md:w-1/2">
     <!-- Decorative blobs -->
-    <div class="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/10 blur-3xl"></div>
-    <div class="pointer-events-none absolute bottom-0 right-1/3 h-40 w-40 rounded-full bg-white/10 blur-2xl"></div>
+    <div
+      class="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/10 blur-3xl"
+    ></div>
+    <div
+      class="pointer-events-none absolute bottom-0 right-1/3 h-40 w-40 rounded-full bg-white/10 blur-2xl"
+    ></div>
 
     <div class="relative z-10 flex items-end justify-between gap-6">
       <!-- Left: text + stats -->
@@ -29,7 +33,9 @@ const displayName = computed(() => props.user?.name || props.user?.email || 'Usu
             <p class="text-xs text-white/80">Nuevos pacientes</p>
             <div class="mt-1 flex items-center gap-2.5">
               <span class="text-2xl font-bold">40</span>
-              <span class="rounded-full bg-emerald-400/25 px-2 py-0.5 text-xs font-semibold text-emerald-200">
+              <span
+                class="rounded-full bg-emerald-400/25 px-2 py-0.5 text-xs font-semibold text-emerald-200"
+              >
                 +51% ↑
               </span>
             </div>
@@ -39,7 +45,9 @@ const displayName = computed(() => props.user?.name || props.user?.email || 'Usu
             <p class="text-xs text-white/80">Pacientes antiguos</p>
             <div class="mt-1 flex items-center gap-2.5">
               <span class="text-2xl font-bold">64</span>
-              <span class="rounded-full bg-red-400/25 px-2 py-0.5 text-xs font-semibold text-red-200">
+              <span
+                class="rounded-full bg-red-400/25 px-2 py-0.5 text-xs font-semibold text-red-200"
+              >
                 -20% ↓
               </span>
             </div>
@@ -51,7 +59,13 @@ const displayName = computed(() => props.user?.name || props.user?.email || 'Usu
       <div class="flex flex-shrink-0 items-center justify-center h-20 w-36 relative">
         <div class="flex items-center gap-3">
           <!-- Sun+Cloud SVG -->
-          <svg viewBox="0 0 64 64" class="h-12 w-12 text-white/90" fill="none" stroke="currentColor" stroke-width="1.5">
+          <svg
+            viewBox="0 0 64 64"
+            class="h-12 w-12 text-white/90"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
             <g fill="currentColor" class="text-yellow-300">
               <circle cx="20" cy="20" r="8" />
             </g>

@@ -3,7 +3,7 @@ export default class UpdatePatientUseCase {
    * @param {import('../repositories/PatientRepository').default} patientRepository
    */
   constructor(patientRepository) {
-    this.patientRepository = patientRepository
+    this.patientRepository = patientRepository;
   }
 
   /**
@@ -11,6 +11,6 @@ export default class UpdatePatientUseCase {
    * @param {object} payload
    */
   async execute(id, payload) {
-    return this.patientRepository.update(id, payload)
+    return this.patientRepository.update(id, payload);
   }
 }

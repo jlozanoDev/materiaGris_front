@@ -14,18 +14,22 @@
     <!-- Dynamic slots for headers -->
     <template v-for="header in headersWithKeys" #[`header.${header.key}`]="{ column }">
       <slot :name="`header-${header.key}`" :column="column">
-        <div class="px-3 py-2 text-sm font-semibold text-slate-700 bg-slate-50 inline-flex items-center gap-2">
+        <div
+          class="px-3 py-2 text-sm font-semibold text-slate-700 bg-slate-50 inline-flex items-center gap-2"
+        >
           <span>{{ column.title }}</span>
           <i
             v-if="column.sortable !== false"
             :class="[
               'v-icon notranslate mdi',
-              colSortOrder(header.key) === 'asc'  ? 'mdi-arrow-up text-indigo-600' :
-              colSortOrder(header.key) === 'desc' ? 'mdi-arrow-down text-indigo-600' :
-                                                    'mdi-swap-vertical text-slate-400'
+              colSortOrder(header.key) === 'asc'
+                ? 'mdi-arrow-up text-indigo-600'
+                : colSortOrder(header.key) === 'desc'
+                ? 'mdi-arrow-down text-indigo-600'
+                : 'mdi-swap-vertical text-slate-400',
             ]"
             aria-hidden="true"
-            style="font-size:1rem; line-height:1;"
+            style="font-size: 1rem; line-height: 1"
           ></i>
         </div>
       </slot>
@@ -45,10 +49,13 @@
 
     <!-- Custom pagination controls (if paginator is true or dataset exceeds page size) -->
     <template v-if="showPaginator" #bottom>
-      <div class="flex flex-wrap items-center justify-between gap-3 px-1 text-sm text-slate-600 mt-3">
+      <div
+        class="flex flex-wrap items-center justify-between gap-3 px-1 text-sm text-slate-600 mt-3"
+      >
         <div class="flex items-center gap-3">
           <span aria-live="polite">
-            Mostrando {{ paginationInfo.startIndex }} – {{ paginationInfo.endIndex }} de {{ paginationInfo.totalItems }}
+            Mostrando {{ paginationInfo.startIndex }} – {{ paginationInfo.endIndex }} de
+            {{ paginationInfo.totalItems }}
           </span>
         </div>
         <v-pagination
@@ -60,7 +67,11 @@
         ></v-pagination>
         <div class="flex items-center gap-3">
           <label for="rowsPerPageSelect" class="sr-only">Filas por página</label>
-          <select id="rowsPerPageSelect" v-model.number="internalRowsPerPage" class="form-input w-auto text-sm">
+          <select
+            id="rowsPerPageSelect"
+            v-model.number="internalRowsPerPage"
+            class="form-input w-auto text-sm"
+          >
             <option v-for="opt in rowsPerPageOptions" :key="opt" :value="opt">{{ opt }}</option>
           </select>
         </div>
@@ -70,87 +81,90 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch } from "vue";
 
 const props = defineProps({
   value: { type: Array, default: () => [] },
   columns: { type: Array, default: () => [] },
-  dataKey: { type: String, default: 'id' },
+  dataKey: { type: String, default: "id" },
   filters: { type: Object, default: null },
   globalFilterFields: { type: Array, default: () => [] },
   sortMode: { type: String, default: null }, // Not directly used by v-data-table but kept for API compatibility
   paginator: { type: Boolean, default: false },
   rows: { type: Number, default: 10 },
   rowsPerPageOptions: { type: Array, default: () => [10, 25, 50] },
-  emptyText: { type: String, default: 'No hay datos.' },
+  emptyText: { type: String, default: "No hay datos." },
   // Additional props from UiDataTable for styling, not directly mapped to v-data-table but good to keep in mind
   stripedRows: { type: Boolean, default: false },
   showGridlines: { type: Boolean, default: false },
   rowHover: { type: Boolean, default: false },
   rowClass: { type: Function, default: null },
   tableStyle: { type: String, default: null },
-})
+});
 
-const emit = defineEmits(['update:rows'])
+const emit = defineEmits(["update:rows"]);
 
 // Internal state for pagination and sorting
-const currentPage = ref(1)
-const internalRowsPerPage = ref(props.rows)
-const sortBy = ref([]) // For v-data-table sort-by prop. In Vuetify 4 each entry is { key, order: 'asc'|'desc' }
+const currentPage = ref(1);
+const internalRowsPerPage = ref(props.rows);
+const sortBy = ref([]); // For v-data-table sort-by prop. In Vuetify 4 each entry is { key, order: 'asc'|'desc' }
 
 // Watch for changes in props.rows and update internalRowsPerPage
-watch(() => props.rows, (newRows) => {
-  internalRowsPerPage.value = newRows
-})
+watch(
+  () => props.rows,
+  (newRows) => {
+    internalRowsPerPage.value = newRows;
+  }
+);
 
 // Emit update:rows when internalRowsPerPage changes
 watch(internalRowsPerPage, (newVal) => {
-  emit('update:rows', newVal)
+  emit("update:rows", newVal);
   // Reset to first page when items per page changes
-  currentPage.value = 1
-})
+  currentPage.value = 1;
+});
 
 // Mapear las columnas a un formato compatible con v-data-table
 const vuetifyHeaders = computed(() => {
-  return props.columns.map(col => {
-    const key = col.key || col.field || col.label
+  return props.columns.map((col) => {
+    const key = col.key || col.field || col.label;
     return {
       title: col.label,
       value: key, // This is important for data access and sorting
       key: key, // Also use key for slot naming
       sortable: !!col.sortable,
-      align: col.align || 'start',
+      align: col.align || "start",
       // Vuetify v-data-table doesn't have a direct 'field' prop in headers
       // We can add it to meta if needed for custom slot logic, but 'value' is primary
       field: col.field, // Keep for displayValue function
       emptyText: col.emptyText, // Keep for displayValue function
       class: col.headerClass, // Apply custom classes to header cells
       cellClass: col.bodyClass, // Apply custom classes to data cells (might need custom slot)
-    }
-  })
-})
+    };
+  });
+});
 
 const headersWithKeys = computed(() => {
-  return props.columns.map(col => ({
+  return props.columns.map((col) => ({
     key: col.key || col.field || col.label,
     field: col.field,
     emptyText: col.emptyText,
-  }))
-})
+  }));
+});
 
 // Global filter value from props.filters
-const globalFilterValue = computed(() => props.filters?.global?.value ?? '')
+const globalFilterValue = computed(() => props.filters?.global?.value ?? "");
 
 // Custom getValue function, similar to the original UiDataTable
 function getValue(obj, path, emptyText) {
-  if (!path) return ''
-  const parts = path.split('.')
-  let v = obj
+  if (!path) return "";
+  const parts = path.split(".");
+  let v = obj;
   for (const p of parts) {
-    if (v == null) return emptyText ?? ''
-    v = v[p]
+    if (v == null) return emptyText ?? "";
+    v = v[p];
   }
-  return v == null ? (emptyText ?? '') : v
+  return v == null ? emptyText ?? "" : v;
 }
 
 // Custom pagination info calculation (now driven by v-data-table's items-per-page and filtered/sorted items)
@@ -159,56 +173,54 @@ const totalFilteredItems = computed(() => {
   // capture `v-data-table`'s `@update:current-items` or similar events
   // to get the exact count of filtered items. For now, we'll estimate
   // by applying the global filter to the original value.
-  if (!globalFilterValue.value) return props.value.length
+  if (!globalFilterValue.value) return props.value.length;
 
-  const q = String(globalFilterValue.value).toLowerCase()
+  const q = String(globalFilterValue.value).toLowerCase();
   const fields = props.globalFilterFields.length
     ? props.globalFilterFields
-    : props.columns.map(c => c.field).filter(Boolean)
+    : props.columns.map((c) => c.field).filter(Boolean);
 
-  return props.value.filter(item =>
-    fields.some(f => {
-      const v = getValue(item, f)
-      return v != null && String(v).toLowerCase().includes(q)
+  return props.value.filter((item) =>
+    fields.some((f) => {
+      const v = getValue(item, f);
+      return v != null && String(v).toLowerCase().includes(q);
     })
-  ).length
-})
-
+  ).length;
+});
 
 const paginationInfo = computed(() => {
-  const totalItems = totalFilteredItems.value
-  const startIndex = (currentPage.value - 1) * internalRowsPerPage.value + 1
-  const endIndex = Math.min(currentPage.value * internalRowsPerPage.value, totalItems)
+  const totalItems = totalFilteredItems.value;
+  const startIndex = (currentPage.value - 1) * internalRowsPerPage.value + 1;
+  const endIndex = Math.min(currentPage.value * internalRowsPerPage.value, totalItems);
 
-  return { startIndex: totalItems === 0 ? 0 : startIndex, endIndex, totalItems }
-})
+  return { startIndex: totalItems === 0 ? 0 : startIndex, endIndex, totalItems };
+});
 
 const pageCount = computed(() => {
-  const totalItems = totalFilteredItems.value
-  return totalItems === 0 ? 1 : Math.ceil(totalItems / internalRowsPerPage.value)
-})
+  const totalItems = totalFilteredItems.value;
+  return totalItems === 0 ? 1 : Math.ceil(totalItems / internalRowsPerPage.value);
+});
 
 // Show paginator if explicitly requested or when the dataset is larger than one page
 const showPaginator = computed(() => {
   try {
-    const totalItems = totalFilteredItems.value
-    return props.paginator || (totalItems > internalRowsPerPage.value)
+    const totalItems = totalFilteredItems.value;
+    return props.paginator || totalItems > internalRowsPerPage.value;
   } catch (e) {
-    return !!props.paginator
+    return !!props.paginator;
   }
-})
+});
 
 // Vuetify 4: sortBy is [{key, order: 'asc'|'desc'}]
 function colSortOrder(key) {
-  if (!key) return null
+  if (!key) return null;
   const entry = Array.isArray(sortBy.value)
-    ? sortBy.value.find(s => s.key === key || s === key)
-    : null
-  if (!entry) return null
+    ? sortBy.value.find((s) => s.key === key || s === key)
+    : null;
+  if (!entry) return null;
   // entry may be a string (Vuetify 3 compat) or object
-  return (typeof entry === 'object') ? (entry.order ?? 'asc') : 'asc'
+  return typeof entry === "object" ? entry.order ?? "asc" : "asc";
 }
-
 </script>
 
 <style scoped>
@@ -276,7 +288,7 @@ function colSortOrder(key) {
 
 /* Add subtle borders to separate rows when dark theme would remove them */
 .app-vuetify-datatable :deep(.v-data-table__td) {
-  border-color: rgba(15,23,42,0.04) !important;
+  border-color: rgba(15, 23, 42, 0.04) !important;
 }
 
 /* Force Vuetify theme variables locally to light values to counter dark themes */

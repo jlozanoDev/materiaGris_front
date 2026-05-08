@@ -1,104 +1,122 @@
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { provideForgotUseCase } from '@/modules/auth/application/containers/forgotContainer'
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import { provideForgotUseCase } from "@/modules/auth/application/containers/forgotContainer";
 
-const router = useRouter()
-const email = ref('')
-const error = ref('')
-const loading = ref(false)
-const success = ref(false)
+const router = useRouter();
+const email = ref("");
+const error = ref("");
+const loading = ref(false);
+const success = ref(false);
 
 async function submit() {
-  error.value = ''
+  error.value = "";
 
-  if (email.value.trim() === '') {
-    error.value = 'El email es obligatorio.'
-    return
+  if (email.value.trim() === "") {
+    error.value = "El email es obligatorio.";
+    return;
   }
 
-  loading.value = true
+  loading.value = true;
   try {
-    const useCase = provideForgotUseCase()
-    const result = await useCase.execute(email.value)
+    const useCase = provideForgotUseCase();
+    const result = await useCase.execute(email.value);
 
-    const status = result?.status ?? 200
-    const data = result?.data ?? {}
+    const status = result?.status ?? 200;
+    const data = result?.data ?? {};
 
     if (status === 429) {
-      error.value = 'Demasiados intentos. Espera un momento antes de volver a intentarlo.'
-      return
+      error.value = "Demasiados intentos. Espera un momento antes de volver a intentarlo.";
+      return;
     }
 
     if (status < 200 || status >= 300) {
-      error.value = data.message || 'Ha ocurrido un error. Inténtalo de nuevo.'
-      return
+      error.value = data.message || "Ha ocurrido un error. Inténtalo de nuevo.";
+      return;
     }
 
-    success.value = true
+    success.value = true;
   } catch (e) {
-    const err = e
+    const err = e;
     if (err && err.body) {
-      const b = err.body
-      if (typeof b === 'string') {
+      const b = err.body;
+      if (typeof b === "string") {
         try {
-          const parsed = JSON.parse(b)
-          error.value = parsed?.message || b
+          const parsed = JSON.parse(b);
+          error.value = parsed?.message || b;
         } catch (parseErr) {
-          error.value = b || 'Ha ocurrido un error.'
+          error.value = b || "Ha ocurrido un error.";
         }
-      } else if (typeof b === 'object') {
+      } else if (typeof b === "object") {
         if (b.message) {
-          error.value = b.message
+          error.value = b.message;
         } else if (b.errors) {
           try {
-            const msgs = Object.values(b.errors).flat().join(' ')
-            error.value = msgs || 'Ha ocurrido un error.'
+            const msgs = Object.values(b.errors).flat().join(" ");
+            error.value = msgs || "Ha ocurrido un error.";
           } catch (ee) {
-            error.value = 'Ha ocurrido un error.'
+            error.value = "Ha ocurrido un error.";
           }
         } else {
-          error.value = JSON.stringify(b)
+          error.value = JSON.stringify(b);
         }
       } else {
-        error.value = 'Ha ocurrido un error.'
+        error.value = "Ha ocurrido un error.";
       }
     } else if (err && err.status === 401) {
-      error.value = 'No autorizado. Inténtalo de nuevo.'
+      error.value = "No autorizado. Inténtalo de nuevo.";
     } else {
-      error.value = 'No se pudo conectar con el servidor'
+      error.value = "No se pudo conectar con el servidor";
     }
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center px-4 relative overflow-hidden" style="background: #513AD7;">
+  <div
+    class="min-h-screen flex items-center justify-center px-4 relative overflow-hidden"
+    style="background: #513ad7"
+  >
     <!-- decorative blurred shapes -->
-    <div class="absolute -top-32 -left-32 w-80 h-80 rounded-full bg-[#7A66E1] opacity-18 blur-3xl pointer-events-none"></div>
-    <div class="absolute -bottom-36 -right-36 w-96 h-96 rounded-full bg-[#6F5BEA] opacity-12 blur-2xl pointer-events-none"></div>
+    <div
+      class="absolute -top-32 -left-32 w-80 h-80 rounded-full bg-[#7A66E1] opacity-18 blur-3xl pointer-events-none"
+    ></div>
+    <div
+      class="absolute -bottom-36 -right-36 w-96 h-96 rounded-full bg-[#6F5BEA] opacity-12 blur-2xl pointer-events-none"
+    ></div>
 
     <div class="w-full max-w-md bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-8">
       <div class="mb-8 text-center">
         <div class="text-gray-600 text-2xl font-extrabold mb-2">MateIA</div>
         <h1 class="text-xl font-semibold text-gray-800">¿Olvidaste tu contraseña?</h1>
-        <p class="text-sm text-gray-500 mt-1">Introduce tu email y te enviaremos un enlace para restablecerla.</p>
+        <p class="text-sm text-gray-500 mt-1">
+          Introduce tu email y te enviaremos un enlace para restablecerla.
+        </p>
       </div>
 
       <!-- Success state -->
       <div v-if="success" class="text-center space-y-4">
         <div class="w-16 h-16 mx-auto rounded-full bg-green-100 flex items-center justify-center">
           <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 13l4 4L19 7"
+            />
           </svg>
         </div>
         <p class="text-gray-700 text-sm">
-          Si el email <strong>{{ email }}</strong> está registrado, recibirás en breve un enlace para restablecer tu contraseña.
+          Si el email <strong>{{ email }}</strong> está registrado, recibirás en breve un enlace
+          para restablecer tu contraseña.
         </p>
         <p class="text-gray-500 text-xs">Revisa también la carpeta de spam.</p>
-        <button @click="router.push('/login')" class="mt-4 text-indigo-600 hover:underline text-sm font-medium">
+        <button
+          @click="router.push('/login')"
+          class="mt-4 text-indigo-600 hover:underline text-sm font-medium"
+        >
           Volver al inicio de sesión
         </button>
       </div>

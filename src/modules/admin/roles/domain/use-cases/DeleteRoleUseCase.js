@@ -1,9 +1,9 @@
 export default class DeleteRoleUseCase {
   constructor(roleRepository) {
-    this.roleRepository = roleRepository
+    this.roleRepository = roleRepository;
   }
 
   async execute(id) {
-    return this.roleRepository.delete(id)
+    return this.roleRepository.delete(id);
   }
 }

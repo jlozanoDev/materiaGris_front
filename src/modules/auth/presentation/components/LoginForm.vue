@@ -8,14 +8,14 @@
 
 <script>
 export default {
-  name: 'LoginForm',
+  name: "LoginForm",
   data() {
-    return { email: '', password: '' }
+    return { email: "", password: "" };
   },
   methods: {
     onSubmit() {
-      this.$emit('submit', { email: this.email, password: this.password })
-    }
-  }
-}
+      this.$emit("submit", { email: this.email, password: this.password });
+    },
+  },
+};
 </script>

@@ -5,7 +5,7 @@ export default class PatientRepository {
    * @returns {Promise<Patient[]>}
    */
   async search(filters) {
-    throw new Error('Not implemented')
+    throw new Error("Not implemented");
   }
 
   /**
@@ -14,7 +14,7 @@ export default class PatientRepository {
    * @returns {Promise<Patient>}
    */
   async create(payload) {
-    throw new Error('Not implemented')
+    throw new Error("Not implemented");
   }
 
   /**
@@ -24,6 +24,6 @@ export default class PatientRepository {
    * @returns {Promise<Patient>}
    */
   async update(id, payload) {
-    throw new Error('Not implemented')
+    throw new Error("Not implemented");
   }
 }

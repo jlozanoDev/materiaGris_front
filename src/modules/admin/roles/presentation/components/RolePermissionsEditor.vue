@@ -1,68 +1,66 @@
 <script setup>
-import { computed, ref } from 'vue'
-import PermissionCategoryNode from './PermissionCategoryNode.vue'
+import { computed, ref } from "vue";
+import PermissionCategoryNode from "./PermissionCategoryNode.vue";
 
 const props = defineProps({
   availablePermissions: {
     type: Array,
-    required: true
+    required: true,
   },
   modelValue: {
     type: Array,
-    default: () => []
-  }
-})
+    default: () => [],
+  },
+});
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(["update:modelValue"]);
 
 const permissionTree = computed(() => {
-  const root = { subcategories: {} }
-  
-  props.availablePermissions.forEach(p => {
-    const parts = (p.category || 'General').split(' > ')
-    let current = root
-    
+  const root = { subcategories: {} };
+
+  props.availablePermissions.forEach((p) => {
+    const parts = (p.category || "General").split(" > ");
+    let current = root;
+
     parts.forEach((part, index) => {
       if (!current.subcategories[part]) {
         current.subcategories[part] = {
           name: part,
           permissions: [],
-          subcategories: {}
-        }
+          subcategories: {},
+        };
       }
       if (index === parts.length - 1) {
-        current.subcategories[part].permissions.push(p)
+        current.subcategories[part].permissions.push(p);
       }
-      current = current.subcategories[part]
-    })
-  })
-  
-  return root.subcategories
-})
+      current = current.subcategories[part];
+    });
+  });
 
-const expansionSignal = ref({ count: 0, state: false })
+  return root.subcategories;
+});
+
+const expansionSignal = ref({ count: 0, state: false });
 
 function expandAll() {
-  expansionSignal.value = { count: expansionSignal.value.count + 1, state: true }
+  expansionSignal.value = { count: expansionSignal.value.count + 1, state: true };
 }
 
 function collapseAll() {
-  expansionSignal.value = { count: expansionSignal.value.count + 1, state: false }
+  expansionSignal.value = { count: expansionSignal.value.count + 1, state: false };
 }
 
 function updateModel(value) {
-  emit('update:modelValue', value)
+  emit("update:modelValue", value);
 }
 
-defineExpose({ expandAll, collapseAll })
-
-
+defineExpose({ expandAll, collapseAll });
 </script>
 
 <template>
   <div class="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-    <PermissionCategoryNode 
-      v-for="node in permissionTree" 
+    <PermissionCategoryNode
+      v-for="node in permissionTree"
       :key="node.name"
       :node="node"
       :model-value="modelValue"
@@ -70,8 +68,11 @@ defineExpose({ expandAll, collapseAll })
       :expansion-signal="expansionSignal"
       @update:model-value="updateModel"
     />
-    
-    <div v-if="Object.keys(permissionTree).length === 0" class="text-center py-10 text-slate-400 italic">
+
+    <div
+      v-if="Object.keys(permissionTree).length === 0"
+      class="text-center py-10 text-slate-400 italic"
+    >
       No hay permisos disponibles para configurar.
     </div>
   </div>
@@ -92,5 +93,3 @@ defineExpose({ expandAll, collapseAll })
   background: #94a3b8;
 }
 </style>
-
-

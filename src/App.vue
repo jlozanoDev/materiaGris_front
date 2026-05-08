@@ -8,8 +8,8 @@
 </template>
 
 <script setup>
-import { useToast } from '@/shared/composables/useToast'
-import Toast from '@/shared/components/Toast.vue'
+import { useToast } from "@/shared/composables/useToast";
+import Toast from "@/shared/components/Toast.vue";
 
-const { toasts } = useToast()
+const { toasts } = useToast();
 </script>

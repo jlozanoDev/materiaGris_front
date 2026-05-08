@@ -3,7 +3,7 @@ export default class CreatePatientUseCase {
    * @param {import('../repositories/PatientRepository').default} patientRepository
    */
   constructor(patientRepository) {
-    this.patientRepository = patientRepository
+    this.patientRepository = patientRepository;
   }
 
   /**
@@ -11,6 +11,6 @@ export default class CreatePatientUseCase {
    * @returns {Promise<import('../entities/Patient').default>}
    */
   async execute(payload) {
-    return this.patientRepository.create(payload)
+    return this.patientRepository.create(payload);
   }
 }

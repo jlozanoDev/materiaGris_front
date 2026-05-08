@@ -1,4 +1,4 @@
 export const Credentials = {
-  email: 'string',
-  password: 'string'
-}
+  email: "string",
+  password: "string",
+};

@@ -3,7 +3,7 @@ export default class ResetPasswordUseCase {
    * @param {import('@/shared/repositories/UserRepository').default} userRepository
    */
   constructor(userRepository) {
-    this.userRepository = userRepository
+    this.userRepository = userRepository;
   }
 
   /**
@@ -13,6 +13,6 @@ export default class ResetPasswordUseCase {
    * @param {string} passwordConfirmation
    */
   async execute(email, token, password, passwordConfirmation) {
-    return this.userRepository.reset(email, token, password, passwordConfirmation)
+    return this.userRepository.reset(email, token, password, passwordConfirmation);
   }
 }

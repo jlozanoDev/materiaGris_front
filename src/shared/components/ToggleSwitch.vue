@@ -13,11 +13,11 @@
 <script setup>
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
-  disabled: { type: Boolean, default: false }
-})
-const emit = defineEmits(['update:modelValue'])
+  disabled: { type: Boolean, default: false },
+});
+const emit = defineEmits(["update:modelValue"]);
 function toggle() {
-  if (props.disabled) return
-  emit('update:modelValue', !props.modelValue)
+  if (props.disabled) return;
+  emit("update:modelValue", !props.modelValue);
 }
 </script>
