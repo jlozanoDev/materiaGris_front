@@ -33,8 +33,8 @@ onMounted(() => {
 <template>
 <div class="relative w-full overflow-x-hidden font-sans bg-[#F8F9FC]">
   
-  <!-- DARK SECTION (HERO) -->
-  <section class="relative bg-[#110A2E] pt-6 pb-64 overflow-hidden">
+   <!-- DARK SECTION (HERO) -->
+   <section class="relative pt-8 pb-56 overflow-hidden" style="background: radial-gradient(800px 500px at 12% 18%, rgba(111,66,193,0.45), transparent 15%), radial-gradient(700px 500px at 90% 80%, rgba(6,182,212,0.10), transparent 20%), linear-gradient(180deg,#2b0b4f,#0b0420 85%);">
     <!-- Synapses background SVG -->
     <svg class="absolute top-[20%] left-0 w-[40%] h-[40%] z-0" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M0 250 Q 200 250, 400 250" stroke="#38bdf8" stroke-width="2" stroke-dasharray="5 5" class="animate-[pulse_3s_infinite]" />
@@ -50,59 +50,61 @@ onMounted(() => {
     <div class="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-cyan-600/20 rounded-full blur-[120px] pointer-events-none"></div>
 
     <!-- Header -->
-    <header class="relative z-50 flex items-center justify-between px-8 md:px-16">
-      <div class="flex items-center gap-3 bg-white/10 backdrop-blur-md rounded-2xl px-4 py-2 border border-white/10 shadow-lg">
-        <div class="h-10 w-10 bg-white rounded-xl flex items-center justify-center">
-          <img :src="logo" class="h-7 w-7 object-contain" />
-        </div>
-        <div>
-          <h1 class="text-white font-bold text-lg leading-none">MaterIA Gris</h1>
-          <p class="text-slate-300 text-[10px] uppercase tracking-wider">Plataforma clínica</p>
-        </div>
-      </div>
-      <div class="flex items-center gap-6">
-        <a href="mailto:soporte@materiagris.com" class="text-white text-sm font-medium hover:text-cyan-400 transition">Soporte</a>
-        <button @click="router.push('/login')" class="bg-[#4F39F6] hover:bg-[#3d2ae6] text-white px-6 py-2.5 rounded-full text-sm font-semibold transition-colors shadow-[0_0_20px_rgba(79,57,246,0.5)]">
-          Iniciar sesión
-        </button>
-      </div>
-    </header>
+      <header class="relative z-50 flex items-center justify-between px-6 md:px-12 py-4">
+         <div class="flex items-center gap-3 bg-transparent rounded-2xl px-2 py-1">
+            <div class="h-12 w-12 bg-white rounded-xl flex items-center justify-center shadow-sm">
+               <img :src="logo" class="h-8 w-8 object-contain" />
+            </div>
+            <div>
+               <h1 class="text-white font-extrabold text-lg leading-none">MaterIA Gris</h1>
+               <p class="text-slate-300 text-[10px] uppercase tracking-wider">Plataforma clínica</p>
+            </div>
+         </div>
+         <div class="flex items-center gap-4">
+            <a href="mailto:soporte@materiagris.com" class="text-white text-sm font-medium hover:text-cyan-300 transition">Soporte</a>
+            <button @click="router.push('/login')" class="bg-gradient-to-r from-[#6B46F6] to-[#4F39F6] text-white px-5 py-2 rounded-full text-sm font-semibold shadow-[0_8px_30px_rgba(79,57,246,0.45)] hover:opacity-95 transition">
+               Iniciar sesión
+            </button>
+         </div>
+      </header>
 
     <!-- Hero Content -->
     <div class="relative z-10 max-w-5xl mx-auto mt-16 text-center flex flex-col items-center">
       
       <!-- Central Graphic -->
-      <div class="relative w-full h-[350px] flex justify-center items-center mb-10">
-        <!-- Glowing Brain Circle -->
-        <div class="relative w-72 h-72 rounded-full border-4 border-cyan-400 flex items-center justify-center bg-[#110A2E] z-20 shadow-[0_0_80px_rgba(34,211,238,0.5),inset_0_0_50px_rgba(34,211,238,0.3)]">
-          <!-- Pulse ring -->
-          <div class="absolute inset-[-20px] rounded-full border border-purple-500/30 animate-[ping_3s_infinite]"></div>
+         <div class="relative w-full h-[420px] flex justify-center items-center mb-8">
+            <!-- Glowing Brain Circle -->
+            <div class="relative w-80 h-80 rounded-full border-4 border-cyan-400 flex items-center justify-center bg-transparent z-20 shadow-[0_0_120px_rgba(79,57,246,0.25),inset_0_0_60px_rgba(79,57,246,0.12)]">
+               <!-- Inner glow ring -->
+               <div class="absolute inset-[-28px] rounded-full border-2 border-purple-500/30 animate-[ping_3s_infinite]"></div>
           
-          <img :src="logo" class="w-32 h-32 object-contain filter drop-shadow-[0_0_20px_rgba(255,255,255,0.8)] relative z-10" />
+               <div class="w-40 h-40 rounded-full bg-gradient-to-br from-[#6B46F6] to-[#4F39F6] flex items-center justify-center shadow-[0_0_30px_rgba(79,57,246,0.6)] relative z-10">
+                  <img :src="logo" class="w-28 h-28 object-contain filter drop-shadow-[0_0_18px_rgba(255,255,255,0.8)]" />
+               </div>
           
-          <div class="absolute -bottom-5 bg-[#110A2E] px-4 py-1 z-20">
-             <h2 class="text-white text-2xl font-bold tracking-widest">MaterIA Gris</h2>
-          </div>
-        </div>
+               <div class="absolute -bottom-6 bg-transparent px-4 py-1 z-20">
+                   <h2 class="text-white text-2xl font-extrabold tracking-widest">MaterIA Gris</h2>
+               </div>
+            </div>
 
-        <!-- Doctor Avatar -->
-        <img :src="doctor" class="absolute right-[5%] lg:right-[15%] bottom-0 h-80 z-30 drop-shadow-[0_20px_30px_rgba(0,0,0,0.8)] pointer-events-none" />
-      </div>
+            <!-- Doctor Avatar -->
+            <img :src="doctor" class="absolute right-6 top-6 md:right-16 md:top-10 lg:right-24 lg:top-12 h-96 z-30 drop-shadow-[0_25px_50px_rgba(0,0,0,0.7)] pointer-events-none transform rotate-3" />
+         </div>
 
       <!-- Hero Text -->
-      <h2 class="text-4xl md:text-5xl font-bold text-white max-w-3xl leading-tight mb-8">
-        MaterIA Gris: Tu socio de IA para una <br/> práctica clínica optimizada y humana
-      </h2>
+         <h2 class="text-4xl md:text-6xl font-extrabold text-white max-w-4xl leading-tight mb-8 tracking-tight landing-hero-title">
+            MaterIA Gris: Tu socio de IA para una práctica clínica optimizada y humana
+         </h2>
 
       <!-- CTA Buttons -->
-      <div class="flex flex-wrap justify-center items-center gap-4 mb-8">
-        <button @click="router.push('/login')" class="bg-[#4F39F6] hover:bg-[#3d2ae6] text-white px-8 py-3.5 rounded-full text-base font-semibold shadow-[0_0_20px_rgba(79,57,246,0.6)] transition-all">
-          Acceder a mi cuenta
-        </button>
-        <button class="bg-white text-[#110A2E] px-8 py-3.5 rounded-full text-base font-semibold hover:bg-slate-100 transition-all">
-          Solicitar demo
-        </button>
-      </div>
+         <div class="flex flex-wrap justify-center items-center gap-4 mb-8">
+            <button @click="router.push('/login')" class="bg-gradient-to-r from-[#6B46F6] to-[#4F39F6] text-white px-10 py-3.5 rounded-full text-base font-extrabold shadow-[0_18px_50px_rgba(79,57,246,0.45)] transition-transform hover:-translate-y-0.5">
+               Acceder a mi cuenta
+            </button>
+            <button class="bg-white text-[#110A2E] px-8 py-3.5 rounded-full text-base font-semibold hover:bg-slate-100 transition-all border border-white/30">
+               Solicitar demo
+            </button>
+         </div>
 
       <!-- Tags -->
       <div class="flex flex-wrap items-center justify-center gap-3">

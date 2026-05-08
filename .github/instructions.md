@@ -1,6 +1,7 @@
 # Materia Gris Frontend - Instrucciones de Desarrollo (Local Node)
 
 Este repositorio contiene el **Frontend de Materia Gris** construido con Vue 3 y Vite.
+Hablame siempre en español.
 
 ## 🚀 Ejecución Local
 
