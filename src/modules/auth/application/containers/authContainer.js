@@ -1,9 +1,11 @@
 import ApiUserRepository from "@/modules/auth/infrastructure/ApiUserRepository";
 import AuthService from "@/modules/auth/domain/services/AuthService";
+import LocalStorageGateway from "@/modules/auth/infrastructure/LocalStorageGateway";
 
 export function provideAuthService() {
   const userRepo = new ApiUserRepository();
-  return new AuthService(userRepo);
+  const storageGateway = new LocalStorageGateway();
+  return new AuthService(userRepo, storageGateway);
 }
 
 export default { provideAuthService };

@@ -1,26 +1,25 @@
 export default class AuthService {
-  /**
-   * @param {import('@/shared/repositories/UserRepository').default} userRepository
-   */
-  constructor(userRepository) {
+  constructor(userRepository, storageGateway) {
     this.userRepository = userRepository;
+    this.storageGateway = storageGateway;
   }
 
-  /**
-   * Validates the stored access token.
-   * If expired (401), attempts a token refresh.
-   * Returns true if a valid session exists after the call.
-   */
+  async login(credentials) {
+    const result = await this.userRepository.login(credentials);
+    if (result && result.access_token) {
+      this.storageGateway.set("access_token", result.access_token);
+    }
+    return result;
+  }
+
   async validateToken() {
-    const token = typeof localStorage !== "undefined" ? localStorage.getItem("access_token") : null;
+    const token = this.storageGateway.get("access_token");
     if (!token) return false;
 
     try {
       const user = await this.userRepository.me();
       if (user) {
-        try {
-          localStorage.setItem("user", JSON.stringify(user));
-        } catch (_) {}
+        this.storageGateway.set("user", JSON.stringify(user));
         return true;
       }
       return false;
@@ -39,14 +38,14 @@ export default class AuthService {
         this._clearSession();
         return false;
       }
-      localStorage.setItem("access_token", refreshData.access_token);
+      this.storageGateway.set("access_token", refreshData.access_token);
       try {
         const user = await this.userRepository.me();
         if (!user) {
           this._clearSession();
           return false;
         }
-        localStorage.setItem("user", JSON.stringify(user));
+        this.storageGateway.set("user", JSON.stringify(user));
         return true;
       } catch (_) {
         this._clearSession();
@@ -58,9 +57,6 @@ export default class AuthService {
     }
   }
 
-  /**
-   * Logs the user out: calls the API logout endpoint and clears the local session.
-   */
   async logout() {
     try {
       await this.userRepository.logout();
@@ -70,11 +66,13 @@ export default class AuthService {
     this._clearSession();
   }
 
+  clearSession() {
+    this._clearSession();
+  }
+
   _clearSession() {
-    try {
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("refresh_token");
-      localStorage.removeItem("user");
-    } catch (_) {}
+    this.storageGateway.remove("access_token");
+    this.storageGateway.remove("refresh_token");
+    this.storageGateway.remove("user");
   }
 }

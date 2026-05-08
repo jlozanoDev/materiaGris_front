@@ -1,15 +1,14 @@
 import { API_BASE } from "@/core/config/env";
-import { useToast } from "@/shared/composables/useToast";
 
 let onUnauthorizedCallback = null;
+let tokenGetter = null;
 
-/**
- * Register a callback invoked when a 401 response is received and
- * `ignoreUnauthorized` is not set. AuthService uses this to perform logout.
- * @param {() => void} cb
- */
 export function setUnauthorizedHandler(cb) {
   onUnauthorizedCallback = cb;
+}
+
+export function setTokenGetter(fn) {
+  tokenGetter = fn;
 }
 
 export async function fetchClient(path, options = {}) {
@@ -22,7 +21,7 @@ export async function fetchClient(path, options = {}) {
       ? path
       : `${API_BASE}${path.startsWith("/") ? "" : "/"}${path}`;
 
-  const token = typeof localStorage !== "undefined" ? localStorage.getItem("access_token") : null;
+  const token = tokenGetter ? tokenGetter() : null;
 
   opts.headers = { ...(opts.headers || {}) };
 
@@ -51,16 +50,6 @@ export async function fetchClient(path, options = {}) {
     if (typeof onUnauthorizedCallback === "function") {
       onUnauthorizedCallback();
     } else {
-      // fallback when no handler registered
-      try {
-        const { show } = useToast();
-        show("Su sesión ha expirado", "error", 5000);
-      } catch (_) {}
-      try {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
-        localStorage.removeItem("user");
-      } catch (_) {}
       window.location.href = "/login";
     }
     return Promise.reject({ status: 401, body });

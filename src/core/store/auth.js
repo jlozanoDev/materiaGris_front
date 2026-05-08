@@ -3,9 +3,11 @@ import { ref } from "vue";
 import { provideAuthService } from "@/modules/auth/application/containers/authContainer";
 
 export const useAuthStore = defineStore("auth", () => {
+  const _storage = provideAuthService().storageGateway;
+
   const initialUser = (() => {
     try {
-      const stored = localStorage.getItem("user");
+      const stored = _storage.get("user");
       return stored ? JSON.parse(stored) : null;
     } catch (_) {
       return null;
@@ -19,24 +21,18 @@ export const useAuthStore = defineStore("auth", () => {
       const authService = provideAuthService();
       const data = await authService.userRepository.me();
       user.value = data;
-      try {
-        localStorage.setItem("user", JSON.stringify(data));
-      } catch (_) {}
+      _storage.set("user", JSON.stringify(data));
       return data;
     } catch (e) {
       user.value = null;
-      try {
-        localStorage.removeItem("user");
-      } catch (_) {}
+      _storage.remove("user");
       return null;
     }
   }
 
   function clearUser() {
     user.value = null;
-    try {
-      localStorage.removeItem("user");
-    } catch (_) {}
+    _storage.remove("user");
   }
 
   function hasPermission(slug) {

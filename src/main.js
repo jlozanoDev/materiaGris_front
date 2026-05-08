@@ -3,9 +3,7 @@ import { createPinia } from "pinia";
 import PrimeVue from "primevue/config";
 import Button from "primevue/button";
 import Paginator from "primevue/paginator";
-import vuetify from "./plugins/vuetify"; // Import Vuetify
-
-/* PrimeVue styles removed */
+import vuetify from "./plugins/vuetify";
 
 import "@/assets/primeicons/primeicons.css";
 
@@ -13,22 +11,23 @@ import "./style.css";
 import App from "./App.vue";
 import router from "@/core/router/index.js";
 import toastPlugin from "@/shared/plugins/toastPlugin";
-import { setUnauthorizedHandler } from "@/core/api/httpClient";
+import { setUnauthorizedHandler, setTokenGetter } from "@/core/api/httpClient";
 import { provideAuthService } from "@/modules/auth/application/containers/authContainer";
 import { useToast } from "@/shared/composables/useToast";
 import { useAuthStore } from "@/core/store/auth";
 import vHasPermission from "@/shared/directives/v-has-permission";
+
 (async () => {
   const authService = provideAuthService();
 
-  // Wire the 401 handler so FetchHttpClient delegates to AuthService
+  setTokenGetter(() => authService.storageGateway.get("access_token"));
+
   setUnauthorizedHandler(async () => {
     try {
       const { show } = useToast();
       show("Su sesión ha expirado", "error", 5000);
     } catch (_) {}
-    authService._clearSession();
-    // also clear the reactive user in Pinia store
+    authService.clearSession();
     try {
       const authStore = useAuthStore();
       authStore.clearUser();
@@ -41,7 +40,6 @@ import vHasPermission from "@/shared/directives/v-has-permission";
   const app = createApp(App);
 
   app.use(createPinia());
-  // Register global directive for permission checks
   app.directive("has-permission", vHasPermission);
   app.use(PrimeVue);
   app.component("PButton", Button);
@@ -49,7 +47,7 @@ import vHasPermission from "@/shared/directives/v-has-permission";
 
   app.use(router);
   app.use(toastPlugin);
-  app.use(vuetify); // Use Vuetify
+  app.use(vuetify);
   app.mount("#app");
 
   if (!isValid && router.currentRoute.value.meta?.requiresAuth) {

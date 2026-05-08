@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
-import { provideLoginUseCase } from "@/modules/auth/application/containers/loginContainer";
+import { provideAuthService } from "@/modules/auth/application/containers/authContainer";
 import ToggleSwitch from "@/shared/components/ToggleSwitch.vue";
 import logo from "@/assets/materiagris.svg";
 import doctor from "@/assets/doctor.png";
@@ -35,9 +35,8 @@ async function submit() {
   if (!clientValidate()) return;
   loading.value = true;
   try {
-    const useCase = provideLoginUseCase();
-    const result = await useCase.execute({ email: email.value, password: password.value });
-    if (result && result.access_token) localStorage.setItem("access_token", result.access_token);
+    const authService = provideAuthService();
+    await authService.login({ email: email.value, password: password.value });
     router.push("/");
   } catch (e) {
     const err = e;
@@ -82,14 +81,12 @@ async function submit() {
     class="min-h-screen flex items-center justify-center px-4 relative overflow-hidden"
     style="background: #23788e"
   >
-    <!-- decorative blurred shapes (tonos azules suaves) -->
     <div
       class="absolute -top-32 -left-32 w-80 h-80 rounded-full bg-[#7A66E1] opacity-18 blur-3xl transform rotate-12 pointer-events-none"
     ></div>
     <div
       class="absolute -bottom-36 -right-36 w-96 h-96 rounded-full bg-[#6F5BEA] opacity-12 blur-2xl transform -rotate-6 pointer-events-none"
     ></div>
-    <!-- subtle diagonal lines SVG (muy sutiles) -->
     <svg
       class="absolute inset-0 w-full h-full pointer-events-none opacity-4"
       xmlns="http://www.w3.org/2000/svg"
@@ -121,11 +118,9 @@ async function submit() {
     <div
       class="w-full max-w-4xl bg-white/80 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden grid grid-cols-1 md:grid-cols-2 items-center"
     >
-      <!-- Left: Illustration / branding -->
       <div
         class="hidden md:flex flex-col items-start justify-between gap-4 px-8 pt-8 pb-0 bg-white relative overflow-hidden"
       >
-        <!-- Logo / Branding (centrado) -->
         <div class="flex-1 flex flex-col items-center justify-center gap-2 px-4">
           <img :src="logo" alt="Materiagris" class="h-72 w-auto object-contain" draggable="false" />
           <div class="text-center max-w-[22rem] -mt-6 mb-7">
@@ -150,13 +145,8 @@ async function submit() {
             </div>
           </div>
         </div>
-
-        <!-- Feature bullets -->
-
-        <!-- Feature bullets -->
       </div>
 
-      <!-- Right: Form -->
       <div class="p-8 md:p-10">
         <div class="mb-6"></div>
 
