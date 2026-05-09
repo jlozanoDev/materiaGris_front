@@ -1,0 +1,48 @@
+# Documentación Funcional — MateriaGris Frontend
+
+> Propósito de negocio, funcionalidades, reglas de negocio, flujos de usuario y glosario.
+> Para documentación técnica ir a [`docs/tecnica/`](../tecnica/INDICE.md).
+
+---
+
+## Transversales
+
+| Archivo | Descripción |
+|---------|-------------|
+| [`vision-general.md`](./vision-general.md) | ¿Qué es MateriaGris? Propósito, objetivos y alcance del sistema |
+| [`glosario-terminos.md`](./glosario-terminos.md) | Definiciones de términos de negocio (paciente, consulta, rol, permiso…) |
+| [`perfiles-de-usuario.md`](./perfiles-de-usuario.md) | Actores del sistema: médico, administrador, recepcionista |
+| [`prompt-ia-documentacion-funcional.md`](./prompt-ia-documentacion-funcional.md) | Prompt para IA: auditar y generar documentación funcional |
+
+## Módulos funcionales
+
+| Módulo | Archivo | ¿Qué cubre? |
+|--------|---------|-------------|
+| Autenticación | [`modulos/autenticacion.md`](./modulos/autenticacion.md) | Login, recuperación de contraseña, cierre de sesión |
+| Dashboard | [`modulos/dashboard.md`](./modulos/dashboard.md) | Panel principal, widgets, estadísticas, calendario |
+| Pacientes | [`modulos/pacientes.md`](./modulos/pacientes.md) | Alta, búsqueda, edición de pacientes |
+| Admin — Usuarios | [`modulos/administracion/usuarios.md`](./modulos/administracion/usuarios.md) | CRUD de usuarios del sistema |
+| Admin — Roles | [`modulos/administracion/roles.md`](./modulos/administracion/roles.md) | Roles y asignación de permisos |
+| Admin — Permisos | [`modulos/administracion/permisos.md`](./modulos/administracion/permisos.md) | Catálogo de permisos del sistema |
+
+## Flujos de usuario
+
+| Flujo | Archivo | Descripción |
+|-------|---------|-------------|
+| Login y acceso | [`flujos/login.md`](./flujos/login.md) | Desde que el usuario llega hasta que accede al sistema |
+| Gestión de pacientes | [`flujos/gestion-pacientes.md`](./flujos/gestion-pacientes.md) | Buscar, crear y editar pacientes |
+| Administración del sistema | [`flujos/administracion-sistema.md`](./flujos/administracion-sistema.md) | Crear usuario, asignar rol, gestionar permisos |
+
+## Estado de cobertura
+
+| Funcionalidad | Docs | Implementación | Prioridad |
+|---------------|------|----------------|-----------|
+| Autenticación | ✅ Documentado | ✅ Completo | Alta |
+| Dashboard | ✅ Documentado | ⚠️ Parcial (datos dummy) | Alta |
+| Pacientes | ✅ Documentado | ⚠️ Parcial | Alta |
+| Admin — Usuarios | ✅ Documentado | ⚠️ Parcial | Alta |
+| Admin — Roles | ✅ Documentado | ⚠️ Parcial | Alta |
+| Admin — Permisos | ✅ Documentado | ✅ Completo | Media |
+| Consultas médicas | ❌ Pendiente | ❌ No implementado | Futura |
+
+✅ Documentado / Implementado · ⚠️ Parcial / En progreso · ❌ No existe / No implementado

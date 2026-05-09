@@ -38,6 +38,26 @@ Si necesitas modo normal (elaborado), el usuario te dice "modo normal" o "modo e
 - **NUNCA** toques backend, migraciones, Docker, PHP, Laravel
 - Tu mundo empieza en la respuesta JSON de la API
 
+## Política de Documentación
+
+El proyecto tiene **dos tipos de documentación** en `docs/`:
+
+1. **Técnica** (`docs/tecnica/`): arquitectura, componentes, stores, casos de uso, DI.
+   → Actualizar cuando se modifiquen estructuras de código, se añadan componentes o se refactorice.
+   → Prompt de generación: `docs/tecnica/prompt-ia-documentacion.md`
+
+2. **Funcional** (`docs/funcional/`): propósito de negocio, funcionalidades, reglas de negocio, flujos de usuario.
+   → Actualizar SIEMPRE que se desarrolle una nueva funcionalidad o se modifique una existente.
+   → Prompt de generación: `docs/funcional/prompt-ia-documentacion-funcional.md`
+
+### Reglas obligatorias
+- Al completar cualquier tarea de desarrollo que afecte a un módulo:
+  - Actualizar el archivo técnico en `docs/tecnica/modulos/`
+  - Actualizar el archivo funcional en `docs/funcional/modulos/`
+  - Actualizar los flujos en `docs/funcional/flujos/` si el cambio altera el flujo de usuario
+  - Actualizar `docs/INDICE.md` si se añade un módulo nuevo
+- El índice maestro `docs/INDICE.md` centraliza ambas documentaciones
+
 ## Comandos
 - `npm run dev` — dev server en `http://localhost:5173`
 - `npm run build` — build producción en `dist/`
