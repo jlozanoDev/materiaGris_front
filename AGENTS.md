@@ -2,7 +2,7 @@
 description: "Úsalo cuando trabajes en el frontend de Materiagris (Vue 3 + Vite), componentes de UI, lógica de estado con Pinia o consumo de la API."
 name: "Materiagris Frontend Development"
 tools: [read, search, edit, execute, todo]
-skills: [materiagris-frontend, materiagris-architecture, materiagris-testing]
+skills: [materiagris-frontend, materiagris-architecture, materiagris-testing, materiagris-designSystem]
 argument-hint: "Describe la funcionalidad de UI, componente o bug del frontend sobre el que quieres trabajar"
 user-invocable: true
 ---
@@ -17,9 +17,10 @@ Si necesitas modo normal (elaborado), el usuario te dice "modo normal" o "modo e
 
 ## Política de Carga de Skills
 
-1. Componentes Vue, lógica cliente o Vite: `materiagris-frontend`.
-2. Estructura de módulos o flujo de datos: `materiagris-architecture`.
-3. Tests unitarios (Vitest) o E2E (Playwright): `materiagris-testing`.
+1. Componentes Vue, lógica cliente o Vite: `materiagris-frontend` (`.agents/skills/materiagris-frontend/SKILL.md`).
+2. Estructura de módulos o flujo de datos: `materiagris-architecture` (`.agents/skills/materiagris-architecture/SKILL.md`).
+3. Tests unitarios (Vitest) o E2E (Playwright): `materiagris-testing` (`.agents/skills/materiagris-testing/SKILL.md`).
+4. Design system, tokens visuales o UI specs: `materiagris-designSystem` (`.agents/skills/materiagris-designSystem/skill.md`).
 
 ## Stack
 - Vue 3 + Composition API (`<script setup>`)
