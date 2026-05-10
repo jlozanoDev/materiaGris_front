@@ -1,12 +1,10 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import logo from '@/assets/materiagris.svg'
 import doctor from '@/assets/doctor.png'
 import {
-  Brain, FileText, Activity, ShieldCheck, Zap,
-  Dna, Stethoscope, Microchip, ChevronRight, CheckCircle2, Server,
-  Lock, ArrowRight, Phone, Cloud, FileLock2, CreditCard
+  Brain, FileText, Activity, ChevronRight, CheckCircle2, Phone
 } from 'lucide-vue-next'
 import gsap from 'gsap'
 import ScrollTrigger from 'gsap/ScrollTrigger'
@@ -62,7 +60,7 @@ onMounted(() => {
          </div>
          <div class="flex items-center gap-4">
             <a href="mailto:soporte@materiagris.com" class="text-white text-sm font-medium hover:text-cyan-300 transition">Soporte</a>
-            <button @click="router.push('/login')" class="bg-gradient-to-r from-[#6B46F6] to-[#4F39F6] text-white px-5 py-2 rounded-full text-sm font-semibold shadow-[0_8px_30px_rgba(79,57,246,0.45)] hover:opacity-95 transition">
+            <button class="bg-gradient-to-r from-[#6B46F6] to-[#4F39F6] text-white px-5 py-2 rounded-full text-sm font-semibold shadow-[0_8px_30px_rgba(79,57,246,0.45)] hover:opacity-95 transition" @click="router.push('/login')">
                Iniciar sesión
             </button>
          </div>
@@ -98,7 +96,7 @@ onMounted(() => {
 
       <!-- CTA Buttons -->
          <div class="flex flex-wrap justify-center items-center gap-4 mb-8">
-            <button @click="router.push('/login')" class="bg-gradient-to-r from-[#6B46F6] to-[#4F39F6] text-white px-10 py-3.5 rounded-full text-base font-extrabold shadow-[0_18px_50px_rgba(79,57,246,0.45)] transition-transform hover:-translate-y-0.5">
+            <button class="bg-gradient-to-r from-[#6B46F6] to-[#4F39F6] text-white px-10 py-3.5 rounded-full text-base font-extrabold shadow-[0_18px_50px_rgba(79,57,246,0.45)] transition-transform hover:-translate-y-0.5" @click="router.push('/login')">
                Acceder a mi cuenta
             </button>
             <button class="bg-white text-[#110A2E] px-8 py-3.5 rounded-full text-base font-semibold hover:bg-slate-100 transition-all border border-white/30">

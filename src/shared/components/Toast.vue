@@ -2,8 +2,10 @@
 import { computed } from "vue";
 import { useToast } from "@/shared/composables/useToast";
 
+defineOptions({ name: "AppToast" });
+
 const props = defineProps({
-  id: [String, Number],
+  id: { type: [String, Number], default: null },
   message: { type: String, default: "" },
   type: { type: String, default: "success" },
 });
@@ -29,7 +31,7 @@ const icons = {
   <div :class="classes" role="status" aria-live="polite">
     <span v-html="icons[props.type] || icons.success"></span>
     <span class="toast-message">{{ props.message }}</span>
-    <button type="button" class="toast-close" @click="close" aria-label="Cerrar notificación">
+    <button type="button" class="toast-close" aria-label="Cerrar notificación" @click="close">
       ×
     </button>
   </div>

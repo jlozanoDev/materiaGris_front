@@ -8,11 +8,12 @@ import Modal from "@/shared/components/Modal.vue";
 import Slider from "primevue/slider";
 import Chips from "primevue/chips";
 import { useAuthStore } from "@/core/store/auth";
+import { useLogout } from "@/shared/composables/useLogout";
 import { useToast } from "@/shared/composables/useToast";
 import { usePatients } from "@/modules/patients/presentation/composables/usePatients";
 
 const authStore = useAuthStore();
-const { user } = authStore;
+const { logout } = useLogout();
 const {
   patients,
   loading,
@@ -300,19 +301,6 @@ function fetchPatients() {
   });
 }
 
-function rowClass(row) {
-  const base = "border-b last:border-b-0";
-  const data = row?.data ?? row;
-  if (!data) return base;
-  if (data.is_active === false || data.disabled === true || data.deleted_at)
-    return base + " opacity-60";
-  return base;
-}
-
-function viewPatient(p) {
-  console.log("View patient", p);
-}
-
 function editPatient(p) {
   editing.value = true;
   // collapse panels when opening edit modal
@@ -360,7 +348,7 @@ function editPatient(p) {
               { text: 'Pacientes', icon: 'pi pi-users' },
             ]"
           />
-          <TopBar :user="authStore.user" />
+          <TopBar :user="authStore.user" @logout="logout" />
         </div>
 
         <div class="bg-white rounded-2xl shadow-sm p-6 flex flex-col">
@@ -374,8 +362,8 @@ function editPatient(p) {
               Pacientes
             </h1>
             <button
-              @click="startNewPatient"
               class="px-4 py-2 rounded-2xl text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+              @click="startNewPatient"
             >
               + Nuevo Paciente
             </button>
@@ -394,7 +382,6 @@ function editPatient(p) {
                 />
 
                 <button
-                  @click.prevent="toggleAdvanced"
                   aria-label="Filtros avanzados"
                   :aria-pressed="advancedOpen"
                   :class="[
@@ -403,6 +390,7 @@ function editPatient(p) {
                       ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
                       : 'bg-white border-slate-100 text-slate-700',
                   ]"
+                  @click.prevent="toggleAdvanced"
                 >
                   <i class="pi pi-filter"></i>
                   <span class="hidden sm:inline">Filtros</span>
@@ -436,8 +424,8 @@ function editPatient(p) {
               >
                 <span>{{ f.label }}</span>
                 <button
-                  @click="removeFilter(f)"
                   class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white border border-indigo-100 text-indigo-600 hover:bg-indigo-50"
+                  @click="removeFilter(f)"
                 >
                   ×
                 </button>
@@ -551,16 +539,16 @@ function editPatient(p) {
 
               <div class="flex items-center gap-3 mt-4 justify-end">
                 <button
-                  @click.prevent="applyFilters"
                   aria-label="Aplicar filtros"
                   class="px-3 py-2 rounded bg-indigo-600 text-white text-sm"
+                  @click.prevent="applyFilters"
                 >
                   Aplicar
                 </button>
                 <button
-                  @click.prevent="resetFilters"
                   aria-label="Limpiar filtros"
                   class="px-3 py-2 rounded bg-white border border-slate-200 text-sm"
+                  @click.prevent="resetFilters"
                 >
                   Limpiar filtros
                 </button>
@@ -572,9 +560,9 @@ function editPatient(p) {
                 <UiVuetifyDataTable
                   class="patients-table"
                   :value="patients"
-                  dataKey="id"
+                  data-key="id"
                   :filters="filters"
-                  :globalFilterFields="[
+                  :global-filter-fields="[
                     'first_name',
                     'last_name',
                     'national_id',
@@ -583,7 +571,7 @@ function editPatient(p) {
                   :columns="columns"
                   :paginator="true"
                   :rows="rows"
-                  :rowsPerPageOptions="[10, 25, 50, 100]"
+                  :rows-per-page-options="[10, 25, 50, 100]"
                 >
                   <template #body-medical_record_number="{ data }">
                     <div class="px-3 py-2 text-sm">{{ data.medical_record_number }}</div>
@@ -625,9 +613,9 @@ function editPatient(p) {
                   <template #body-actions="{ data }">
                     <div class="px-3 py-2 text-right">
                       <button
-                        @click="editPatient(data)"
                         aria-label="Editar"
                         class="group inline-flex items-center justify-center h-8 w-8 rounded-2xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-200 mr-2"
+                        @click="editPatient(data)"
                       >
                         <i
                           class="pi pi-pencil h-4 w-4 transition-colors duration-150 text-current group-hover:text-indigo-600"
@@ -654,10 +642,10 @@ function editPatient(p) {
               <div class="flex items-center gap-3 ml-auto">
                 <button
                   type="button"
-                  @click="form.is_active = !form.is_active"
                   :aria-pressed="form.is_active"
                   class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none"
                   :class="form.is_active ? 'bg-indigo-600' : 'bg-slate-200'"
+                  @click="form.is_active = !form.is_active"
                 >
                   <span class="sr-only">Activo</span>
                   <span
@@ -671,7 +659,7 @@ function editPatient(p) {
           </template>
 
           <div class="space-y-4">
-            <form id="patient-form" @submit.prevent="savePatient" class="space-y-4">
+            <form id="patient-form" class="space-y-4" @submit.prevent="savePatient">
               <!-- Identificación -->
               <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
                 <h4 class="text-sm font-semibold text-slate-700 mb-3">Identificación</h4>
@@ -782,9 +770,9 @@ function editPatient(p) {
                   <h4 class="text-sm font-semibold text-slate-700">Contacto</h4>
                   <button
                     type="button"
-                    @click="contactOpen = !contactOpen"
                     :aria-expanded="contactOpen"
                     class="flex items-center gap-2 text-slate-600 hover:text-slate-800"
+                    @click="contactOpen = !contactOpen"
                   >
                     <i
                       :class="[
@@ -852,9 +840,9 @@ function editPatient(p) {
                   <h4 class="text-sm font-semibold text-slate-700">Dirección</h4>
                   <button
                     type="button"
-                    @click="addressOpen = !addressOpen"
                     :aria-expanded="addressOpen"
                     class="flex items-center gap-2 text-slate-600 hover:text-slate-800"
+                    @click="addressOpen = !addressOpen"
                   >
                     <i
                       :class="[
@@ -941,8 +929,8 @@ function editPatient(p) {
             <div class="flex justify-end gap-3">
               <button
                 type="button"
-                @click="cancelNewPatient"
                 class="px-4 py-2 rounded-2xl text-sm font-medium text-slate-700 hover:bg-slate-100"
+                @click="cancelNewPatient"
               >
                 Cancelar
               </button>

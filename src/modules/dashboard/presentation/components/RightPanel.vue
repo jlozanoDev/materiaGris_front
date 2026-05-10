@@ -51,8 +51,8 @@ const isToday = (day) =>
         <h3 class="text-sm font-semibold text-slate-800">Calendario</h3>
         <div class="flex gap-1">
           <button
-            @click="prevMonth"
             class="flex h-6 w-6 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition"
+            @click="prevMonth"
           >
             <svg
               class="h-3.5 w-3.5"
@@ -67,8 +67,8 @@ const isToday = (day) =>
             </svg>
           </button>
           <button
-            @click="nextMonth"
             class="flex h-6 w-6 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition"
+            @click="nextMonth"
           >
             <svg
               class="h-3.5 w-3.5"

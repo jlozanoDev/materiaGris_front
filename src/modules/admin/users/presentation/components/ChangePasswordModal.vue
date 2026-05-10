@@ -1,5 +1,5 @@
 <template>
-  <Modal :show="show" size="md" iconClass="h-6 w-6 text-rose-500" @close="close">
+  <Modal :show="show" size="md" icon-class="h-6 w-6 text-rose-500" @close="close">
     <template #icon>
       <svg
         viewBox="0 0 24 24"
@@ -49,7 +49,7 @@
       </div>
 
       <div class="flex justify-end gap-3">
-        <button type="button" @click="close" class="btn btn-ghost">Cancelar</button>
+        <button type="button" class="btn btn-ghost" @click="close">Cancelar</button>
         <button type="submit" :disabled="!canSave" class="btn btn-primary disabled:opacity-50">
           Guardar
         </button>
@@ -62,7 +62,7 @@
 import { ref, computed } from "vue";
 import Modal from "@/shared/components/Modal.vue";
 
-const props = defineProps({ show: { type: Boolean, default: false } });
+defineProps({ show: { type: Boolean, default: false } });
 const emit = defineEmits(["close", "save"]);
 
 const oldPassword = ref("");

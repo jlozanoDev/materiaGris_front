@@ -3,19 +3,19 @@ export default class RoleRepository {
     throw new Error("Not implemented");
   }
 
-  async getById(id) {
+  async getById(_id) {
     throw new Error("Not implemented");
   }
 
-  async create(payload) {
+  async create(_payload) {
     throw new Error("Not implemented");
   }
 
-  async update(id, payload) {
+  async update(_id, _payload) {
     throw new Error("Not implemented");
   }
 
-  async delete(id) {
+  async delete(_id) {
     throw new Error("Not implemented");
   }
 }

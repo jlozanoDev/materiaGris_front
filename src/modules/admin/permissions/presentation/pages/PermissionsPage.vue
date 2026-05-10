@@ -4,11 +4,13 @@ import AppSidebar from "@/shared/components/AppSidebar.vue";
 import TopBar from "@/shared/components/TopBar.vue";
 import Breadcrumb from "@/shared/components/Breadcrumb.vue";
 import { useAuthStore } from "@/core/store/auth";
+import { useLogout } from "@/shared/composables/useLogout";
 import UiVuetifyDataTable from "@/shared/components/UiVuetifyDataTable.vue"; // Changed import
 import { usePermissions } from "@/modules/admin/permissions/presentation/composables/usePermissions";
 
 // Composables
 const authStore = useAuthStore();
+const { logout } = useLogout();
 const { permissions, loading, fetchPermissions } = usePermissions();
 
 // Filters and global search for DataTable
@@ -37,10 +39,6 @@ watch(
   { immediate: true }
 );
 
-function rowClass(row) {
-  return "border-b last:border-b-0";
-}
-
 const breadcrumb = [
   { text: "Dashboard", icon: "pi pi-objects-column", to: "/" },
   { text: "Permisos", icon: "pi pi-shield" },
@@ -62,7 +60,7 @@ onMounted(async () => {
       <main class="flex flex-1 min-w-0 flex-col overflow-y-auto p-5 gap-5">
         <div class="flex flex-col gap-0">
           <Breadcrumb :items="breadcrumb" />
-          <TopBar :user="authStore.user" />
+          <TopBar :user="authStore.user" @logout="logout" />
         </div>
 
         <div
@@ -95,9 +93,9 @@ onMounted(async () => {
                 :key="localPermissions.length"
                 class="permissions-table"
                 :value="localPermissions"
-                dataKey="id"
+                data-key="id"
                 :filters="filters"
-                :globalFilterFields="['slug', 'name', 'category', 'description']"
+                :global-filter-fields="['slug', 'name', 'category', 'description']"
                 :columns="columns"
               >
                 <template #body-slug="{ data }">

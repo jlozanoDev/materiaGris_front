@@ -3,9 +3,9 @@ import { onMounted, ref, watch } from "vue";
 import AppSidebar from "@/shared/components/AppSidebar.vue";
 import TopBar from "@/shared/components/TopBar.vue";
 import Breadcrumb from "@/shared/components/Breadcrumb.vue";
-import Modal from "@/shared/components/Modal.vue";
 import EditUserModal from "@/modules/admin/users/presentation/components/EditUserModal.vue";
 import { useAuthStore } from "@/core/store/auth";
+import { useLogout } from "@/shared/composables/useLogout";
 import { useUsers } from "@/modules/admin/users/presentation/composables/useUsers";
 import { useRoles } from "@/modules/admin/roles/presentation/composables/useRoles";
 import { usePermissions } from "@/modules/admin/permissions/presentation/composables/usePermissions";
@@ -13,6 +13,7 @@ import UiVuetifyDataTable from "@/shared/components/UiVuetifyDataTable.vue";
 
 // Composables
 const authStore = useAuthStore();
+const { logout } = useLogout();
 const { users, loading, fetchUsers, createUser, updateUser, deleteUser } = useUsers();
 const { roles: allRoles, fetchRoles: loadRoles } = useRoles();
 const { permissions: allPermissionsList, fetchPermissions: loadPerms, loading: loadingPerms } = usePermissions();
@@ -51,15 +52,6 @@ watch(
   { immediate: true }
 );
 
-function rowClass(row) {
-  const base = "border-b last:border-b-0";
-  const data = row?.data ?? row;
-  if (!data) return base;
-  if (data.active === false || data.disabled === true || data.deleted_at)
-    return base + " opacity-60";
-  return base;
-}
-
 function startNewUser() {
   editing.value = true;
   isNewUser.value = true;
@@ -82,69 +74,45 @@ function cancelEditUser() {
 
 function handleSaveUser(payload) {
   if (isNewUser.value) {
-    createUser(payload)
+    return createUser(payload)
       .then(() => {
         editing.value = false;
         isNewUser.value = false;
         form.value = {};
       })
       .catch((err) => {
-        console.error("createUser error", err);
+        console.warn("UsersPage: createUser failed", err);
+        throw err;
       });
   } else {
-    updateUser(form.value.id, payload)
+    const payloadToSend = { ...(payload || {}) };
+    if (payloadToSend.id) delete payloadToSend.id;
+    return updateUser(form.value.id, payloadToSend)
       .then(() => {
         editing.value = false;
         isNewUser.value = false;
         form.value = {};
       })
       .catch((err) => {
-        console.error("updateUser error", err);
+        console.warn("UsersPage: updateUser failed", err);
+        throw err;
       });
   }
 }
 
-function saveUser() {
-  // Persist to backend
-  if (isNewUser.value) {
-    // create
-    const payload = { name: form.value.name, email: form.value.email };
-    // use same instance
-    createUser(payload)
-      .then(() => {
-        editing.value = false;
-        isNewUser.value = false;
-        form.value = {};
-      })
-      .catch((err) => {
-        // TODO: mostrar error en UI
-        console.error("createUser error", err);
-      });
-  } else {
-    const payload = { name: form.value.name };
-    updateUser(form.value.id, payload)
-      .then(() => {
-        editing.value = false;
-        isNewUser.value = false;
-        form.value = {};
-      })
-      .catch((err) => {
-        console.error("updateUser error", err);
-      });
-  }
+// Expose a `saveUser` method on the component instance for tests and external callers
+function saveUser(payload) {
+  const p = payload ?? form.value;
+  return handleSaveUser(p);
 }
 
-function toggleActive(u) {
-  const idx = localUsers.value.findIndex((x) => x.id === u.id);
-  if (idx === -1) return;
-  localUsers.value[idx] = { ...localUsers.value[idx], active: !localUsers.value[idx].active };
-}
+defineExpose({ saveUser });
 
 function confirmDeactivate(u) {
   const isActive = u.active !== false;
   if (!confirm(isActive ? "Desactivar usuario?" : "Reactivar usuario?")) return;
   // call delete (soft-delete) on backend
-  deleteUser(u.id).catch((err) => console.error("deleteUser error", err));
+  deleteUser(u.id).catch((err) => console.warn("UsersPage: deleteUser failed", err));
 }
 
 const breadcrumb = [
@@ -168,7 +136,7 @@ onMounted(async () => {
       <main class="flex flex-1 min-w-0 flex-col overflow-y-auto p-5 gap-5">
         <div class="flex flex-col gap-0">
           <Breadcrumb :items="breadcrumb" />
-          <TopBar :user="authStore.user" />
+          <TopBar :user="authStore.user" @logout="logout" />
         </div>
 
         <div
@@ -193,8 +161,8 @@ onMounted(async () => {
               <div class="ml-4">
                 <button
                   v-has-permission="'admin.user.create'"
-                  @click="startNewUser"
                   class="btn btn-primary"
+                  @click="startNewUser"
                 >
                   Agregar usuario
                 </button>
@@ -205,9 +173,9 @@ onMounted(async () => {
               <UiVuetifyDataTable
                 class="users-table"
                 :value="localUsers"
-                dataKey="id"
+                data-key="id"
                 :filters="filters"
-                :globalFilterFields="['name', 'email']"
+                :global-filter-fields="['name', 'email']"
                 :columns="columns"
               >
                 <template #body-name="{ data }">
@@ -252,9 +220,9 @@ onMounted(async () => {
                     <div class="flex items-center justify-end gap-2">
                       <button
                         v-has-permission="'admin.user.update'"
-                        @click="startEditUser(data)"
                         aria-label="Editar"
                         class="icon-action group"
+                        @click="startEditUser(data)"
                       >
                         <i
                           class="pi pi-pencil h-4 w-4 transition-colors duration-150 text-current group-hover:text-indigo-600"
@@ -262,7 +230,6 @@ onMounted(async () => {
                       </button>
                       <button
                         v-has-permission="'admin.user.delete'"
-                        @click="confirmDeactivate(data)"
                         :aria-label="data?.active === false ? 'Reactivar' : 'Desactivar'"
                         :class="[
                           'icon-action group',
@@ -270,6 +237,7 @@ onMounted(async () => {
                             ? 'bg-green-600 text-white hover:bg-green-700'
                             : 'bg-amber-500 text-white hover:bg-amber-600',
                         ]"
+                        @click="confirmDeactivate(data)"
                       >
                         <i class="pi pi-ban h-4 w-4 transition-colors duration-150"></i>
                       </button>

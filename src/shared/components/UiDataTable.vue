@@ -80,8 +80,8 @@
       <div class="flex items-center gap-3">
         <label for="rowsPerPageSelect" class="sr-only">Filas por página</label>
         <select
-          id="rowsPerPageSelect"
           v-if="rowsPerPageOptions && rowsPerPageOptions.length"
+          id="rowsPerPageSelect"
           v-model.number="pageSize"
           class="form-input w-auto text-sm"
         >
@@ -96,16 +96,16 @@
         <button
           class="btn btn-sm btn-ghost"
           :disabled="!table.getCanPreviousPage()"
-          @click="table.setPageIndex(0)"
           aria-label="Primera página"
+          @click="table.setPageIndex(0)"
         >
           «
         </button>
         <button
           class="btn btn-sm btn-ghost"
           :disabled="!table.getCanPreviousPage()"
-          @click="table.previousPage()"
           aria-label="Página anterior"
+          @click="table.previousPage()"
         >
           ‹
         </button>
@@ -120,9 +120,9 @@
               ? 'btn-primary'
               : 'btn-ghost border border-slate-200 hover:bg-slate-100',
           ]"
-          @click="table.setPageIndex(page - 1)"
           :aria-current="page === currentPage ? 'page' : undefined"
           :aria-label="'Ir a la página ' + page"
+          @click="table.setPageIndex(page - 1)"
         >
           {{ page }}
         </button>
@@ -130,16 +130,16 @@
         <button
           class="btn btn-sm btn-ghost"
           :disabled="!table.getCanNextPage()"
-          @click="table.nextPage()"
           aria-label="Página siguiente"
+          @click="table.nextPage()"
         >
           ›
         </button>
         <button
           class="btn btn-sm btn-ghost"
           :disabled="!table.getCanNextPage()"
-          @click="table.setPageIndex(table.getPageCount() - 1)"
           aria-label="Última página"
+          @click="table.setPageIndex(table.getPageCount() - 1)"
         >
           »
         </button>
@@ -281,10 +281,6 @@ const pageSize = computed({
     pagination.value = { pageIndex: 0, pageSize: Number(val) };
   },
 });
-
-function onRowsPerPageChange(val) {
-  pagination.value = { pageIndex: 0, pageSize: Number(val) };
-}
 
 const startIndex = computed(() => {
   if (filteredTotal.value === 0) return 0;

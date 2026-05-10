@@ -5,6 +5,7 @@ import TopBar from "@/shared/components/TopBar.vue";
 import Breadcrumb from "@/shared/components/Breadcrumb.vue";
 import Modal from "@/shared/components/Modal.vue";
 import { useAuthStore } from "@/core/store/auth";
+import { useLogout } from "@/shared/composables/useLogout";
 import { useRoles } from "@/modules/admin/roles/presentation/composables/useRoles";
 import { usePermissions } from "@/modules/admin/permissions/presentation/composables/usePermissions";
 import UiVuetifyDataTable from "@/shared/components/UiVuetifyDataTable.vue";
@@ -13,6 +14,7 @@ import { useToast } from "@/shared/composables/useToast";
 
 // Composables
 const authStore = useAuthStore();
+const { logout } = useLogout();
 const { fetchPermissions: fetchAllPermissions } = usePermissions();
 const {
   roles,
@@ -146,7 +148,7 @@ onMounted(async () => {
       <main class="flex flex-1 min-w-0 flex-col overflow-y-auto p-5 gap-5">
         <div class="flex flex-col gap-0">
           <Breadcrumb :items="breadcrumb" />
-          <TopBar :user="authStore.user" />
+          <TopBar :user="authStore.user" @logout="logout" />
         </div>
 
         <div
@@ -173,8 +175,8 @@ onMounted(async () => {
               <div class="ml-4">
                 <button
                   v-has-permission="'admin.role.create'"
-                  @click="startNewRole"
                   class="btn btn-primary flex items-center gap-2"
+                  @click="startNewRole"
                 >
                   <i class="pi pi-plus"></i>
                   Agregar Rol
@@ -186,9 +188,9 @@ onMounted(async () => {
               <UiVuetifyDataTable
                 class="roles-table"
                 :value="localRoles"
-                dataKey="id"
+                data-key="id"
                 :filters="filters"
-                :globalFilterFields="['name', 'description']"
+                :global-filter-fields="['name', 'description']"
                 :columns="columns"
               >
                 <template #body-name="{ data }">
@@ -219,9 +221,9 @@ onMounted(async () => {
                     <div class="flex items-center justify-end gap-2">
                       <button
                         v-has-permission="'admin.role.update'"
-                        @click="startEditRole(data)"
                         aria-label="Editar"
                         class="icon-action group"
+                        @click="startEditRole(data)"
                       >
                         <i
                           class="pi pi-pencil h-4 w-4 transition-colors duration-150 text-current group-hover:text-indigo-600"
@@ -230,9 +232,9 @@ onMounted(async () => {
                       <button
                         v-if="!data.is_system"
                         v-has-permission="'admin.role.delete'"
-                        @click="confirmDelete(data)"
                         aria-label="Eliminar"
                         class="icon-action group hover:bg-red-50"
+                        @click="confirmDelete(data)"
                       >
                         <i
                           class="pi pi-trash h-4 w-4 transition-colors duration-150 text-current group-hover:text-red-600"
@@ -267,7 +269,7 @@ onMounted(async () => {
               </div>
 
               <div v-else class="space-y-6">
-                <form @submit.prevent="saveRole" class="space-y-6">
+                <form class="space-y-6" @submit.prevent="saveRole">
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label class="block text-sm font-bold text-slate-700 mb-1"
@@ -302,16 +304,16 @@ onMounted(async () => {
                       <div class="flex gap-2">
                         <button
                           type="button"
-                          @click="editorRef?.expandAll()"
                           class="text-[10px] font-bold uppercase tracking-tight text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-1"
+                          @click="editorRef?.expandAll()"
                         >
                           <i class="pi pi-plus-circle"></i> Desplegar todo
                         </button>
                         <span class="text-slate-300">|</span>
                         <button
                           type="button"
-                          @click="editorRef?.collapseAll()"
                           class="text-[10px] font-bold uppercase tracking-tight text-slate-500 hover:text-slate-700 transition-colors flex items-center gap-1"
+                          @click="editorRef?.collapseAll()"
                         >
                           <i class="pi pi-minus-circle"></i> Plegar todo
                         </button>
@@ -319,8 +321,8 @@ onMounted(async () => {
                     </div>
                     <RolePermissionsEditor
                       ref="editorRef"
-                      :availablePermissions="availablePermissions"
                       v-model="form.permissions"
+                      :available-permissions="availablePermissions"
                     />
                   </div>
 
@@ -337,7 +339,7 @@ onMounted(async () => {
                       denegado.
                     </p>
                     <div class="flex justify-end gap-3">
-                      <button type="button" @click="cancelEdit" class="btn btn-ghost">
+                      <button type="button" class="btn btn-ghost" @click="cancelEdit">
                         Cancelar
                       </button>
                       <button type="submit" class="btn btn-primary px-8">Guardar Cambios</button>

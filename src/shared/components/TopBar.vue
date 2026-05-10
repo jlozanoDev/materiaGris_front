@@ -56,9 +56,9 @@
     <div class="relative">
       <div
         ref="userRef"
-        @click="toggleMenu"
         :aria-expanded="menuOpen"
         class="group flex items-center gap-2.5 ml-2 cursor-pointer select-none"
+        @click="toggleMenu"
       >
         <div
           class="h-9 w-9 rounded-full avatar-gradient flex items-center justify-center text-white text-sm font-semibold transition-transform transform duration-150 group-hover:scale-105"
@@ -92,8 +92,8 @@
           <ul class="py-1">
             <li>
               <button
-                @click="onEdit"
                 class="group w-full text-right px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 justify-end whitespace-nowrap"
+                @click="onEdit"
               >
                 <span>Editar</span>
                 <svg
@@ -115,8 +115,8 @@
             </li>
             <li>
               <button
-                @click="onChangePassword"
                 class="group w-full text-right px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 justify-end whitespace-nowrap"
+                @click="onChangePassword"
               >
                 <span>Cambiar contraseña</span>
                 <svg
@@ -138,8 +138,8 @@
             </li>
             <li>
               <button
-                @click="onManageAddresses"
                 class="group w-full text-right px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 justify-end whitespace-nowrap"
+                @click="onManageAddresses"
               >
                 <span>Direcciones</span>
                 <svg
@@ -153,6 +153,30 @@
                 >
                   <path d="M21 10c0 6-9 12-9 12S3 16 3 10a9 9 0 1118 0z"></path>
                   <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+              </button>
+            </li>
+            <li aria-hidden="true">
+              <div class="mx-3 my-1 border-t border-slate-100"></div>
+            </li>
+            <li>
+              <button
+                class="group w-full text-right px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 justify-end whitespace-nowrap"
+                @click="onLogout"
+              >
+                <span>Cerrar sesión</span>
+                <svg
+                  class="h-5 w-5 transition-transform transform duration-150 group-hover:scale-110 text-slate-500"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
                 </svg>
               </button>
             </li>
@@ -176,6 +200,7 @@ const emit = defineEmits([
   "admin.user.updated",
   "password-changed",
   "addresses-saved",
+  "logout",
 ]);
 
 const menuOpen = ref(false);
@@ -198,6 +223,11 @@ const onManageAddresses = (e) => {
   menuOpen.value = false;
   emit("manage-addresses");
 };
+
+function onLogout() {
+  menuOpen.value = false;
+  emit("logout");
+}
 
 const displayName = computed(() => props.user?.name || props.user?.email || "Usuario");
 

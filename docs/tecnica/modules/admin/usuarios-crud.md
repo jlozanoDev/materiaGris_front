@@ -64,3 +64,9 @@ Atributos: `id`, `name`, `email`, `roles`, `permissions`, `isActive`, `addresses
 - [ ] Agregar filtros de búsqueda por nombre, email, rol
 - [ ] Notificaciones toast de éxito/error en cada operación CRUD
 - [ ] Tests unitarios para use cases y composable
+
+## Nota para tests
+
+- **`saveUser` expuesto en `UsersPage.vue`:** el componente expone un método `saveUser` mediante `defineExpose` para facilitar las pruebas de integración. `saveUser(payload)` delega en `handleSaveUser(payload)` y devuelve la promesa de la operación (create/update). Esto permite a los tests usar `await wrapper.vm.saveUser()` para verificar llamadas al `composable` `useUsers`.
+
+Mantener esta exposición ayuda a mantener los tests simples; si se prefiere, los tests también pueden simular el evento `@save` del `EditUserModal`.

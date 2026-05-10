@@ -2,7 +2,7 @@
   <router-view />
   <div aria-live="polite">
     <transition-group name="toast" tag="div">
-      <Toast v-for="t in toasts" :key="t.id" :id="t.id" :message="t.message" :type="t.type" />
+      <Toast v-for="t in toasts" :id="t.id" :key="t.id" :message="t.message" :type="t.type" />
     </transition-group>
   </div>
 </template>

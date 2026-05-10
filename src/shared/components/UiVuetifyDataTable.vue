@@ -1,18 +1,18 @@
 <template>
   <v-data-table
-    :headers="vuetifyHeaders"
-    :items="value"
     v-model:items-per-page="internalRowsPerPage"
     v-model:page="currentPage"
+    v-model:sort-by="sortBy"
+    :headers="vuetifyHeaders"
+    :items="value"
     :items-per-page-options="paginator ? rowsPerPageOptions : []"
     :no-data-text="emptyText"
     class="app-vuetify-datatable"
     density="compact"
     :search="globalFilterValue"
-    v-model:sort-by="sortBy"
   >
     <!-- Dynamic slots for headers -->
-    <template v-for="header in headersWithKeys" #[`header.${header.key}`]="{ column }">
+    <template v-for="(header, idx) in headersWithKeys" :key="idx" #[`header.${header.key}`]="{ column }">
       <slot :name="`header-${header.key}`" :column="column">
         <div
           class="px-3 py-2 text-sm font-semibold text-slate-700 bg-slate-50 inline-flex items-center gap-2"
@@ -36,7 +36,7 @@
     </template>
 
     <!-- Dynamic slots for items -->
-    <template v-for="header in headersWithKeys" #[`item.${header.key}`]="{ item }">
+    <template v-for="(header, idx) in headersWithKeys" :key="`item-${idx}`" #[`item.${header.key}`]="{ item }">
       <slot :name="`body-${header.key}`" :data="item.raw ?? item">
         {{ getValue(item.raw ?? item, header.field, header.emptyText) }}
       </slot>

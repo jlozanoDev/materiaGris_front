@@ -12,12 +12,12 @@ export default class LocalStorageGateway extends StorageGateway {
   set(key, value) {
     try {
       localStorage.setItem(key, String(value));
-    } catch {}
+    } catch { /* noop */ }
   }
 
   remove(key) {
     try {
       localStorage.removeItem(key);
-    } catch {}
+    } catch { /* noop */ }
   }
 }

@@ -1,13 +1,13 @@
 export default class StorageGateway {
-  get(key) {
+  get(_key) {
     throw new Error("Not implemented");
   }
 
-  set(key, value) {
+  set(_key, _value) {
     throw new Error("Not implemented");
   }
 
-  remove(key) {
+  remove(_key) {
     throw new Error("Not implemented");
   }
 }

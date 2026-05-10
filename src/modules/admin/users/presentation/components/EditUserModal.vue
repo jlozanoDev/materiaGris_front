@@ -1,5 +1,5 @@
 <template>
-  <Modal :show="show" size="lg" iconClass="h-6 w-6 text-indigo-600" @close="close">
+  <Modal :show="show" size="lg" icon-class="h-6 w-6 text-indigo-600" @close="close">
     <template #icon>
       <svg
         viewBox="0 0 24 24"
@@ -20,7 +20,7 @@
       </h3>
     </template>
 
-    <form @submit.prevent="onSave" class="space-y-4">
+    <form class="space-y-4" @submit.prevent="onSave">
       <!-- Nombre -->
       <div class="mb-4">
         <label class="block text-sm font-medium text-slate-600 mb-1">Nombre</label>
@@ -66,8 +66,8 @@
               :value="role.id"
               :checked="selectedRoleIds.includes(role.id)"
               :disabled="role.is_system"
-              @change="toggleRole(role.id)"
               class="form-checkbox"
+              @change="toggleRole(role.id)"
             />
             <span class="text-sm text-slate-700">{{ role.name }}</span>
             <span v-if="role.is_system" class="badge badge--secondary text-xs">Sistema</span>
@@ -88,7 +88,7 @@
       <div class="mb-4">
         <div class="flex items-center justify-between mb-2">
           <label class="block text-sm font-medium text-slate-600">Permisos Individuales</label>
-          <button type="button" @click="resetPermissions" class="btn btn-ghost btn-sm">
+          <button type="button" class="btn btn-ghost btn-sm" @click="resetPermissions">
             Restaurar permisos
           </button>
         </div>
@@ -129,8 +129,8 @@
                       type="radio"
                       :name="'perm-' + perm.id"
                       :checked="selectedPermissions[perm.id] === 1"
-                      @change="setPermission(perm.id, 1)"
                       class="form-radio"
+                      @change="setPermission(perm.id, 1)"
                     />
                     <span class="text-green-600 text-xs">+</span>
                   </label>
@@ -139,8 +139,8 @@
                       type="radio"
                       :name="'perm-' + perm.id"
                       :checked="selectedPermissions[perm.id] === -1"
-                      @change="setPermission(perm.id, -1)"
                       class="form-radio"
+                      @change="setPermission(perm.id, -1)"
                     />
                     <span class="text-red-500 text-xs">-</span>
                   </label>
@@ -149,8 +149,8 @@
                       type="radio"
                       :name="'perm-' + perm.id"
                       :checked="selectedPermissions[perm.id] === 0 || !selectedPermissions[perm.id]"
-                      @change="setPermission(perm.id, 0)"
                       class="form-radio"
+                      @change="setPermission(perm.id, 0)"
                     />
                     <span class="text-slate-400 text-xs">ninguno</span>
                   </label>
@@ -205,7 +205,7 @@
       </div>
 
       <div class="flex justify-end gap-3">
-        <button type="button" @click="close" class="btn btn-ghost">Cancelar</button>
+        <button type="button" class="btn btn-ghost" @click="close">Cancelar</button>
         <button type="submit" :disabled="!canSave" class="btn btn-primary disabled:opacity-50">
           Guardar
         </button>
@@ -215,7 +215,7 @@
 </template>
 
 <script setup>
-import { ref, watch, computed, onMounted } from "vue";
+import { ref, watch, computed } from "vue";
 import Modal from "@/shared/components/Modal.vue";
 
 const props = defineProps({
@@ -305,7 +305,7 @@ function getEffectiveGrant(permissionId) {
   // Intentar resolver vía slug en el mapa efectivo (derivado de roles + overrides)
   const perm = allPermissionsList.value.find((p) => p.id == permissionId);
   const slug = perm?.slug || perm?.name;
-  if (slug && effectivePermissionsMap.value && effectivePermissionsMap.value.hasOwnProperty(slug)) {
+  if (slug && effectivePermissionsMap.value && Object.prototype.hasOwnProperty.call(effectivePermissionsMap.value, slug)) {
     return effectivePermissionsMap.value[slug];
   }
 
@@ -332,7 +332,7 @@ const effectivePermissionsMap = computed(() => {
     const role = availableRoles.value.find((r) => r.id === roleId);
     if (role?.permissions) {
       role.permissions.forEach((p) => {
-        const permId = p.id || p.permission_id;
+        const _permId = p.id || p.permission_id;
         result[p.slug || p.name] = 1; // Los roles siempre dan grant +1
       });
     }
@@ -536,7 +536,7 @@ function onSave() {
 
   // Añadir permisos que se eliminaron (grant = 0 para quitar)
   Object.entries(originalPermissions.value).forEach(([permId, grant]) => {
-    if (!selectedPermissions.value.hasOwnProperty(permId) && grant !== 0) {
+    if (!Object.prototype.hasOwnProperty.call(selectedPermissions.value, permId) && grant !== 0) {
       permissionsChanges.push({
         permission_id: parseInt(permId),
         grant: 0, // Eliminar

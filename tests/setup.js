@@ -2,6 +2,7 @@ import { config } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, afterEach } from 'vitest'
 import vHasPermission from '../src/shared/directives/v-has-permission'
+import { routerKey } from 'vue-router'
 
 // Initialize a fresh Pinia per test to avoid state leaking between tests
 beforeEach(() => {
@@ -20,6 +21,15 @@ afterEach(() => {
 // Global stub for router-link to avoid component resolution warnings
 config.global.components = {
   'router-link': { template: '<a><slot /></a>' }
+}
+
+// Provide a minimal router injection to silence "injection 'Symbol(router)' not found" warnings
+config.global.provide = {
+  [routerKey]: {
+    push: () => {},
+    replace: () => {},
+    currentRoute: { value: {} },
+  },
 }
 
 // Global plugins and directives

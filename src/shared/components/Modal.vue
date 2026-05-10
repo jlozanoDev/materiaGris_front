@@ -22,8 +22,8 @@
                   <div
                     v-else-if="icon"
                     class="flex-shrink-0 flex items-center modal-icon"
-                    v-html="icon"
                     :class="iconClass"
+                    v-html="icon"
                   />
 
                   <div class="min-w-0">
@@ -49,6 +49,8 @@
 
 <script setup>
 import { computed, watch, onUnmounted, ref } from "vue";
+
+defineOptions({ name: "AppModal" });
 
 const props = defineProps({
   show: { type: Boolean, default: false },

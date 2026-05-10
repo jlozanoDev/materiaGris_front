@@ -81,11 +81,11 @@ function select(i) {
       <li
         v-for="(p, i) in patients"
         :key="i"
-        @click="select(i)"
         :class="[
           'flex cursor-pointer items-center gap-3 rounded-2xl px-3 py-2.5 transition',
           selected === i ? 'bg-indigo-50' : 'hover:bg-slate-50',
         ]"
+        @click="select(i)"
       >
         <!-- Avatar -->
         <div

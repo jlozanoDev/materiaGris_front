@@ -75,8 +75,8 @@ function updateModel(value) {
     <!-- Header -->
     <button
       type="button"
-      @click="toggle"
       class="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors text-left"
+      @click="toggle"
     >
       <div class="flex items-center gap-3">
         <div class="w-6 h-6 rounded-lg bg-indigo-50 flex items-center justify-center">
@@ -116,7 +116,6 @@ function updateModel(value) {
           >
             <button
               type="button"
-              @click="setGrant(permission.id, 1)"
               title="Permitir"
               :class="[
                 'px-3 py-1.5 text-[10px] font-bold rounded-lg transition-all duration-200 uppercase tracking-tighter',
@@ -124,12 +123,12 @@ function updateModel(value) {
                   ? 'bg-green-600 text-white shadow-md'
                   : 'text-slate-500 hover:bg-slate-200',
               ]"
+              @click="setGrant(permission.id, 1)"
             >
               Permitir
             </button>
             <button
               type="button"
-              @click="setGrant(permission.id, 0)"
               title="Neutral"
               :class="[
                 'px-3 py-1.5 text-[10px] font-bold rounded-lg transition-all duration-200 uppercase tracking-tighter',
@@ -137,12 +136,12 @@ function updateModel(value) {
                   ? 'bg-slate-400 text-white shadow-md'
                   : 'text-slate-500 hover:bg-slate-200',
               ]"
+              @click="setGrant(permission.id, 0)"
             >
               Neutral
             </button>
             <button
               type="button"
-              @click="setGrant(permission.id, -1)"
               title="Denegar"
               :class="[
                 'px-3 py-1.5 text-[10px] font-bold rounded-lg transition-all duration-200 uppercase tracking-tighter',
@@ -150,6 +149,7 @@ function updateModel(value) {
                   ? 'bg-red-600 text-white shadow-md'
                   : 'text-slate-500 hover:bg-slate-200',
               ]"
+              @click="setGrant(permission.id, -1)"
             >
               Denegar
             </button>

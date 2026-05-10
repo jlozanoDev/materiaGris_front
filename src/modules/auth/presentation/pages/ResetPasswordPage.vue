@@ -121,28 +121,28 @@ async function submit() {
         </div>
         <p class="text-gray-700 text-sm">Tu contraseña ha sido restablecida correctamente.</p>
         <button
-          @click="router.push('/login')"
           class="mt-4 w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-2xl transition text-sm"
+          @click="router.push('/login')"
         >
           Iniciar sesión
         </button>
       </div>
 
       <!-- Form state -->
-      <form v-else @submit.prevent="submit" class="space-y-4">
+      <form v-else class="space-y-4" @submit.prevent="submit">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Nueva contraseña</label>
           <div class="relative">
             <input
-              :type="showPassword ? 'text' : 'password'"
               v-model="password"
+              :type="showPassword ? 'text' : 'password'"
               autocomplete="new-password"
               class="w-full h-12 px-4 rounded-2xl border border-gray-200 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent text-sm"
             />
             <button
               type="button"
-              @click="showPassword = !showPassword"
               class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              @click="showPassword = !showPassword"
             >
               <svg
                 v-if="!showPassword"
@@ -189,15 +189,15 @@ async function submit() {
           <label class="block text-sm font-medium text-gray-700 mb-2">Confirmar contraseña</label>
           <div class="relative">
             <input
-              :type="showConfirmation ? 'text' : 'password'"
               v-model="passwordConfirmation"
+              :type="showConfirmation ? 'text' : 'password'"
               autocomplete="new-password"
               class="w-full h-12 px-4 rounded-2xl border border-gray-200 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent text-sm"
             />
             <button
               type="button"
-              @click="showConfirmation = !showConfirmation"
               class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              @click="showConfirmation = !showConfirmation"
             >
               <svg
                 v-if="!showConfirmation"

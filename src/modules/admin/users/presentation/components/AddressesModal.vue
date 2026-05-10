@@ -1,5 +1,5 @@
 <template>
-  <Modal :show="show" size="max-w-5xl" iconClass="h-6 w-6 text-indigo-600" @close="onClose">
+  <Modal :show="show" size="max-w-5xl" icon-class="h-6 w-6 text-indigo-600" @close="onClose">
     <template #icon>
       <svg
         viewBox="0 0 24 24"
@@ -38,9 +38,9 @@
         <UiVuetifyDataTable
           class="addresses-table"
           :value="localAddresses"
-          dataKey="id"
+          data-key="id"
           :filters="filters"
-          :globalFilterFields="['alias', 'street', 'number', 'postal_code', 'mobile_phone']"
+          :global-filter-fields="['alias', 'street', 'number', 'postal_code', 'mobile_phone']"
           :columns="columns"
         >
           <template #body-alias="{ data }">
@@ -72,7 +72,7 @@
           <template #body-actions="{ data }">
             <div class="px-3 py-2 text-right">
               <div class="flex items-center justify-end gap-2">
-                <button @click="startEdit(data)" aria-label="Editar" class="icon-action group">
+                <button aria-label="Editar" class="icon-action group" @click="startEdit(data)">
                   <i
                     class="pi pi-pencil h-4 w-4 transition-colors duration-150 text-current group-hover:text-indigo-600"
                   ></i>
@@ -82,9 +82,9 @@
                   >
                 </button>
                 <button
-                  @click="confirmDelete(data)"
                   aria-label="Eliminar"
                   class="icon-action icon-action--danger group"
+                  @click="confirmDelete(data)"
                 >
                   <i class="pi pi-trash h-4 w-4 transition-colors duration-150"></i>
                   <span
@@ -102,7 +102,7 @@
         </UiVuetifyDataTable>
 
         <div class="mt-3">
-          <button @click="startNew" class="btn btn-primary">Agregar dirección</button>
+          <button class="btn btn-primary" @click="startNew">Agregar dirección</button>
         </div>
       </div>
 
@@ -117,7 +117,7 @@
                 </h4>
               </div>
             </div>
-            <form @submit.prevent="saveEdit" class="space-y-3">
+            <form class="space-y-3" @submit.prevent="saveEdit">
               <div>
                 <label class="block text-sm font-medium text-slate-600 mb-1">Alias</label>
                 <input v-model="form.alias" placeholder="Alias" class="form-input" />
@@ -146,9 +146,9 @@
               <div class="flex items-center gap-3">
                 <button
                   type="button"
-                  @click="form.is_primary = !form.is_primary"
                   :aria-pressed="form.is_primary"
                   :class="['toggle', form.is_primary ? 'toggle--on' : '']"
+                  @click="form.is_primary = !form.is_primary"
                 >
                   <span class="sr-only">Dirección principal</span>
                   <span class="toggle-thumb"></span>
@@ -157,7 +157,7 @@
               </div>
 
               <div class="flex justify-end gap-3">
-                <button type="button" @click="cancelEdit" class="btn btn-ghost">Cancelar</button>
+                <button type="button" class="btn btn-ghost" @click="cancelEdit">Cancelar</button>
                 <button type="submit" class="btn btn-primary">Guardar</button>
               </div>
             </form>
@@ -168,15 +168,15 @@
 
     <template #footer>
       <div class="pt-4 flex items-center justify-end gap-3 mt-4">
-        <button @click="onClose" class="btn btn-ghost">Cerrar</button>
-        <button @click="saveAll" class="btn btn-primary">Guardar cambios</button>
+        <button class="btn btn-ghost" @click="onClose">Cerrar</button>
+        <button class="btn btn-primary" @click="saveAll">Guardar cambios</button>
       </div>
     </template>
   </Modal>
 </template>
 
 <script setup>
-import { ref, watch, computed } from "vue";
+import { ref, watch } from "vue";
 import Modal from "@/shared/components/Modal.vue";
 import UiVuetifyDataTable from "@/shared/components/UiVuetifyDataTable.vue";
 const props = defineProps({
@@ -260,10 +260,6 @@ function saveEdit() {
 function confirmDelete(addr) {
   if (!confirm("Eliminar dirección?")) return;
   localAddresses.value = localAddresses.value.filter((a) => a.id !== addr.id);
-}
-
-function rowClass() {
-  return "border-b last:border-b-0";
 }
 
 function saveAll() {

@@ -114,15 +114,15 @@ async function submit() {
         </p>
         <p class="text-gray-500 text-xs">Revisa también la carpeta de spam.</p>
         <button
-          @click="router.push('/login')"
           class="mt-4 text-indigo-600 hover:underline text-sm font-medium"
+          @click="router.push('/login')"
         >
           Volver al inicio de sesión
         </button>
       </div>
 
       <!-- Form state -->
-      <form v-else @submit.prevent="submit" class="space-y-4">
+      <form v-else class="space-y-4" @submit.prevent="submit">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
           <input

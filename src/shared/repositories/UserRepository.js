@@ -1,9 +1,9 @@
 export default class UserRepository {
-  async login(credentials) {
+  async login(_credentials) {
     throw new Error("Not implemented");
   }
 
-  async forgot(email) {
+  async forgot(_email) {
     throw new Error("Not implemented");
   }
 
@@ -23,7 +23,7 @@ export default class UserRepository {
     throw new Error("Not implemented");
   }
 
-  async reset(email, token, password, passwordConfirmation) {
+  async reset(_email, _token, _password, _passwordConfirmation) {
     throw new Error("Not implemented");
   }
 }

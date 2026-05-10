@@ -3,8 +3,8 @@
     type="button"
     :aria-pressed="modelValue"
     :class="['toggle', modelValue ? 'toggle--on' : '']"
-    @click="toggle"
     :disabled="disabled"
+    @click="toggle"
   >
     <span class="toggle-thumb"></span>
   </button>

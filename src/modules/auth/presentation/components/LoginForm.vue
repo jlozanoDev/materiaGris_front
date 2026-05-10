@@ -9,6 +9,7 @@
 <script>
 export default {
   name: "LoginForm",
+  emits: ["submit"],
   data() {
     return { email: "", password: "" };
   },

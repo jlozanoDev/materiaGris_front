@@ -47,6 +47,8 @@
 </template>
 
 <script setup>
+defineOptions({ name: "AppBreadcrumb" });
+
 const props = defineProps({
   items: {
     type: Array,

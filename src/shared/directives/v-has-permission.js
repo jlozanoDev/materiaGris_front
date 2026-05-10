@@ -48,7 +48,7 @@ export default {
     if (el.__unwatch_permission__) {
       try {
         el.__unwatch_permission__();
-      } catch (e) {}
+      } catch (e) { /* noop */ }
     }
 
     // recreate watcher bound to the new binding

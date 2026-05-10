@@ -150,7 +150,7 @@ async function submit() {
       <div class="p-8 md:p-10">
         <div class="mb-6"></div>
 
-        <form @submit.prevent="submit" class="space-y-4">
+        <form class="space-y-4" @submit.prevent="submit">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
             <input
@@ -166,16 +166,16 @@ async function submit() {
             <label class="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
             <div class="relative">
               <input
-                :type="showPassword ? 'text' : 'password'"
                 v-model="password"
+                :type="showPassword ? 'text' : 'password'"
                 autocomplete="current-password"
                 required
                 class="w-full h-12 px-4 rounded-2xl border border-gray-200 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent text-sm"
               />
               <button
                 type="button"
-                @click="showPassword = !showPassword"
                 class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                @click="showPassword = !showPassword"
               >
                 <svg
                   v-if="!showPassword"

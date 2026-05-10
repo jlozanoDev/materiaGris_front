@@ -29,11 +29,7 @@ export default class ApiUserRepository extends UserRepository {
   }
 
   async me() {
-    try {
-      return await fetchClient("/auth/me", { method: "GET", ignoreUnauthorized: true });
-    } catch (err) {
-      throw err;
-    }
+    return await fetchClient("/auth/me", { method: "GET", ignoreUnauthorized: true });
   }
 
   async all() {
@@ -89,11 +85,7 @@ export default class ApiUserRepository extends UserRepository {
   }
 
   async refresh() {
-    try {
-      return await fetchClient("/auth/refresh", { method: "POST", ignoreUnauthorized: true });
-    } catch (err) {
-      throw err;
-    }
+    return await fetchClient("/auth/refresh", { method: "POST", ignoreUnauthorized: true });
   }
 
   async reset(email, token, password, passwordConfirmation) {

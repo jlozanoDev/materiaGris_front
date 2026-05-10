@@ -1,8 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch } from "vue";
-import { useToast } from "@/shared/composables/useToast";
 import { useRouter, useRoute } from "vue-router";
-import { getAuthService } from "@/core/services/serviceRegistry";
+import { useLogout } from "@/shared/composables/useLogout";
 import { useAuthStore } from "@/core/store/auth";
 
 const authStore = useAuthStore();
@@ -10,15 +9,13 @@ const router = useRouter();
 const route = useRoute();
 const active = ref(0);
 const items = ["grid", "patients", "calendar", "chat", "clock", "settings"];
-const loading = ref(false);
-const toast = ref("");
-const showToast = ref(false);
+const { logout, loading } = useLogout();
 
 // Sidebar settings menu state
 const menuOpen = ref(false);
 const settingsWrapRef = ref(null);
 
-function handleItemClick(i, icon, e) {
+function handleItemClick(i, icon) {
   active.value = i;
   if (icon === "settings") {
     // toggle settings menu
@@ -100,18 +97,7 @@ watch(
   }
 );
 
-async function logout() {
-  if (loading.value) return;
-  loading.value = true;
-  try {
-    await getAuthService().logout();
-    const { show } = useToast();
-    show("Sesión cerrada", "success", 900);
-    setTimeout(() => router.replace({ name: "Login" }), 900);
-  } finally {
-    loading.value = false;
-  }
-}
+// logout handled by useLogout composable
 </script>
 
 <template>
@@ -128,13 +114,13 @@ async function logout() {
         v-for="icon in items.filter((ic) => ic !== 'settings')"
         :key="icon"
         v-has-permission="icon === 'patients' ? 'patient.view' : null"
-        @click="handleItemClick(items.indexOf(icon), icon, $event)"
         :title="getTitle(icon)"
         :aria-label="getTitle(icon)"
         :class="[
           'sidebar-item',
           active === items.indexOf(icon) ? 'sidebar-item--active' : 'sidebar-item--inactive',
         ]"
+        @click="handleItemClick(items.indexOf(icon), icon, $event)"
       >
         <i v-if="icon === 'grid'" class="pi pi-th-large text-current text-lg"></i>
         <i v-else-if="icon === 'patients'" class="pi pi-users text-current text-lg"></i>
@@ -146,7 +132,6 @@ async function logout() {
       <!-- Settings: fuera del v-for para que settingsWrapRef sea un solo nodo DOM -->
       <div ref="settingsWrapRef" class="relative">
         <button
-          @click="handleItemClick(items.indexOf('settings'), 'settings', $event)"
           :title="getTitle('settings')"
           :aria-label="getTitle('settings')"
           :class="[
@@ -155,6 +140,7 @@ async function logout() {
               ? 'sidebar-item--active'
               : 'sidebar-item--inactive',
           ]"
+          @click="handleItemClick(items.indexOf('settings'), 'settings', $event)"
         >
           <i class="pi pi-cog text-current text-lg"></i>
         </button>
@@ -174,8 +160,8 @@ async function logout() {
               <button
                 title="Usuarios"
                 aria-label="Usuarios"
-                @click.prevent="openAdminRoute({ name: 'AdminUsers' })"
                 class="group w-full text-left px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 justify-start whitespace-nowrap"
+                @click.prevent="openAdminRoute({ name: 'AdminUsers' })"
               >
                 <i
                   class="pi pi-user h-5 w-5 transition-transform transform duration-150 group-hover:scale-110 text-slate-500"
@@ -203,8 +189,8 @@ async function logout() {
               <button
                 title="Roles"
                 aria-label="Roles"
-                @click.prevent="openAdminRoute({ name: 'AdminRoles' })"
                 class="group w-full text-left px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 justify-start whitespace-nowrap"
+                @click.prevent="openAdminRoute({ name: 'AdminRoles' })"
               >
                 <i
                   class="pi pi-users h-5 w-5 transition-transform transform duration-150 group-hover:scale-110 text-slate-500"
@@ -227,8 +213,8 @@ async function logout() {
               <button
                 title="Permisos"
                 aria-label="Permisos"
-                @click.prevent="openAdminRoute({ name: 'AdminPermissions' })"
                 class="group w-full text-left px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 justify-start whitespace-nowrap"
+                @click.prevent="openAdminRoute({ name: 'AdminPermissions' })"
               >
                 <i
                   class="pi pi-shield h-5 w-5 transition-transform transform duration-150 group-hover:scale-110 text-slate-500"
@@ -242,8 +228,8 @@ async function logout() {
               <button
                 title="Tipos de informes"
                 aria-label="Tipos de informes"
-                @click.prevent="openAdminRoute({ name: 'AdminReportTypes' })"
                 class="group w-full text-left px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 justify-start whitespace-nowrap"
+                @click.prevent="openAdminRoute({ name: 'AdminReportTypes' })"
               >
                 <i
                   class="pi pi-file h-5 w-5 transition-transform transform duration-150 group-hover:scale-110 text-slate-500"
@@ -260,9 +246,9 @@ async function logout() {
     <button
       title="Cerrar sesión"
       aria-label="Cerrar sesión"
-      @click="logout"
       :disabled="loading"
       class="sidebar-item sidebar-item--inactive disabled:opacity-60"
+      @click="logout"
     >
       <svg
         v-if="!loading"
@@ -296,9 +282,6 @@ async function logout() {
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
       </svg>
     </button>
-    <!-- Toast -->
-    <div v-if="showToast" class="toast toast--success" role="status" aria-live="polite">
-      {{ toast }}
-    </div>
+    <!-- Toast handled globally in App.vue -->
   </aside>
 </template>

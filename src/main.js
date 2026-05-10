@@ -30,12 +30,12 @@ import vHasPermission from "@/shared/directives/v-has-permission";
     try {
       const { show } = useToast();
       show("Su sesión ha expirado", "error", 5000);
-    } catch (_) {}
+    } catch (_) { /* noop */ }
     authService.clearSession();
     try {
       const authStore = useAuthStore();
       authStore.clearUser();
-    } catch (_) {}
+    } catch (_) { /* noop */ }
     router.replace({ name: "Login" });
   });
 
@@ -47,7 +47,7 @@ import vHasPermission from "@/shared/directives/v-has-permission";
   app.directive("has-permission", vHasPermission);
   app.use(PrimeVue);
   app.component("PButton", Button);
-  app.component("Paginator", Paginator);
+  app.component("AppPaginator", Paginator);
 
   app.use(router);
   app.use(toastPlugin);

@@ -12,7 +12,9 @@ import ChangePasswordModal from "@/modules/admin/users/presentation/components/C
 import AddressesModal from "@/modules/admin/users/presentation/components/AddressesModal.vue";
 
 import { useAuthStore } from "@/core/store/auth";
+import { useLogout } from "@/shared/composables/useLogout";
 const authStore = useAuthStore();
+const { logout } = useLogout();
 
 const showEditModal = ref(false);
 const showChangePasswordModal = ref(false);
@@ -26,7 +28,7 @@ function loadAddresses() {
       const parsed = JSON.parse(stored);
       if (Array.isArray(parsed)) return parsed;
     }
-  } catch (e) {}
+  } catch (e) { /* noop */ }
   return [
     {
       id: 1, alias: "Casa", street: "C. Falsa", number: "123",
@@ -45,21 +47,21 @@ const onSaveEdited = (edited) => {
   authStore.user = { ...authStore.user, ...edited };
   try {
     localStorage.setItem("user", JSON.stringify(authStore.user));
-  } catch (e) {}
+  } catch (e) { /* noop */ }
 };
 
-const onSavePassword = ({ password, oldPassword }) => {
+const onSavePassword = () => {
   console.log("[DashboardPage] password change requested (frontend-only)");
   try {
     localStorage.setItem("passwordChangedAt", new Date().toISOString());
-  } catch (e) {}
+  } catch (e) { /* noop */ }
 };
 
 const onSaveAddresses = (newAddresses) => {
   addresses.value = newAddresses;
   try {
     localStorage.setItem("addresses", JSON.stringify(addresses.value));
-  } catch (e) {}
+  } catch (e) { /* noop */ }
 };
 
 const breadcrumb = [{ text: "Dashboard", icon: "pi pi-objects-column", to: "/" }];
@@ -81,7 +83,8 @@ onMounted(() => {
             :user="authStore.user"
             @open-edit="showEditModal = true"
             @open-change-password="showChangePasswordModal = true"
-            @manage-addresses="showAddressesModal = true"
+              @manage-addresses="showAddressesModal = true"
+              @logout="logout"
           />
         </div>
         <div class="flex gap-5">
