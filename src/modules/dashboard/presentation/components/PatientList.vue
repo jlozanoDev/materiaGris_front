@@ -1,7 +1,16 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from "vue";
 
-const patients = [
+interface Patient {
+  initials: string;
+  color: string;
+  name: string;
+  type: string;
+  typeColor: string;
+  time: string;
+}
+
+const patients: Patient[] = [
   {
     initials: "DW",
     color: "bg-teal-500",
@@ -44,10 +53,12 @@ const patients = [
   },
 ];
 
-const selected = ref(0);
-const emit = defineEmits(["select"]);
+const selected = ref<number>(0);
+const emit = defineEmits<{
+  select: [patient: Patient];
+}>();
 
-function select(i) {
+function select(i: number): void {
   selected.value = i;
   emit("select", patients[i]);
 }

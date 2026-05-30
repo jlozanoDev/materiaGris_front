@@ -3,6 +3,30 @@ import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, afterEach } from 'vitest'
 import vHasPermission from '../src/shared/directives/v-has-permission'
 import { routerKey } from 'vue-router'
+import { setAuthService, setStorageGateway } from '../src/core/services/serviceRegistry'
+
+// Mock storage gateway and auth service for all tests
+const mockStorage = {
+  get: () => null,
+  set: () => {},
+  remove: () => {},
+  clear: () => {},
+  getToken: () => null,
+  setToken: () => {},
+  removeToken: () => {},
+}
+
+const mockAuthService = {
+  userRepository: { me: () => Promise.resolve(null), login: () => {}, logout: () => {}, refresh: () => {}, forgot: () => {}, reset: () => {} },
+  storageGateway: mockStorage,
+  login: () => Promise.resolve({}),
+  validateToken: () => Promise.resolve(false),
+  logout: () => Promise.resolve(),
+  clearSession: () => {},
+}
+
+setStorageGateway(mockStorage)
+setAuthService(mockAuthService)
 
 // Initialize a fresh Pinia per test to avoid state leaking between tests
 beforeEach(() => {

@@ -7,7 +7,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { useToast } from "@/shared/composables/useToast";
 import Toast from "@/shared/components/Toast.vue";
 

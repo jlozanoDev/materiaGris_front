@@ -9,7 +9,7 @@ describe('ResetPasswordUseCase', () => {
 
     await useCase.execute('user@test.com', 'token-abc', 'Password123', 'Password123')
 
-    expect(resetMock).toHaveBeenCalledWith('user@test.com', 'token-abc', 'Password123', 'Password123')
+    expect(resetMock).toHaveBeenCalledWith({ token: 'token-abc', password: 'Password123', password_confirmation: 'Password123' })
   })
 
   it('propaga el error si el repositorio falla', async () => {

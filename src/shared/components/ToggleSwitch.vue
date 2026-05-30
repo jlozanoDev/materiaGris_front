@@ -10,13 +10,22 @@
   </button>
 </template>
 
-<script setup>
-const props = defineProps({
-  modelValue: { type: Boolean, default: false },
-  disabled: { type: Boolean, default: false },
+<script setup lang="ts">
+interface Props {
+  modelValue?: boolean;
+  disabled?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  modelValue: false,
+  disabled: false,
 });
-const emit = defineEmits(["update:modelValue"]);
-function toggle() {
+
+const emit = defineEmits<{
+  "update:modelValue": [value: boolean];
+}>();
+
+function toggle(): void {
   if (props.disabled) return;
   emit("update:modelValue", !props.modelValue);
 }

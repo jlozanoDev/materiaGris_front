@@ -65,11 +65,9 @@ export interface IAuthService {
   userRepository: IUserRepository;
   storageGateway: IStorageGateway;
   login(credentials: Credentials): Promise<any>;
-  forgotPassword(email: string): Promise<any>;
-  resetPassword(data: any): Promise<any>;
   validateToken(): Promise<boolean>;
-  hasPermission(slug: string): boolean;
-  hasPermissions(slugs: string[], mode?: 'any' | 'all'): boolean;
+  logout(): Promise<void>;
+  clearSession(): void;
 }
 
 export interface IStorageGateway {

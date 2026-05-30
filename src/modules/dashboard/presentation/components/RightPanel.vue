@@ -1,41 +1,42 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from "vue";
 
 /* ── Calendar ─────────────────────────────────────── */
 const now = new Date();
 const today = { year: now.getFullYear(), month: now.getMonth(), day: now.getDate() };
 
-const viewDate = ref(new Date(today.year, today.month, 1));
+const viewDate = ref<Date>(new Date(today.year, today.month, 1));
 
-const monthName = computed(() => viewDate.value.toLocaleString("en-US", { month: "long" }));
-const yearNum = computed(() => viewDate.value.getFullYear());
+const monthName = computed<string>(() => viewDate.value.toLocaleString("en-US", { month: "long" }));
+const yearNum = computed<number>(() => viewDate.value.getFullYear());
 
-const calDays = computed(() => {
+const calDays = computed<(number | null)[]>(() => {
   const y = viewDate.value.getFullYear();
   const m = viewDate.value.getMonth();
   const firstDow = new Date(y, m, 1).getDay();
   const total = new Date(y, m + 1, 0).getDate();
-  const cells = Array(firstDow).fill(null);
+  const cells: (number | null)[] = Array(firstDow).fill(null);
   for (let d = 1; d <= total; d++) cells.push(d);
   return cells;
 });
 
 // Days with appointment dots
-const dotDays = new Set([1, 8, 14, 21]);
+const dotDays = new Set<number>([1, 8, 14, 21]);
 
-function prevMonth() {
+function prevMonth(): void {
   const d = new Date(viewDate.value);
   d.setMonth(d.getMonth() - 1);
   viewDate.value = d;
 }
-function nextMonth() {
+function nextMonth(): void {
   const d = new Date(viewDate.value);
   d.setMonth(d.getMonth() + 1);
   viewDate.value = d;
 }
 
-const isToday = (day) =>
-  day &&
+const isToday = (day: number | null): boolean =>
+  day !== null &&
+  day !== undefined &&
   viewDate.value.getFullYear() === today.year &&
   viewDate.value.getMonth() === today.month &&
   day === today.day;

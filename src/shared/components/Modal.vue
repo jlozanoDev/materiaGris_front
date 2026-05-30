@@ -33,23 +33,36 @@
   </transition>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, watch, onUnmounted, ref } from "vue";
 
 defineOptions({ name: "AppModal" });
 
-const props = defineProps({
-  show: { type: Boolean, default: false },
-  size: { type: String, default: "md" },
-  closeOnBackdrop: { type: Boolean, default: true },
-  title: { type: String, default: "" },
-  customClass: { type: String, default: "" },
-  iconClass: { type: String, default: "h-5 w-5 text-slate-600" },
-});
-const emit = defineEmits(["close", "backdrop-click"]);
+interface Props {
+  show?: boolean;
+  size?: string;
+  closeOnBackdrop?: boolean;
+  title?: string;
+  customClass?: string;
+  iconClass?: string;
+}
 
-const sizeClass = computed(() => {
-  const map = {
+const props = withDefaults(defineProps<Props>(), {
+  show: false,
+  size: "md",
+  closeOnBackdrop: true,
+  title: "",
+  customClass: "",
+  iconClass: "h-5 w-5 text-slate-600",
+});
+
+const emit = defineEmits<{
+  close: [];
+  "backdrop-click": [];
+}>();
+
+const sizeClass = computed<string>(() => {
+  const map: Record<string, string> = {
     sm: "max-w-sm",
     md: "max-w-md",
     lg: "max-w-3xl",
@@ -59,23 +72,23 @@ const sizeClass = computed(() => {
   return map[props.size] || props.size;
 });
 
-function handleBackdropClick() {
+function handleBackdropClick(): void {
   if (props.closeOnBackdrop) emit("close");
   emit("backdrop-click");
 }
 
 // Body lock: prevents background elements from remaining interactive/selectable
 // Use a per-instance `locked` ref so each Modal tracks its own lock state
-const locked = ref(false);
+const locked = ref<boolean>(false);
 
-function _addBodyLock() {
+function _addBodyLock(): void {
   const cur = parseInt(document.body.dataset.dsModalCount || "0", 10) || 0;
   document.body.dataset.dsModalCount = String(cur + 1);
   document.body.classList.add("ds-modal-open");
   locked.value = true;
 }
 
-function _removeBodyLock() {
+function _removeBodyLock(): void {
   const cur = parseInt(document.body.dataset.dsModalCount || "0", 10) || 0;
   const next = Math.max(0, cur - 1);
   if (next === 0) {
@@ -93,7 +106,7 @@ watch(
     if (val) _addBodyLock();
     else if (locked.value) _removeBodyLock();
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 onUnmounted(() => {

@@ -1,51 +1,68 @@
-<script setup>
+<script setup lang="ts">
 import { ref, watch } from "vue";
 
 defineOptions({
   name: "PermissionCategoryNode",
 });
 
-const props = defineProps({
-  node: {
-    type: Object,
-    required: true,
-  },
-  modelValue: {
-    type: Array,
-    required: true,
-  },
-  depth: {
-    type: Number,
-    default: 0,
-  },
-  expansionSignal: {
-    type: Object,
-    default: () => ({ count: 0, state: true }),
-  },
+interface Permission {
+  id: number;
+  name: string;
+  description: string;
+}
+
+interface PermissionNode {
+  name: string;
+  permissions: Permission[];
+  subcategories: PermissionNode[];
+}
+
+interface PermissionGrant {
+  id: number;
+  grant: number;
+}
+
+interface ExpansionSignal {
+  count: number;
+  state: boolean;
+}
+
+interface Props {
+  node: PermissionNode;
+  modelValue: PermissionGrant[];
+  depth?: number;
+  expansionSignal?: ExpansionSignal;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  depth: 0,
+  expansionSignal: () => ({ count: 0, state: true }),
 });
 
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits<{
+  "update:modelValue": [value: PermissionGrant[]];
+}>();
 
-const expanded = ref(false);
+const expanded = ref<boolean>(false);
 
 watch(
   () => props.expansionSignal,
   (newSignal) => {
     expanded.value = newSignal.state;
   },
-  { deep: true }
+  { deep: true },
 );
 
-function toggle() {
+function toggle(): void {
   expanded.value = !expanded.value;
 }
 
-function getGrant(permissionId) {
+function getGrant(permissionId: number): number {
   const found = props.modelValue.find((p) => p.id === permissionId);
   return found ? found.grant : 0;
 }
 
-function setGrant(permissionId, grant) {
+function setGrant(permissionId: number, grant: number): void {
   const newValue = [...props.modelValue];
   const idx = newValue.findIndex((p) => p.id === permissionId);
 
@@ -62,7 +79,7 @@ function setGrant(permissionId, grant) {
   emit("update:modelValue", newValue);
 }
 
-function updateModel(value) {
+function updateModel(value: PermissionGrant[]): void {
   emit("update:modelValue", value);
 }
 </script>

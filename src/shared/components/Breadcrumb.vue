@@ -46,25 +46,29 @@
   </nav>
 </template>
 
-<script setup>
+<script setup lang="ts">
 defineOptions({ name: "AppBreadcrumb" });
 
-const props = defineProps({
-  items: {
-    type: Array,
-    default: () => [],
-  },
-  // permite pasar nombres cortos como 'home' que se mapearán a 'pi pi-home'
-  primePrefix: {
-    type: String,
-    default: "pi pi-",
-  },
+interface BreadcrumbItem {
+  text: string;
+  to?: string;
+  icon?: string;
+}
+
+interface Props {
+  items?: BreadcrumbItem[];
+  primePrefix?: string;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  items: () => [],
+  primePrefix: "pi pi-",
 });
 
-const iconClass = (icon) => {
+function iconClass(icon?: string): string {
   if (!icon) return "";
   return icon.includes("pi") ? icon : `${props.primePrefix}${icon}`;
-};
+}
 </script>
 
 <style scoped>

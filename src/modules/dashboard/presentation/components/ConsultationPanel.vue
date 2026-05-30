@@ -1,7 +1,18 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from "vue";
 
-const patient = ref({
+interface Patient {
+  initials: string;
+  color: string;
+  name: string;
+  info: string;
+  symptoms: string[];
+  lastChecked: string;
+  observation: string;
+  prescription: string;
+}
+
+const patient = ref<Patient>({
   initials: "DW",
   color: "bg-teal-500",
   name: "Denzel White",

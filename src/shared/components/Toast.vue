@@ -1,25 +1,33 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from "vue";
 import { useToast } from "@/shared/composables/useToast";
 
 defineOptions({ name: "AppToast" });
 
-const props = defineProps({
-  id: { type: [String, Number], default: null },
-  message: { type: String, default: "" },
-  type: { type: String, default: "success" },
+interface Props {
+  id?: number | null;
+  message?: string;
+  type?: string;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  id: null,
+  message: "",
+  type: "success",
 });
 
-const classes = computed(() => `toast toast--${props.type}`);
+const classes = computed<string>(() => `toast toast--${props.type}`);
 
 const { dismiss } = useToast();
 
-function close() {
+function close(): void {
   if (props.id !== undefined && props.id !== null) dismiss(props.id);
 }
 
-const ALLOWED_TYPES = ["success", "error", "info"];
-const safeType = computed(() => ALLOWED_TYPES.includes(props.type) ? props.type : "success");
+const ALLOWED_TYPES: string[] = ["success", "error", "info"];
+const safeType = computed<string>(() =>
+  ALLOWED_TYPES.includes(props.type ?? "") ? props.type : "success",
+);
 </script>
 
 <template>

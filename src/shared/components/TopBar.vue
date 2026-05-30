@@ -189,49 +189,61 @@
   </header>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted } from "vue";
 
-const props = defineProps({ user: { type: Object, default: null } });
-const emit = defineEmits([
-  "open-edit",
-  "open-change-password",
-  "manage-addresses",
-  "admin.user.updated",
-  "password-changed",
-  "addresses-saved",
-  "logout",
-]);
+interface User {
+  name?: string;
+  email?: string;
+}
 
-const menuOpen = ref(false);
-const userRef = ref(null);
-const menuRef = ref(null);
+interface Props {
+  user?: User | null;
+}
 
-const toggleMenu = () => {
+const props = withDefaults(defineProps<Props>(), {
+  user: null,
+});
+
+const emit = defineEmits<{
+  "open-edit": [];
+  "open-change-password": [];
+  "manage-addresses": [];
+  "admin.user.updated": [];
+  "password-changed": [];
+  "addresses-saved": [];
+  logout: [];
+}>();
+
+const menuOpen = ref<boolean>(false);
+const userRef = ref<HTMLElement | null>(null);
+const menuRef = ref<HTMLElement | null>(null);
+
+const toggleMenu = (): void => {
   menuOpen.value = !menuOpen.value;
 };
-const onEdit = () => {
+const onEdit = (): void => {
   menuOpen.value = false;
   emit("open-edit");
 };
-const onChangePassword = () => {
+const onChangePassword = (): void => {
   menuOpen.value = false;
   emit("open-change-password");
 };
-const onManageAddresses = (e) => {
+const onManageAddresses = (e?: Event): void => {
   if (e && e.preventDefault) e.preventDefault();
   menuOpen.value = false;
   emit("manage-addresses");
 };
 
-function onLogout() {
+function onLogout(): void {
   menuOpen.value = false;
   emit("logout");
 }
 
-const displayName = computed(() => props.user?.name || props.user?.email || "Usuario");
+const displayName = computed<string>(() => props.user?.name || props.user?.email || "Usuario");
 
-const initials = computed(() => {
+const initials = computed<string>(() => {
   const name = props.user?.name;
   if (!name) return (props.user?.email?.charAt(0) || "U").toUpperCase();
   const parts = name?.trim().split(/\s+/) || [];
@@ -240,10 +252,10 @@ const initials = computed(() => {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 });
 
-function onClickOutside(e) {
+function onClickOutside(e: MouseEvent): void {
   if (!menuOpen.value) return;
-  if (userRef.value && userRef.value.contains(e.target)) return;
-  if (menuRef.value && menuRef.value.contains(e.target)) return;
+  if (userRef.value && userRef.value.contains(e.target as Node)) return;
+  if (menuRef.value && menuRef.value.contains(e.target as Node)) return;
   menuOpen.value = false;
 }
 

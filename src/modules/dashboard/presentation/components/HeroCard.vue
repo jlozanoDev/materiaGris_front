@@ -1,9 +1,20 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from "vue";
 
-const props = defineProps({ user: { type: Object, default: null } });
+interface User {
+  name?: string;
+  email?: string;
+}
 
-const displayName = computed(() => props.user?.name || props.user?.email || "Usuario");
+interface Props {
+  user?: User | null;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  user: null,
+});
+
+const displayName = computed<string>(() => props.user?.name || props.user?.email || "Usuario");
 </script>
 
 <template>
