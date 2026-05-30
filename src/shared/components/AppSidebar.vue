@@ -1,31 +1,31 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useLogout } from "@/shared/composables/useLogout";
 import { useAuthStore } from "@/core/store/auth";
 
+type SidebarIcon = "grid" | "patients" | "settings";
+
 const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
-const active = ref(0);
-const items = ["grid", "patients", "settings"];
+const active = ref<number>(0);
+const items: SidebarIcon[] = ["grid", "patients", "settings"];
 const { logout, loading } = useLogout();
 
-// Sidebar settings menu state
-const menuOpen = ref(false);
-const settingsWrapRef = ref(null);
+const menuOpen = ref<boolean>(false);
+const settingsWrapRef = ref<HTMLElement | null>(null);
 
-function handleItemClick(i, icon) {
+function handleItemClick(i: number, icon: SidebarIcon, _event?: Event): void {
   active.value = i;
   if (icon === "settings") {
-    // toggle settings menu
     menuOpen.value = !menuOpen.value;
     return;
   } else {
     menuOpen.value = false;
   }
 
-  const routes = {
+  const routes: Record<string, { name: string }> = {
     grid: { name: "Dashboard" },
     patients: { name: "Patients" },
   };
@@ -40,7 +40,7 @@ function handleItemClick(i, icon) {
   }
 }
 
-function getIconForPath(p) {
+function getIconForPath(p: string): SidebarIcon | null {
   if (!p) return null;
   if (p === "/" || p === "") return "grid";
   if (p.startsWith("/patients")) return "patients";
@@ -48,24 +48,24 @@ function getIconForPath(p) {
   return null;
 }
 
-const titlesMap = {
+const titlesMap: Record<SidebarIcon, string> = {
   grid: "Inicio",
   patients: "Pacientes",
   settings: "Ajustes",
 };
 
-function getTitle(icon) {
+function getTitle(icon: SidebarIcon): string {
   return titlesMap[icon] || "";
 }
 
-function openAdminRoute(path) {
+function openAdminRoute(path: { name: string }): void {
   menuOpen.value = false;
   router.push(path);
 }
 
-function onClickOutside(e) {
+function onClickOutside(e: MouseEvent): void {
   if (!menuOpen.value) return;
-  const target = e.target;
+  const target = e.target as HTMLElement | null;
   if (!target) return;
   if (settingsWrapRef.value && settingsWrapRef.value.contains(target)) return;
   menuOpen.value = false;
@@ -73,13 +73,11 @@ function onClickOutside(e) {
 
 onMounted(() => {
   document.addEventListener("click", onClickOutside);
-  // Set initial active icon based on current route
   const activeIcon = getIconForPath(route.path);
   if (activeIcon) active.value = items.indexOf(activeIcon);
 });
 onUnmounted(() => document.removeEventListener("click", onClickOutside));
 
-// Keep active in sync when the route changes
 watch(
   () => route.path,
   (p) => {
@@ -87,8 +85,6 @@ watch(
     if (icon) active.value = items.indexOf(icon);
   }
 );
-
-// logout handled by useLogout composable
 </script>
 
 <template>

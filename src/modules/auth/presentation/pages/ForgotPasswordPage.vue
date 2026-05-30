@@ -1,16 +1,16 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { provideForgotUseCase } from "@/modules/auth/application/containers/forgotContainer";
 import { parseApiError } from "@/shared/utils/parseApiError";
 
 const router = useRouter();
-const email = ref("");
-const error = ref("");
-const loading = ref(false);
-const success = ref(false);
+const email = ref<string>("");
+const error = ref<string>("");
+const loading = ref<boolean>(false);
+const success = ref<boolean>(false);
 
-async function submit() {
+async function submit(): Promise<void> {
   error.value = "";
 
   if (email.value.trim() === "") {
@@ -23,8 +23,8 @@ async function submit() {
     const useCase = provideForgotUseCase();
     const result = await useCase.execute(email.value);
 
-    const status = result?.status ?? 200;
-    const data = result?.data ?? {};
+    const status: number = result?.status ?? 200;
+    const data: Record<string, unknown> = result?.data ?? {};
 
     if (status === 429) {
       error.value = "Demasiados intentos. Espera un momento antes de volver a intentarlo.";
@@ -32,7 +32,7 @@ async function submit() {
     }
 
     if (status < 200 || status >= 300) {
-      error.value = data.message || "Ha ocurrido un error. Inténtalo de nuevo.";
+      error.value = (data.message as string) || "Ha ocurrido un error. Inténtalo de nuevo.";
       return;
     }
 

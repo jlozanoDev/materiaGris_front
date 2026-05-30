@@ -175,30 +175,59 @@
   </Modal>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, watch } from "vue";
 import Modal from "@/shared/components/Modal.vue";
 import UiVuetifyDataTable from "@/shared/components/UiVuetifyDataTable.vue";
-const props = defineProps({
-  show: { type: Boolean, default: false },
-  addresses: { type: Array, default: () => [] },
-});
-const emit = defineEmits(["close", "save"]);
 
-const localAddresses = ref([]);
-const editing = ref(false);
-const isNew = ref(false);
-const form = ref({});
+interface Address {
+  id: number;
+  alias: string;
+  street: string;
+  number: string;
+  postal_code: string;
+  mobile_phone: string;
+  landline_phone?: string;
+  contact_email?: string;
+  is_primary: boolean;
+}
+
+interface Props {
+  show?: boolean;
+  addresses?: Address[];
+}
+
+interface ColumnDef {
+  key: string;
+  field?: string;
+  label: string;
+  sortable: boolean;
+}
+
+interface FilterDef {
+  global: { value: string | null; matchMode: string };
+}
+
+const props = withDefaults(defineProps<Props>(), { show: false, addresses: () => [] });
+const emit = defineEmits<{
+  (e: "close"): void;
+  (e: "save", addresses: Address[]): void;
+}>();
+
+const localAddresses = ref<Address[]>([]);
+const editing = ref<boolean>(false);
+const isNew = ref<boolean>(false);
+const form = ref<Address>({} as Address);
 
 // Búsqueda/filtrado global para DataTable
-const globalFilter = ref("");
-const filters = ref({ global: { value: null, matchMode: "contains" } });
+const globalFilter = ref<string>("");
+const filters = ref<FilterDef>({ global: { value: null, matchMode: "contains" } });
 
-watch(globalFilter, (val) => {
+watch(globalFilter, (val: string) => {
   filters.value = { global: { value: val, matchMode: "contains" } };
 });
 
-const columns = [
+const columns: ColumnDef[] = [
   { key: "alias", field: "alias", label: "Alias", sortable: true },
   { key: "street", field: "street", label: "Calle", sortable: true },
   { key: "number", field: "number", label: "Número", sortable: true },
@@ -210,13 +239,13 @@ const columns = [
 
 watch(
   () => props.addresses,
-  (v) => {
+  (v: Address[] | undefined) => {
     localAddresses.value = (v || []).map((a) => ({ ...a }));
   },
   { immediate: true }
 );
 
-function startNew() {
+function startNew(): void {
   editing.value = true;
   isNew.value = true;
   form.value = {
@@ -232,19 +261,19 @@ function startNew() {
   };
 }
 
-function startEdit(addr) {
+function startEdit(addr: Record<string, unknown>): void {
   editing.value = true;
   isNew.value = false;
-  form.value = { ...addr };
+  form.value = { ...addr } as unknown as Address;
 }
 
-function cancelEdit() {
+function cancelEdit(): void {
   editing.value = false;
   isNew.value = false;
-  form.value = {};
+  form.value = {} as Address;
 }
 
-function saveEdit() {
+function saveEdit(): void {
   // ensure single principal
   if (form.value.is_primary) {
     localAddresses.value = localAddresses.value.map((a) => ({ ...a, is_primary: false }));
@@ -254,20 +283,20 @@ function saveEdit() {
   else localAddresses.value.splice(idx, 1, { ...form.value });
   editing.value = false;
   isNew.value = false;
-  form.value = {};
+  form.value = {} as Address;
 }
 
-function confirmDelete(addr) {
+function confirmDelete(addr: Record<string, unknown>): void {
   if (!confirm("Eliminar dirección?")) return;
-  localAddresses.value = localAddresses.value.filter((a) => a.id !== addr.id);
+  localAddresses.value = localAddresses.value.filter((a) => a.id !== (addr.id as number));
 }
 
-function saveAll() {
+function saveAll(): void {
   emit("save", localAddresses.value);
   emit("close");
 }
 
-function onClose() {
+function onClose(): void {
   emit("close");
 }
 </script>

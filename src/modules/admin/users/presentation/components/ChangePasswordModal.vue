@@ -58,26 +58,38 @@
   </Modal>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from "vue";
 import Modal from "@/shared/components/Modal.vue";
 
-defineProps({ show: { type: Boolean, default: false } });
-const emit = defineEmits(["close", "save"]);
+interface Props {
+  show?: boolean;
+}
 
-const oldPassword = ref("");
-const password = ref("");
-const confirm = ref("");
+interface PasswordPayload {
+  oldPassword: string;
+  password: string;
+}
 
-const canSave = computed(
+withDefaults(defineProps<Props>(), { show: false });
+const emit = defineEmits<{
+  (e: "close"): void;
+  (e: "save", payload: PasswordPayload): void;
+}>();
+
+const oldPassword = ref<string>("");
+const password = ref<string>("");
+const confirm = ref<string>("");
+
+const canSave = computed<boolean>(
   () =>
     oldPassword.value.trim().length > 0 &&
     password.value.length >= 8 &&
     password.value === confirm.value
 );
 
-const close = () => emit("close");
-const onSave = () => {
+const close = (): void => emit("close");
+const onSave = (): void => {
   emit("save", { oldPassword: oldPassword.value, password: password.value });
   oldPassword.value = "";
   password.value = "";

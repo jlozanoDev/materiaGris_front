@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { onMounted, ref, watch, computed } from "vue";
 import AppSidebar from "@/shared/components/AppSidebar.vue";
 import TopBar from "@/shared/components/TopBar.vue";
@@ -11,27 +11,108 @@ import { useAuthStore } from "@/core/store/auth";
 import { useLogout } from "@/shared/composables/useLogout";
 import { useToast } from "@/shared/composables/useToast";
 import { usePatients } from "@/modules/patients/presentation/composables/usePatients";
+import type { Patient } from "@/shared/types";
+
+// --- Local interfaces ---
+
+interface DataTableColumn {
+  key: string;
+  field?: string;
+  label: string;
+  sortable: boolean;
+}
+
+interface DataTableFilters {
+  global: { value: string | null; matchMode: string };
+}
+
+interface PatientSearchFilters {
+  age_min: string | number;
+  age_max: string | number;
+  gender: string;
+  city: string;
+  insurance: string[];
+  registered_from: string;
+  registered_to: string;
+  last_visit_from: string;
+  last_visit_to: string;
+  is_active: string;
+}
+
+interface ActiveFilterItem {
+  key: string;
+  label: string;
+  value?: string;
+}
+
+interface PatientFormData {
+  id?: number | string;
+  medical_record_number: string;
+  national_id: string;
+  first_name: string;
+  last_name: string;
+  second_last_name: string;
+  gender: string;
+  date_of_birth: string;
+  last_visit_at: string;
+  city: string;
+  is_active: boolean;
+  insurance_id: string;
+  email: string;
+  phone: string;
+  mobile: string;
+  contact_name: string;
+  contact_phone: string;
+  address_line1: string;
+  address_line2: string;
+  neighborhood: string;
+  postal_code: string;
+  state: string;
+  country: string;
+}
+
+interface PatientFiltersPayload {
+  q?: string;
+  age_min?: string | number;
+  age_max?: string | number;
+  gender?: string;
+  city?: string;
+  registered_from?: string;
+  registered_to?: string;
+  last_visit_from?: string;
+  last_visit_to?: string;
+  is_active?: string;
+  insurance?: string[];
+}
+
+// --- Composables ---
 
 const authStore = useAuthStore();
 const { logout } = useLogout();
 const {
-  patients,
+  patients: _patients,
   loading,
   fetchPatients: fetchPatientsUseCase,
   createPatient,
   updatePatient,
 } = usePatients();
-const globalFilter = ref("");
-const filters = ref({ global: { value: null, matchMode: "contains" } });
-// Filas por página (paginador del DataTable)
-const rows = ref(10);
-watch(globalFilter, (val) => {
+
+// Type-bridge: DataTable expects Record<string, unknown>[] but composable returns Patient[]
+const patients = computed(() => _patients.value as unknown as Record<string, unknown>[]);
+
+// --- Filters and table state ---
+
+const globalFilter = ref<string>("");
+const filters = ref<DataTableFilters>({ global: { value: null, matchMode: "contains" } });
+watch(globalFilter, (val: string) => {
   filters.value = { global: { value: val, matchMode: "contains" } };
 });
 
+const rows = ref<number>(10);
+
 const { show } = useToast();
 
-const columns = [
+const columns: DataTableColumn[] = [
   { key: "medical_record_number", field: "medical_record_number", label: "NHC", sortable: true },
   { key: "national_id", field: "national_id", label: "DNI", sortable: true },
   { key: "email", field: "email", label: "Email", sortable: true },
@@ -43,14 +124,11 @@ const columns = [
   { key: "actions", label: "", sortable: false },
 ];
 
-onMounted(async () => {
-  await authStore.fetchUser();
-  fetchPatients();
-});
+// --- Advanced search state ---
 
-// Advanced search state
-const advancedOpen = ref(false);
-const searchFilters = ref({
+const advancedOpen = ref<boolean>(false);
+
+const defaultSearchFilters = (): PatientSearchFilters => ({
   age_min: "",
   age_max: "",
   gender: "",
@@ -60,46 +138,38 @@ const searchFilters = ref({
   registered_to: "",
   last_visit_from: "",
   last_visit_to: "",
-  is_active: "all", // 'all' | 'true' | 'false'
+  is_active: "all",
 });
 
-function toggleAdvanced() {
+const searchFilters = ref<PatientSearchFilters>(defaultSearchFilters());
+
+// Insurance chips input for UI
+const insuranceChips = ref<string[]>([]);
+
+function toggleAdvanced(): void {
   advancedOpen.value = !advancedOpen.value;
   if (advancedOpen.value) {
     const ins = searchFilters.value.insurance;
-    insuranceChips.value = Array.isArray(ins) ? ins.map((i) => String(i)) : [];
-    // sync slider with applied filters when opening
+    insuranceChips.value = Array.isArray(ins) ? ins.map((i: string) => String(i)) : [];
     const min = Number(searchFilters.value.age_min) || 0;
     const max = Number(searchFilters.value.age_max) || 120;
     ageRange.value = [min, max];
   }
 }
 
-function resetFilters() {
+function resetFilters(): void {
   globalFilter.value = "";
-  searchFilters.value = {
-    age_min: "",
-    age_max: "",
-    gender: "",
-    city: "",
-    insurance: [],
-    registered_from: "",
-    registered_to: "",
-    last_visit_from: "",
-    last_visit_to: "",
-    is_active: "all",
-  };
+  searchFilters.value = defaultSearchFilters();
   ageRange.value = [0, 120];
   insuranceChips.value = [];
   fetchPatients();
 }
 
-// insurance chips input for UI (IDs entered as tokens)
-const insuranceChips = ref([]);
+// --- Active filters display ---
 
-const activeFiltersList = computed(() => {
+const activeFiltersList = computed<ActiveFilterItem[]>(() => {
   const f = searchFilters.value || {};
-  const list = [];
+  const list: ActiveFilterItem[] = [];
   if (f.age_min || f.age_max) {
     const min = f.age_min || "0";
     const max = f.age_max || "120";
@@ -108,7 +178,7 @@ const activeFiltersList = computed(() => {
   if (f.gender) list.push({ key: "gender", label: `Género: ${f.gender}` });
   if (f.city) list.push({ key: "city", label: `Ciudad: ${f.city}` });
   if (Array.isArray(f.insurance) && f.insurance.length)
-    f.insurance.forEach((i) => list.push({ key: "insurance", label: `Aseg: ${i}`, value: i }));
+    f.insurance.forEach((i: string) => list.push({ key: "insurance", label: `Aseg: ${i}`, value: i }));
   if (f.registered_from || f.registered_to)
     list.push({
       key: "registered",
@@ -124,50 +194,51 @@ const activeFiltersList = computed(() => {
   return list;
 });
 
-const activeAdvancedCount = computed(() => activeFiltersList.value.length);
+const activeAdvancedCount = computed<number>(() => activeFiltersList.value.length);
 
-// age range for UI (0..120) — applied on 'Aplicar filtros'
-const ageRange = ref([
+// --- Age range slider ---
+
+const ageRange = ref<[number, number]>([
   Number(searchFilters.value.age_min) || 0,
   Number(searchFilters.value.age_max) || 120,
 ]);
 
-const ageMin = computed({
+const ageMin = computed<number>({
   get: () => ageRange.value[0],
-  set: (v) => {
+  set: (v: number) => {
     ageRange.value = [Number(v) || 0, ageRange.value[1]];
   },
 });
 
-const ageMax = computed({
+const ageMax = computed<number>({
   get: () => ageRange.value[1],
-  set: (v) => {
+  set: (v: number) => {
     ageRange.value = [ageRange.value[0], Number(v) || 120];
   },
 });
 
-function applyFilters() {
-  // map chips (tokens) to insurance filter values
+// --- Filter actions ---
+
+function applyFilters(): void {
   if (!insuranceChips.value || insuranceChips.value.length === 0) {
     searchFilters.value.insurance = [];
   } else {
     searchFilters.value.insurance = insuranceChips.value
-      .map((s) => String(s).trim())
-      .filter((s) => s !== "");
+      .map((s: string) => String(s).trim())
+      .filter((s: string) => s !== "");
   }
-  // apply slider values to searchFilters (omit defaults)
   const [min, max] = Array.isArray(ageRange.value) ? ageRange.value : [0, 120];
   searchFilters.value.age_min = min && Number(min) > 0 ? Number(min) : "";
   searchFilters.value.age_max = max && Number(max) < 120 ? Number(max) : "";
   fetchPatients();
 }
 
-function removeFilter(item) {
+function removeFilter(item: ActiveFilterItem): void {
   if (!item || !item.key) return;
   const key = item.key;
   if (key === "insurance") {
     searchFilters.value.insurance = (searchFilters.value.insurance || []).filter(
-      (i) => String(i) !== String(item.value)
+      (i: string) => String(i) !== String(item.value)
     );
   } else if (key === "age") {
     searchFilters.value.age_min = "";
@@ -187,15 +258,17 @@ function removeFilter(item) {
     searchFilters.value.is_active = "all";
   }
   insuranceChips.value = Array.isArray(searchFilters.value.insurance)
-    ? searchFilters.value.insurance.map((i) => String(i))
+    ? searchFilters.value.insurance.map((i: string) => String(i))
     : [];
   fetchPatients();
 }
 
-// Modal / create patient state
-const editing = ref(false);
-const creating = ref(false);
-const form = ref({
+// --- Modal / CRUD state ---
+
+const editing = ref<boolean>(false);
+const creating = ref<boolean>(false);
+
+const emptyFormData = (): PatientFormData => ({
   medical_record_number: "",
   national_id: "",
   first_name: "",
@@ -207,13 +280,11 @@ const form = ref({
   city: "",
   is_active: true,
   insurance_id: "",
-  // Contact
   email: "",
   phone: "",
   mobile: "",
   contact_name: "",
   contact_phone: "",
-  // Address
   address_line1: "",
   address_line2: "",
   neighborhood: "",
@@ -222,71 +293,49 @@ const form = ref({
   country: "",
 });
 
-// UI state for collapsible panels (collapsed by default)
-const contactOpen = ref(false);
-const addressOpen = ref(false);
+const form = ref<PatientFormData>(emptyFormData());
 
-function startNewPatient() {
+const contactOpen = ref<boolean>(false);
+const addressOpen = ref<boolean>(false);
+
+// --- Patient CRUD ---
+
+function startNewPatient(): void {
   editing.value = true;
-  // ensure panels start folded when opening
   contactOpen.value = false;
   addressOpen.value = false;
-
-  form.value = {
-    medical_record_number: "",
-    national_id: "",
-    first_name: "",
-    last_name: "",
-    second_last_name: "",
-    gender: "",
-    date_of_birth: "",
-    last_visit_at: "",
-    city: "",
-    is_active: true,
-    insurance_id: "",
-    email: "",
-    phone: "",
-    mobile: "",
-    contact_name: "",
-    contact_phone: "",
-    address_line1: "",
-    address_line2: "",
-    neighborhood: "",
-    postal_code: "",
-    state: "",
-    country: "",
-  };
+  form.value = emptyFormData();
 }
 
-function cancelNewPatient() {
+function cancelNewPatient(): void {
   editing.value = false;
   creating.value = false;
 }
 
-async function savePatient() {
+async function savePatient(): Promise<void> {
   if (creating.value) return;
   creating.value = true;
   try {
-    if (form.value && form.value.id) {
-      await updatePatient(form.value.id, { ...form.value });
+    if (form.value?.id) {
+      await updatePatient(form.value.id, { ...form.value } as unknown as Record<string, unknown>);
       show("Paciente actualizado correctamente", "success", 2500);
     } else {
-      await createPatient({ ...form.value });
+      await createPatient({ ...form.value } as unknown as Record<string, unknown>);
       show("Paciente creado correctamente", "success", 2500);
     }
     editing.value = false;
     fetchPatients();
-  } catch (err) {
-    const msg = err?.body?.message || "Error creando/actualizando paciente";
+  } catch (err: unknown) {
+    const msg = (err as { body?: { message?: string } })?.body?.message || "Error creando/actualizando paciente";
     show(msg, "error", 5000);
   } finally {
     creating.value = false;
   }
 }
 
-function fetchPatients() {
+function fetchPatients(): void {
   const f = searchFilters.value;
-  fetchPatientsUseCase({
+  const payload: PatientFiltersPayload = {
     q: globalFilter.value || undefined,
     age_min: f.age_min || undefined,
     age_max: f.age_max || undefined,
@@ -298,41 +347,49 @@ function fetchPatients() {
     last_visit_to: f.last_visit_to || undefined,
     is_active: f.is_active !== "all" ? f.is_active : undefined,
     insurance: Array.isArray(f.insurance) && f.insurance.length > 0 ? f.insurance : undefined,
-  });
+  };
+  fetchPatientsUseCase(payload as Record<string, unknown>);
 }
 
-function editPatient(p) {
+function editPatient(p: any): void {
+  const pr = p as Record<string, unknown>;
+  const patient = p as Patient;
   editing.value = true;
-  // collapse panels when opening edit modal
   contactOpen.value = false;
   addressOpen.value = false;
-  // map fields from patient to form, fallback to empty strings
   form.value = {
-    id: p.id,
-    medical_record_number: p.medical_record_number || "",
-    national_id: p.national_id || "",
-    first_name: p.first_name || "",
-    last_name: p.last_name || "",
-    second_last_name: p.second_last_name || "",
-    gender: p.gender || "",
-    date_of_birth: p.date_of_birth || "",
-    last_visit_at: p.last_visit_at || "",
-    city: p.city || "",
-    is_active: !!p.is_active,
-    insurance_id: p.insurance_id ?? "",
-    email: p.email || "",
-    phone: p.phone || "",
-    mobile: p.mobile || "",
-    contact_name: p.contact_name || "",
-    contact_phone: p.contact_phone || "",
-    address_line1: p.address_line1 || "",
-    address_line2: p.address_line2 || "",
-    neighborhood: p.neighborhood || "",
-    postal_code: p.postal_code || "",
-    state: p.state || "",
-    country: p.country || "",
+    id: patient.id,
+    medical_record_number: patient.medical_record_number || "",
+    national_id: patient.national_id || "",
+    first_name: patient.first_name || "",
+    last_name: patient.last_name || "",
+    second_last_name: patient.second_last_name || "",
+    gender: patient.gender || "",
+    date_of_birth: patient.date_of_birth || "",
+    last_visit_at: (pr.last_visit_at as string) || "",
+    city: patient.city || "",
+    is_active: !!patient.is_active,
+    insurance_id: patient.insurance_id != null ? String(patient.insurance_id) : "",
+    email: (pr.email as string) || "",
+    phone: (pr.phone as string) || "",
+    mobile: (pr.mobile as string) || "",
+    contact_name: (pr.contact_name as string) || "",
+    contact_phone: (pr.contact_phone as string) || "",
+    address_line1: (pr.address_line1 as string) || "",
+    address_line2: (pr.address_line2 as string) || "",
+    neighborhood: (pr.neighborhood as string) || "",
+    postal_code: (pr.postal_code as string) || "",
+    state: (pr.state as string) || "",
+    country: (pr.country as string) || "",
   };
 }
+
+// --- Lifecycle ---
+
+onMounted(async () => {
+  await authStore.fetchUser();
+  fetchPatients();
+});
 </script>
 
 <template>

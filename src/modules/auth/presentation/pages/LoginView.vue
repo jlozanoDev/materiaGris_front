@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { provideAuthService } from "@/modules/auth/application/containers/authContainer";
@@ -10,18 +10,18 @@ import doctor from "@/assets/doctor.png";
 const router = useRouter();
 const route = useRoute();
 const authService = provideAuthService();
-const email = ref("");
-const password = ref("");
-const remember = ref(false);
-const error = ref("");
-const loading = ref(false);
-const showPassword = ref(false);
+const email = ref<string>("");
+const password = ref<string>("");
+const remember = ref<boolean>(false);
+const error = ref<string>("");
+const loading = ref<boolean>(false);
+const showPassword = ref<boolean>(false);
 
-const isValid = computed(() => {
+const isValid = computed<boolean>(() => {
   return email.value.trim() !== "" && password.value.length >= 6;
 });
 
-function clientValidate() {
+function clientValidate(): boolean {
   if (email.value.trim() === "") {
     error.value = "El email es obligatorio.";
     return false;
@@ -34,16 +34,16 @@ function clientValidate() {
   return true;
 }
 
-async function submit() {
+async function submit(): Promise<void> {
   if (!clientValidate()) return;
   loading.value = true;
   try {
     await authService.login({ email: email.value, password: password.value });
-    const redirect = route.query.redirect;
+    const redirect = route.query.redirect as string | undefined;
     router.push(redirect || "/");
   } catch (e) {
     error.value = parseApiError(e);
-    if (e && e.status === 401) error.value = "Credenciales inválidas o sesión expirada.";
+    if (e && (e as { status?: number }).status === 401) error.value = "Credenciales inválidas o sesión expirada.";
   } finally {
     loading.value = false;
   }

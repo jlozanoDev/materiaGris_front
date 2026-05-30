@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { onMounted, ref, watch } from "vue";
 import AppSidebar from "@/shared/components/AppSidebar.vue";
 import TopBar from "@/shared/components/TopBar.vue";
@@ -11,8 +11,44 @@ import { usePermissions } from "@/modules/admin/permissions/presentation/composa
 import UiVuetifyDataTable from "@/shared/components/UiVuetifyDataTable.vue";
 import RolePermissionsEditor from "@/modules/admin/roles/presentation/components/RolePermissionsEditor.vue";
 import { useToast } from "@/shared/composables/useToast";
+import type { Role, PermissionShape } from "@/shared/types";
 
-// Composables
+// --- Local interfaces ---
+
+interface PermissionGrant {
+  id: number;
+  grant: number;
+}
+
+interface DataTableColumn {
+  key: string;
+  field?: string;
+  label: string;
+  sortable: boolean;
+}
+
+interface DataTableFilters {
+  global: { value: string | null; matchMode: string };
+}
+
+interface RoleFormData {
+  id?: number | string;
+  name: string;
+  description: string;
+  permissions: PermissionGrant[];
+  is_system?: boolean;
+  users_count?: number;
+  [key: string]: unknown;
+}
+
+interface BreadcrumbItem {
+  text: string;
+  icon?: string;
+  to?: string;
+}
+
+// --- Composables ---
+
 const authStore = useAuthStore();
 const { logout } = useLogout();
 const { fetchPermissions: fetchAllPermissions } = usePermissions();
@@ -29,36 +65,41 @@ const {
 } = useRoles(fetchAllPermissions);
 const { show: showToast } = useToast();
 
-// Filters and global search
-const globalFilter = ref("");
-const filters = ref({ global: { value: null, matchMode: "contains" } });
-watch(globalFilter, (val) => {
+// --- Filters and global search ---
+
+const globalFilter = ref<string>("");
+const filters = ref<DataTableFilters>({ global: { value: null, matchMode: "contains" } });
+watch(globalFilter, (val: string) => {
   filters.value = { global: { value: val, matchMode: "contains" } };
 });
 
-const columns = [
+const columns: DataTableColumn[] = [
   { key: "name", field: "name", label: "Nombre del Rol", sortable: true },
   { key: "description", field: "description", label: "Descripción", sortable: true },
   { key: "users_count", field: "users_count", label: "Usuarios", sortable: true },
   { key: "actions", label: "", sortable: false },
 ];
 
-const localRoles = ref([]);
-const editing = ref(false);
-const isNewRole = ref(false);
-const form = ref({ name: "", description: "", permissions: [] });
-const loadingRole = ref(false);
-const editorRef = ref(null);
+// --- Local state ---
+
+const localRoles = ref<Role[]>([]);
+const editing = ref<boolean>(false);
+const isNewRole = ref<boolean>(false);
+const form = ref<RoleFormData>({ name: "", description: "", permissions: [] });
+const loadingRole = ref<boolean>(false);
+const editorRef = ref<InstanceType<typeof RolePermissionsEditor> | null>(null);
 
 watch(
   roles,
-  (v) => {
-    localRoles.value = (v || []).map((r) => ({ ...r }));
+  (v: Role[]) => {
+    localRoles.value = (v || []).map((r: Role) => ({ ...r }));
   },
   { immediate: true }
 );
 
-async function startNewRole() {
+// --- CRUD actions ---
+
+async function startNewRole(): Promise<void> {
   editing.value = true;
   isNewRole.value = true;
   form.value = { name: "", description: "", permissions: [] };
@@ -67,7 +108,8 @@ async function startNewRole() {
   }
 }
 
-async function startEditRole(r) {
+async function startEditRole(r: any): Promise<void> {
+  const role = r as Role;
   editing.value = true;
   isNewRole.value = false;
   loadingRole.value = true;
@@ -76,9 +118,9 @@ async function startEditRole(r) {
     if (availablePermissions.value.length === 0) {
       await fetchAvailablePermissions();
     }
-    const fullRole = await fetchRole(r.id);
-    form.value = { ...fullRole };
-  } catch (err) {
+    const fullRole = await fetchRole(role.id);
+    form.value = { ...(fullRole as RoleFormData) };
+  } catch (err: unknown) {
     showToast("Error al cargar el rol", "error");
     editing.value = false;
   } finally {
@@ -86,53 +128,58 @@ async function startEditRole(r) {
   }
 }
 
-function cancelEdit() {
+function cancelEdit(): void {
   editing.value = false;
   isNewRole.value = false;
   form.value = { name: "", description: "", permissions: [] };
 }
 
-async function saveRole() {
+async function saveRole(): Promise<void> {
   try {
     if (isNewRole.value) {
-      await createRole(form.value);
+      await createRole(form.value as unknown as Record<string, unknown>);
       showToast("Rol creado exitosamente", "success");
     } else {
-      await updateRole(form.value.id, form.value);
+      await updateRole(form.value.id!, form.value as unknown as Record<string, unknown>);
       showToast("Rol actualizado exitosamente", "success");
     }
     editing.value = false;
-  } catch (err) {
-    showToast(err.message || "Error al guardar el rol", "error");
+  } catch (err: unknown) {
+    showToast((err as { message?: string }).message || "Error al guardar el rol", "error");
   }
 }
 
-async function confirmDelete(r) {
-  if (r.is_system) {
+async function confirmDelete(r: any): Promise<void> {
+  const role = r as Role & { is_system?: boolean };
+  if (role.is_system) {
     showToast("No se pueden eliminar roles del sistema", "warning");
     return;
   }
 
   if (
     !confirm(
-      `¿Estás seguro de eliminar el rol "${r.name}"? Los usuarios vinculados podrían perder acceso.`
+      `¿Estás seguro de eliminar el rol "${role.name}"? Los usuarios vinculados podrían perder acceso.`
     )
   )
     return;
 
   try {
-    await deleteRole(r.id);
+    await deleteRole(role.id);
     showToast("Rol eliminado exitosamente", "success");
-  } catch (err) {
-    showToast(err.message || "Error al eliminar el rol", "error");
+  } catch (err: unknown) {
+    showToast((err as { message?: string }).message || "Error al eliminar el rol", "error");
   }
 }
 
-const breadcrumb = [
+// --- Breadcrumb ---
+
+const breadcrumb: BreadcrumbItem[] = [
   { text: "Dashboard", icon: "pi pi-objects-column", to: "/" },
   { text: "Seguridad", icon: "pi pi-shield" },
   { text: "Roles", icon: "pi pi-users" },
 ];
+
+// --- Lifecycle ---
 
 onMounted(async () => {
   if (!authStore.user) await authStore.fetchUser();

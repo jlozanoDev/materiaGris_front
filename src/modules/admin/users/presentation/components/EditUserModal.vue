@@ -214,41 +214,99 @@
   </Modal>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, watch, computed } from "vue";
 import Modal from "@/shared/components/Modal.vue";
 
-const props = defineProps({
-  show: { type: Boolean, default: false },
-  user: { type: Object, default: null },
-  roles: { type: Array, default: () => [] },
-  permissions: { type: Array, default: () => [] },
-  loadingPermissions: { type: Boolean, default: false },
-  isNew: { type: Boolean, default: false },
+interface UserRole {
+  id: number;
+  name?: string;
+  is_system?: boolean;
+  permissions?: Array<{ id?: number; permission_id?: number; slug?: string; name?: string } | string>;
+}
+
+interface UserPermission {
+  permission_id: number;
+  slug?: string;
+  grant: number;
+  origin: "user" | "role";
+}
+
+interface PermissionItem {
+  id: number;
+  slug: string;
+  name: string;
+  category_id?: number;
+  category?: { id: number; name: string };
+}
+
+interface UserData {
+  id?: number | string;
+  name?: string;
+  email?: string;
+  roles?: UserRole[];
+  user_permissions?: UserPermission[];
+  permissions_override?: string[];
+  permissionsOverride?: string[];
+  all_roles?: UserRole[];
+}
+
+interface Props {
+  show?: boolean;
+  user?: UserData | null;
+  roles?: UserRole[];
+  permissions?: PermissionItem[];
+  loadingPermissions?: boolean;
+  isNew?: boolean;
+}
+
+interface Payload {
+  name: string;
+  email?: string;
+  roles?: number[];
+  roles_remove?: number[];
+  permissions?: Array<{ permission_id: number; grant: number }>;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  show: false,
+  user: null,
+  roles: () => [],
+  permissions: () => [],
+  loadingPermissions: false,
+  isNew: false,
 });
-const emit = defineEmits(["close", "save"]);
+const emit = defineEmits<{
+  (e: "close"): void;
+  (e: "save", payload: Payload): void;
+}>();
 
-const allRoles = computed(() => props.roles);
-const allPermissionsList = computed(() => props.permissions);
+const allRoles = computed<UserRole[]>(() => props.roles);
+const allPermissionsList = computed<PermissionItem[]>(() => props.permissions);
 
-const name = ref(props.user?.name || "");
-const email = ref(props.user?.email || "");
-const selectedRoleIds = ref([]);
-const originalRoleIds = ref([]);
-const selectedPermissions = ref({}); // { permission_id: grant }
-const originalPermissions = ref({}); // Permissions override originales
-const originalPermissionsSlug = ref({}); // Overrides expresados por slug (p.e. '-patients.view')
+const name = ref<string>(props.user?.name || "");
+const email = ref<string>(props.user?.email || "");
+const selectedRoleIds = ref<number[]>([]);
+const originalRoleIds = ref<number[]>([]);
+const selectedPermissions = ref<Record<number, number>>({}); // { permission_id: grant }
+const originalPermissions = ref<Record<number, number>>({});
+const originalPermissionsSlug = ref<Record<string, number>>({}); // Overrides expresados por slug
 
-const availableRoles = computed(() => {
+const availableRoles = computed<UserRole[]>(() => {
   if (props.user?.all_roles) return props.user.all_roles;
   return allRoles.value || [];
 });
 
-const isNewUser = computed(() => props.isNew);
+const isNewUser = computed<boolean>(() => props.isNew);
 
-// Permissions agrupados por categoría
-const permissionsByCategory = computed(() => {
-  const categories = {};
+interface CategoryGroup {
+  id: number | undefined;
+  name: string;
+  permissions: PermissionItem[];
+}
+
+const permissionsByCategory = computed<CategoryGroup[]>(() => {
+  const categories: Record<string, CategoryGroup> = {};
   const perms = allPermissionsList.value || [];
 
   perms.forEach((perm) => {
@@ -266,14 +324,11 @@ const permissionsByCategory = computed(() => {
   return Object.values(categories);
 });
 
-// Permisos del usuario (tanto de roles como overrides)
-const userPermissionsList = computed(() => {
+const userPermissionsList = computed<UserPermission[]>(() => {
   return props.user?.user_permissions || [];
 });
 
-// Permisos que vienen de roles (no editables)
-function isPermissionFromRole(permissionId) {
-  // Primero verificar si alguna de las roles seleccionadas entrega este permiso
+function isPermissionFromRole(permissionId: number): boolean {
   const permId = permissionId;
   const permSlug = (() => {
     const p = allPermissionsList.value.find((x) => x.id == permId);
@@ -285,15 +340,14 @@ function isPermissionFromRole(permissionId) {
     if (!role || !role.permissions) return false;
     return role.permissions.some((rp) => {
       if (!rp) return false;
-      if (rp.id || rp.permission_id) return (rp.id || rp.permission_id) == permId;
-      if (rp.slug) return rp.slug === permSlug;
-      if (rp.name) return rp.name === permSlug;
+      if (typeof rp !== "string" && (rp.id || rp.permission_id)) return (rp.id || rp.permission_id) == permId;
+      if (typeof rp !== "string" && rp.slug) return rp.slug === permSlug;
+      if (typeof rp !== "string" && rp.name) return rp.name === permSlug;
       if (typeof rp === "string") return rp === permSlug;
       return false;
     });
   });
 
-  // También considerar permisos que ya venían de roles en el servidor
   const fromUserRole = userPermissionsList.value.some(
     (p) => p.permission_id === permissionId && p.origin === "role"
   );
@@ -301,16 +355,13 @@ function isPermissionFromRole(permissionId) {
   return fromSelectedRoles || fromUserRole;
 }
 
-// Obtener el grant efectivo de un permiso
-function getEffectiveGrant(permissionId) {
-  // Intentar resolver vía slug en el mapa efectivo (derivado de roles + overrides)
+function getEffectiveGrant(permissionId: number): number {
   const perm = allPermissionsList.value.find((p) => p.id == permissionId);
   const slug = perm?.slug || perm?.name;
   if (slug && effectivePermissionsMap.value && Object.prototype.hasOwnProperty.call(effectivePermissionsMap.value, slug)) {
     return effectivePermissionsMap.value[slug];
   }
 
-  // Si no está en el mapa, caer de nuevo a overrides numéricos y permisos de usuario
   if (
     selectedPermissions.value[permissionId] !== undefined &&
     selectedPermissions.value[permissionId] !== 0
@@ -324,25 +375,25 @@ function getEffectiveGrant(permissionId) {
   return 0;
 }
 
-// Mapa de permisos efectivos (resultado final)
-const effectivePermissionsMap = computed(() => {
-  const result = {};
+const effectivePermissionsMap = computed<Record<string, number>>(() => {
+  const result: Record<string, number> = {};
 
-  // Añadir permisos de roles seleccionados
   selectedRoleIds.value.forEach((roleId) => {
     const role = availableRoles.value.find((r) => r.id === roleId);
     if (role?.permissions) {
       role.permissions.forEach((p) => {
-        const _permId = p.id || p.permission_id;
-        result[p.slug || p.name] = 1; // Los roles siempre dan grant +1
+        if (typeof p !== "string") {
+          result[p.slug || p.name || ""] = 1;
+        } else {
+          result[p] = 1;
+        }
       });
     }
   });
 
-  // Aplicar overrides individuales
   Object.entries(selectedPermissions.value).forEach(([permId, grant]) => {
     if (grant !== 0) {
-      const perm = allPermissionsList.value.find((p) => p.id == permId);
+      const perm = allPermissionsList.value.find((p) => p.id === Number(permId));
       if (perm) {
         result[perm.slug] = grant;
       }
@@ -352,26 +403,23 @@ const effectivePermissionsMap = computed(() => {
   return result;
 });
 
-// Overrides que se eliminarán al cambiar roles seleccionadas
-const overridesToRemove = computed(() => {
-  const toRemove = [];
+const overridesToRemove = computed<(number | string)[]>(() => {
+  const toRemove: (number | string)[] = [];
 
-  // 1) Overrides expresados por id (originalPermissions)
   Object.keys(originalPermissions.value || {}).forEach((key) => {
     const permId = parseInt(key);
     if (!permId) return;
-    // Si alguna de las roles seleccionadas contiene este permiso, se eliminará el override
     const willBeProvided = selectedRoleIds.value.some((roleId) => {
       const role = availableRoles.value.find((r) => r.id === roleId);
       if (!role || !role.permissions) return false;
       return role.permissions.some((rp) => {
         if (!rp) return false;
-        if (rp.id || rp.permission_id) return (rp.id || rp.permission_id) == permId;
-        if (rp.slug) {
+        if (typeof rp !== "string" && (rp.id || rp.permission_id)) return (rp.id || rp.permission_id) == permId;
+        if (typeof rp !== "string" && rp.slug) {
           const perm = allPermissionsList.value.find((p) => p.id == permId);
           return perm && perm.slug === rp.slug;
         }
-        if (rp.name) {
+        if (typeof rp !== "string" && rp.name) {
           const perm = allPermissionsList.value.find((p) => p.id == permId);
           return (perm && perm.slug === rp.name) || (perm && perm.name === rp.name);
         }
@@ -385,15 +433,14 @@ const overridesToRemove = computed(() => {
     if (willBeProvided) toRemove.push(permId);
   });
 
-  // 2) Overrides expresados por slug (originalPermissionsSlug)
   Object.keys(originalPermissionsSlug.value || {}).forEach((slug) => {
     const willBeProvided = selectedRoleIds.value.some((roleId) => {
       const role = availableRoles.value.find((r) => r.id === roleId);
       if (!role || !role.permissions) return false;
       return role.permissions.some((rp) => {
         if (!rp) return false;
-        if (rp.slug) return rp.slug === slug;
-        if (rp.name) return rp.name === slug;
+        if (typeof rp !== "string" && rp.slug) return rp.slug === slug;
+        if (typeof rp !== "string" && rp.name) return rp.name === slug;
         if (typeof rp === "string") return rp === slug;
         return false;
       });
@@ -401,7 +448,6 @@ const overridesToRemove = computed(() => {
     if (willBeProvided) toRemove.push(slug);
   });
 
-  // devolver lista única
   return Array.from(new Set(toRemove));
 });
 
@@ -410,12 +456,11 @@ watch(
   (val) => {
     name.value = val?.name || "";
     email.value = val?.email || "";
-    originalRoleIds.value = val?.roles?.map((r) => r.id) || [];
-    selectedRoleIds.value = val?.roles?.map((r) => r.id) || [];
+    originalRoleIds.value = val?.roles?.map((r: UserRole) => r.id) || [];
+    selectedRoleIds.value = val?.roles?.map((r: UserRole) => r.id) || [];
 
-    // Cargar permisos override actuales (origin = 'user') y también soportar formato legacy por slug
-    const overrides = {};
-    const slugOverrides = {};
+    const overrides: Record<number, number> = {};
+    const slugOverrides: Record<string, number> = {};
     const userPerms = val?.user_permissions || [];
     userPerms.forEach((p) => {
       if (p.origin === "user") {
@@ -424,12 +469,11 @@ watch(
       }
     });
 
-    // Formato legacy: permissions_override: ['-patients.view']
     const permsOverrideArr = val?.permissions_override || val?.permissionsOverride || [];
     permsOverrideArr.forEach((s) => {
       if (!s || typeof s !== "string") return;
-      let grant = 0;
-      let slug = s;
+      let grant: number = 0;
+      let slug: string = s;
       if (s.startsWith("+") || s.startsWith("-")) {
         grant = s[0] === "+" ? 1 : -1;
         slug = s.slice(1);
@@ -441,7 +485,6 @@ watch(
     originalPermissions.value = { ...overrides };
     originalPermissionsSlug.value = { ...slugOverrides };
 
-    // Si ya tenemos la lista de permisos, mapear overrides por slug a ids
     if (allPermissionsList.value && allPermissionsList.value.length > 0) {
       Object.entries(slugOverrides).forEach(([slug, grant]) => {
         const perm = allPermissionsList.value.find((p) => p.slug === slug || p.name === slug);
@@ -455,7 +498,6 @@ watch(
   { immediate: true, deep: true }
 );
 
-// Sincronizar overrides expresados por slug cuando se carguen los permisos globales
 watch(
   () => allPermissionsList.value,
   (perms) => {
@@ -471,27 +513,24 @@ watch(
   { immediate: true }
 );
 
+const canSave = computed<boolean>(() => name.value.trim().length > 0);
 
-
-const canSave = computed(() => name.value.trim().length > 0);
-
-function getRoleName(roleId) {
+function getRoleName(roleId: number): string {
   const role = availableRoles.value.find((r) => r.id === roleId);
-  return role?.name || roleId;
+  return String(role?.name || roleId);
 }
 
-function formatOverrideItem(item) {
+function formatOverrideItem(item: number | string | null | undefined): string {
   if (item === null || item === undefined) return "";
-  // si es numérico, buscar slug por id
   if (typeof item === "number" || String(item).match(/^[0-9]+$/)) {
-    const pid = parseInt(item);
+    const pid = typeof item === "number" ? item : parseInt(item as string);
     const perm = allPermissionsList.value.find((p) => p.id == pid);
-    return perm?.slug || perm?.name || pid;
+    return perm?.slug || perm?.name || String(pid);
   }
   return String(item);
 }
 
-function toggleRole(roleId) {
+function toggleRole(roleId: number): void {
   const idx = selectedRoleIds.value.indexOf(roleId);
   if (idx === -1) {
     selectedRoleIds.value.push(roleId);
@@ -500,7 +539,7 @@ function toggleRole(roleId) {
   }
 }
 
-function setPermission(permId, grant) {
+function setPermission(permId: number, grant: number): void {
   if (grant === 0) {
     delete selectedPermissions.value[permId];
   } else {
@@ -508,26 +547,24 @@ function setPermission(permId, grant) {
   }
 }
 
-function resetPermissions() {
+function resetPermissions(): void {
   selectedPermissions.value = { ...originalPermissions.value };
 }
 
-function close() {
+function close(): void {
   emit("close");
 }
 
-function onSave() {
-  const basePayload = { name: name.value.trim() };
+function onSave(): void {
+  const basePayload: Payload = { name: name.value.trim() };
   if (isNewUser.value) basePayload.email = email.value.trim();
 
-  // Calcular cambios de roles
   const rolesToAdd = selectedRoleIds.value.filter((id) => !originalRoleIds.value.includes(id));
   const rolesToRemove = originalRoleIds.value.filter((id) => !selectedRoleIds.value.includes(id));
 
-  // Calcular cambios de permisos override
-  const permissionsChanges = [];
+  const permissionsChanges: Array<{ permission_id: number; grant: number }> = [];
   Object.entries(selectedPermissions.value).forEach(([permId, grant]) => {
-    if (originalPermissions.value[permId] !== grant) {
+    if (originalPermissions.value[Number(permId)] !== grant) {
       permissionsChanges.push({
         permission_id: parseInt(permId),
         grant: grant,
@@ -535,17 +572,15 @@ function onSave() {
     }
   });
 
-  // Añadir permisos que se eliminaron (grant = 0 para quitar)
   Object.entries(originalPermissions.value).forEach(([permId, grant]) => {
     if (!Object.prototype.hasOwnProperty.call(selectedPermissions.value, permId) && grant !== 0) {
       permissionsChanges.push({
         permission_id: parseInt(permId),
-        grant: 0, // Eliminar
+        grant: 0,
       });
     }
   });
 
-  // Si la selección de roles provocará eliminación de overrides, pedir confirmación al usuario
   if (overridesToRemove.value && overridesToRemove.value.length > 0) {
     const msg = `Se eliminarán ${overridesToRemove.value.length} permisos individuales. ¿Continuar?`;
     if (typeof confirm === "function") {
@@ -553,10 +588,9 @@ function onSave() {
     }
   }
 
-  const payload = {
+  const payload: Payload = {
     ...basePayload,
     ...(rolesToAdd.length > 0 && { roles: rolesToAdd }),
-    // siempre incluir roles_remove si hubo algún cambio en roles (incluso vacío)
     ...(rolesToAdd.length > 0 || rolesToRemove.length > 0 ? { roles_remove: rolesToRemove } : {}),
     ...(permissionsChanges.length > 0 && { permissions: permissionsChanges }),
   };

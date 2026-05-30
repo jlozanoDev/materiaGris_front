@@ -148,7 +148,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, watch } from "vue";
 import {
   useVueTable,
@@ -159,34 +159,83 @@ import {
 } from "@tanstack/vue-table";
 import { ref } from "vue";
 
-const props = defineProps({
-  value: { type: Array, default: () => [] },
-  columns: { type: Array, default: () => [] },
-  dataKey: { type: String, default: "id" },
-  filters: { type: Object, default: null },
-  globalFilterFields: { type: Array, default: () => [] },
-  sortMode: { type: String, default: null },
-  scrollable: { type: Boolean, default: false },
-  scrollHeight: { type: String, default: null },
-  stripedRows: { type: Boolean, default: false },
-  showGridlines: { type: Boolean, default: false },
-  rowHover: { type: Boolean, default: false },
-  rowClass: { type: Function, default: null },
-  tableStyle: { type: String, default: null },
-  paginator: { type: Boolean, default: false },
-  rows: { type: Number, default: 10 },
-  rowsPerPageOptions: { type: Array, default: () => [10, 25, 50] },
-  paginatorTemplate: { type: String, default: "" },
-  currentPageReportTemplate: { type: String, default: "" },
-  emptyText: { type: String, default: "No hay datos." },
+// Augment TanStack ColumnMeta with our custom fields used in templates
+declare module "@tanstack/vue-table" {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface ColumnMeta<TData, TValue> {
+    key?: string;
+    field?: string;
+    bodyClass?: string;
+    emptyText?: string;
+  }
+}
+
+interface ColumnDef {
+  key?: string;
+  field?: string;
+  label: string;
+  sortable?: boolean;
+  bodyClass?: string;
+  emptyText?: string;
+  align?: string;
+  headerClass?: string;
+}
+
+interface FilterDef {
+  global?: { value: string | null; matchMode: string };
+}
+
+interface Props {
+  value?: unknown[];
+  columns?: ColumnDef[];
+  dataKey?: string;
+  filters?: FilterDef | null;
+  globalFilterFields?: string[];
+  sortMode?: string | null;
+  scrollable?: boolean;
+  scrollHeight?: string | null;
+  stripedRows?: boolean;
+  showGridlines?: boolean;
+  rowHover?: boolean;
+  rowClass?: ((row: unknown) => string) | null;
+  tableStyle?: string | null;
+  paginator?: boolean;
+  rows?: number;
+  rowsPerPageOptions?: number[];
+  paginatorTemplate?: string;
+  currentPageReportTemplate?: string;
+  emptyText?: string;
+}
+
+type Updater<T> = T | ((prev: T) => T);
+
+type SortingState = { id: string; desc: boolean }[];
+
+const props = withDefaults(defineProps<Props>(), {
+  value: () => [],
+  columns: () => [],
+  dataKey: "id",
+  filters: null,
+  globalFilterFields: () => [],
+  sortMode: null,
+  scrollable: false,
+  scrollHeight: null,
+  stripedRows: false,
+  showGridlines: false,
+  rowHover: false,
+  rowClass: null,
+  tableStyle: null,
+  paginator: false,
+  rows: 10,
+  rowsPerPageOptions: () => [10, 25, 50],
+  paginatorTemplate: "",
+  currentPageReportTemplate: "",
+  emptyText: "No hay datos.",
 });
 
-// Sorting state
-const sorting = ref([]);
-// Pagination state
+const sorting = ref<SortingState>([]);
 const pagination = ref({ pageIndex: 0, pageSize: props.rows });
 
-// Sync rows prop → pageSize
 watch(
   () => props.rows,
   (val) => {
@@ -194,14 +243,12 @@ watch(
   }
 );
 
-// Global filter value extracted from PrimeVue-style filters prop
 const globalFilterValue = computed(() => props.filters?.global?.value ?? "");
 
-// Build TanStack column defs from columns prop
 const columnDefs = computed(() =>
   props.columns.map((col) => ({
     id: col.key || col.field || col.label,
-    accessorFn: col.field ? (row) => getValue(row, col.field) : () => "",
+    accessorFn: col.field ? (row: unknown) => getValue(row, col.field!) : () => "",
     header: col.label,
     enableSorting: !!col.sortable,
     meta: {
@@ -213,13 +260,12 @@ const columnDefs = computed(() =>
   }))
 );
 
-// Custom global filter: checks if any of the globalFilterFields contains the search string
-function globalFilterFn(row, _columnId, filterValue) {
+function globalFilterFn(row: { original: unknown }, _columnId: string, filterValue: string): boolean {
   if (!filterValue) return true;
   const q = String(filterValue).toLowerCase();
   const fields = props.globalFilterFields.length
     ? props.globalFilterFields
-    : props.columns.map((c) => c.field).filter(Boolean);
+    : props.columns.map((c) => c.field).filter(Boolean) as string[];
   return fields.some((f) => {
     const v = getValue(row.original, f);
     return v != null && String(v).toLowerCase().includes(q);
@@ -228,7 +274,7 @@ function globalFilterFn(row, _columnId, filterValue) {
 
 const table = useVueTable({
   get data() {
-    return props.value;
+    return props.value ?? [];
   },
   get columns() {
     return columnDefs.value;
@@ -244,7 +290,7 @@ const table = useVueTable({
       return globalFilterValue.value;
     },
   },
-  onSortingChange: (updater) => {
+  onSortingChange: (updater: Updater<SortingState>) => {
     sorting.value = typeof updater === "function" ? updater(sorting.value) : updater;
   },
   onPaginationChange: (updater) => {
@@ -260,7 +306,6 @@ const table = useVueTable({
 
 const filteredTotal = computed(() => table.getFilteredRowModel().rows.length);
 
-// Visible page numbers (max 5 around current)
 const visiblePages = computed(() => {
   const total = table.getPageCount();
   const current = table.getState().pagination.pageIndex + 1;
@@ -273,7 +318,6 @@ const visiblePages = computed(() => {
   return Array.from(pages).sort((a, b) => a - b);
 });
 
-// Pagination helpers: current page, start/end indices and pageSize control
 const currentPage = computed(() => table.getState().pagination.pageIndex + 1);
 const pageSize = computed({
   get: () => table.getState().pagination.pageSize,
@@ -294,20 +338,20 @@ const endIndex = computed(() => {
   );
 });
 
-function getValue(obj, path) {
+function getValue(obj: unknown, path: string): unknown {
   if (!path) return undefined;
   const parts = path.split(".");
-  let v = obj;
+  let v: unknown = obj;
   for (const p of parts) {
     if (v == null) return undefined;
-    v = v[p];
+    v = (v as Record<string, unknown>)[p];
   }
   return v;
 }
 
-function displayValue(data, field, emptyText) {
+function displayValue(data: unknown, field: string | undefined, emptyText?: string): string {
   if (!field) return "";
   const val = getValue(data, field);
-  return val == null ? emptyText ?? "" : val;
+  return val == null ? (emptyText ?? "") : String(val);
 }
 </script>

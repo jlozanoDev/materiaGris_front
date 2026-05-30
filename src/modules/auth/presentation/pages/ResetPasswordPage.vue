@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { provideResetPasswordUseCase } from "@/modules/auth/application/containers/resetContainer";
@@ -7,30 +7,30 @@ import { parseApiError } from "@/shared/utils/parseApiError";
 const router = useRouter();
 const route = useRoute();
 
-const token = ref("");
-const email = ref("");
-const password = ref("");
-const passwordConfirmation = ref("");
-const showPassword = ref(false);
-const showConfirmation = ref(false);
-const error = ref("");
-const loading = ref(false);
-const success = ref(false);
+const token = ref<string>("");
+const email = ref<string>("");
+const password = ref<string>("");
+const passwordConfirmation = ref<string>("");
+const showPassword = ref<boolean>(false);
+const showConfirmation = ref<boolean>(false);
+const error = ref<string>("");
+const loading = ref<boolean>(false);
+const success = ref<boolean>(false);
 
 onMounted(() => {
-  token.value = route.query.token || "";
-  email.value = route.query.email || "";
+  token.value = (route.query.token as string) || "";
+  email.value = (route.query.email as string) || "";
 
   if (!token.value || !email.value) {
     error.value = "El enlace de recuperación no es válido. Solicita uno nuevo.";
   }
 });
 
-const isValid = computed(
+const isValid = computed<boolean>(
   () => password.value.length >= 8 && password.value === passwordConfirmation.value
 );
 
-function clientValidate() {
+function clientValidate(): boolean {
   if (password.value.length < 8) {
     error.value = "La contraseña debe tener al menos 8 caracteres.";
     return false;
@@ -43,7 +43,7 @@ function clientValidate() {
   return true;
 }
 
-async function submit() {
+async function submit(): Promise<void> {
   if (!clientValidate()) return;
 
   loading.value = true;
@@ -53,7 +53,7 @@ async function submit() {
     success.value = true;
   } catch (err) {
     error.value = parseApiError(err);
-    if (err && err.status === 401) error.value = "El enlace ha expirado o no es válido.";
+    if (err && (err as { status?: number }).status === 401) error.value = "El enlace ha expirado o no es válido.";
   } finally {
     loading.value = false;
   }

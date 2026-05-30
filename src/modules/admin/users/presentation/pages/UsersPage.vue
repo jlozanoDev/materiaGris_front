@@ -1,5 +1,5 @@
-<script setup>
-import { onMounted, ref, watch } from "vue";
+<script setup lang="ts">
+import { computed, onMounted, ref, watch } from "vue";
 import AppSidebar from "@/shared/components/AppSidebar.vue";
 import TopBar from "@/shared/components/TopBar.vue";
 import Breadcrumb from "@/shared/components/Breadcrumb.vue";
@@ -10,22 +10,65 @@ import { useUsers } from "@/modules/admin/users/presentation/composables/useUser
 import { useRoles } from "@/modules/admin/roles/presentation/composables/useRoles";
 import { usePermissions } from "@/modules/admin/permissions/presentation/composables/usePermissions";
 import UiVuetifyDataTable from "@/shared/components/UiVuetifyDataTable.vue";
+import type { AdminUser } from "@/shared/types";
 
-// Composables
+// Type bridge for EditUserModal (has stricter local types than shared)
+const userForModal = computed(() => form.value as unknown as Record<string, unknown>);
+const rolesForModal = computed(() => allRoles.value as any);
+const permsForModal = computed(() => allPermissionsList.value as any);
+
+// --- Local interfaces ---
+
+interface UserPermission {
+  id: number | string;
+  slug: string;
+  grant: number;
+  origin: string;
+}
+
+interface DataTableColumn {
+  key: string;
+  field?: string;
+  label: string;
+  sortable: boolean;
+}
+
+interface DataTableFilters {
+  global: { value: string | null; matchMode: string };
+}
+
+interface UserFormData {
+  id?: number | string;
+  name: string;
+  email: string;
+  active?: boolean;
+  role?: string | Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+interface BreadcrumbItem {
+  text: string;
+  icon?: string;
+  to?: string;
+}
+
+// --- Composables ---
+
 const authStore = useAuthStore();
 const { logout } = useLogout();
 const { users, loading, fetchUsers, createUser, updateUser, deleteUser } = useUsers();
 const { roles: allRoles, fetchRoles: loadRoles } = useRoles();
 const { permissions: allPermissionsList, fetchPermissions: loadPerms, loading: loadingPerms } = usePermissions();
 
-// Filters and global search for DataTable
-const globalFilter = ref("");
-const filters = ref({ global: { value: null, matchMode: "contains" } });
-watch(globalFilter, (val) => {
+// --- Filters and global search ---
+
+const globalFilter = ref<string>("");
+const filters = ref<DataTableFilters>({ global: { value: null, matchMode: "contains" } });
+watch(globalFilter, (val: string) => {
   filters.value = { global: { value: val, matchMode: "contains" } };
 });
 
-const columns = [
+const columns: DataTableColumn[] = [
   { key: "name", field: "name", label: "Nombre", sortable: true },
   { key: "email", field: "email", label: "Email", sortable: true },
   { key: "roles", field: "roles", label: "Roles", sortable: false },
@@ -33,94 +76,92 @@ const columns = [
   { key: "actions", label: "", sortable: false },
 ];
 
-function getUserPermissions(user) {
-  return (user?.user_permissions || []).filter((p) => p.origin === "user");
-}
+// --- Local state ---
 
-// local UI-only state to allow add/edit/deactivate in the frontend
-const localUsers = ref([]);
-const editing = ref(false);
-const isNewUser = ref(false);
-const form = ref({});
+const localUsers = ref<AdminUser[]>([]);
+const editing = ref<boolean>(false);
+const isNewUser = ref<boolean>(false);
+const form = ref<UserFormData>({ name: "", email: "" });
 
-// keep local copy in sync with fetched users
 watch(
   users,
-  (v) => {
-    localUsers.value = (v || []).map((u) => ({ ...u }));
+  (v: AdminUser[]) => {
+    localUsers.value = (v || []).map((u: AdminUser) => ({ ...u }));
   },
   { immediate: true }
 );
 
-function startNewUser() {
+// --- Utility functions ---
+
+function getUserPermissions(user: any): UserPermission[] {
+  return ((user?.user_permissions as UserPermission[] | undefined) || []).filter(
+    (p: UserPermission) => p.origin === "user"
+  );
+}
+
+// --- CRUD actions ---
+
+function startNewUser(): void {
   editing.value = true;
   isNewUser.value = true;
   form.value = { id: Date.now(), name: "", email: "", active: true };
 }
 
-function startEditUser(u) {
+function startEditUser(u: any): void {
+  const user = u as AdminUser;
   editing.value = true;
   isNewUser.value = false;
-  form.value = { ...u };
-  // remove role from the editable form (UI no longer exposes role)
-  if (form.value && form.value.role) delete form.value.role;
+  form.value = { ...user } as UserFormData;
+  if (form.value.role) delete form.value.role;
 }
 
-function cancelEditUser() {
+function confirmDeactivate(u: any): void {
+  const isActive = u.active !== false;
+  if (!confirm(isActive ? "Desactivar usuario?" : "Reactivar usuario?")) return;
+  deleteUser(u.id as number | string).catch((err: unknown) => console.warn("UsersPage: deleteUser failed", err));
+}
+
+function cancelEditUser(): void {
   editing.value = false;
   isNewUser.value = false;
-  form.value = {};
+  form.value = { name: "", email: "" };
 }
 
-function handleSaveUser(payload) {
+async function handleSaveUser(payload: Record<string, unknown>): Promise<void> {
   if (isNewUser.value) {
-    return createUser(payload)
-      .then(() => {
-        editing.value = false;
-        isNewUser.value = false;
-        form.value = {};
-      })
-      .catch((err) => {
-        console.warn("UsersPage: createUser failed", err);
-        throw err;
-      });
+    await createUser(payload);
+    editing.value = false;
+    isNewUser.value = false;
+    form.value = { name: "", email: "" };
   } else {
-    const payloadToSend = { ...(payload || {}) };
+    const payloadToSend: Record<string, unknown> = { ...(payload || {}) };
     if (payloadToSend.id) delete payloadToSend.id;
-    return updateUser(form.value.id, payloadToSend)
-      .then(() => {
-        editing.value = false;
-        isNewUser.value = false;
-        form.value = {};
-      })
-      .catch((err) => {
-        console.warn("UsersPage: updateUser failed", err);
-        throw err;
-      });
+    await updateUser(form.value.id!, payloadToSend);
+    editing.value = false;
+    isNewUser.value = false;
+    form.value = { name: "", email: "" };
   }
 }
 
-// Expose a `saveUser` method on the component instance for tests and external callers
-function saveUser(payload) {
-  const p = payload ?? form.value;
-  return handleSaveUser(p).catch((_err) => {
+const handleSaveUserBridge = (payload: any) => handleSaveUser(payload);
+
+function saveUser(payload?: Record<string, unknown>): Promise<void> {
+  const p = payload ?? (form.value as unknown as Record<string, unknown>);
+  return handleSaveUser(p).catch((_err: unknown) => {
     // Rejection handled upstream by modal/caller
   });
 }
 
 defineExpose({ saveUser });
 
-function confirmDeactivate(u) {
-  const isActive = u.active !== false;
-  if (!confirm(isActive ? "Desactivar usuario?" : "Reactivar usuario?")) return;
-  // call delete (soft-delete) on backend
-  deleteUser(u.id).catch((err) => console.warn("UsersPage: deleteUser failed", err));
-}
+// --- Breadcrumb ---
 
-const breadcrumb = [
+const breadcrumb: BreadcrumbItem[] = [
   { text: "Dashboard", icon: "pi pi-objects-column", to: "/" },
   { text: "Usuarios", icon: "pi pi-user" },
 ];
+
+// --- Lifecycle ---
 
 onMounted(async () => {
   await authStore.fetchUser();
@@ -256,13 +297,13 @@ onMounted(async () => {
             <!-- Usuario Modal - usando EditUserModal para roles y permisos -->
             <EditUserModal
               :show="editing"
-              :user="form"
-              :roles="allRoles"
-              :permissions="allPermissionsList"
+              :user="userForModal"
+              :roles="rolesForModal"
+              :permissions="permsForModal"
               :loading-permissions="loadingPerms"
               :is-new="isNewUser"
               @close="cancelEditUser"
-              @save="handleSaveUser"
+              @save="handleSaveUserBridge"
             />
           </div>
         </div>

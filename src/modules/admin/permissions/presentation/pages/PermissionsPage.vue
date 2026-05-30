@@ -1,48 +1,74 @@
-<script setup>
+<script setup lang="ts">
 import { onMounted, ref, watch } from "vue";
 import AppSidebar from "@/shared/components/AppSidebar.vue";
 import TopBar from "@/shared/components/TopBar.vue";
 import Breadcrumb from "@/shared/components/Breadcrumb.vue";
 import { useAuthStore } from "@/core/store/auth";
 import { useLogout } from "@/shared/composables/useLogout";
-import UiVuetifyDataTable from "@/shared/components/UiVuetifyDataTable.vue"; // Changed import
+import UiVuetifyDataTable from "@/shared/components/UiVuetifyDataTable.vue";
 import { usePermissions } from "@/modules/admin/permissions/presentation/composables/usePermissions";
+import type { PermissionShape } from "@/shared/types";
 
-// Composables
+// --- Local interfaces ---
+
+interface DataTableColumn {
+  key: string;
+  field?: string;
+  label: string;
+  sortable: boolean;
+}
+
+interface DataTableFilters {
+  global: { value: string | null; matchMode: string };
+}
+
+interface BreadcrumbItem {
+  text: string;
+  icon?: string;
+  to?: string;
+}
+
+// --- Composables ---
+
 const authStore = useAuthStore();
 const { logout } = useLogout();
 const { permissions, loading, fetchPermissions } = usePermissions();
 
-// Filters and global search for DataTable
-const globalFilter = ref("");
-const filters = ref({ global: { value: null, matchMode: "contains" } });
-watch(globalFilter, (val) => {
+// --- Filters and global search ---
+
+const globalFilter = ref<string>("");
+const filters = ref<DataTableFilters>({ global: { value: null, matchMode: "contains" } });
+watch(globalFilter, (val: string) => {
   filters.value = { global: { value: val, matchMode: "contains" } };
 });
 
-const columns = [
+const columns: DataTableColumn[] = [
   { key: "slug", field: "slug", label: "Slug", sortable: true },
   { key: "name", field: "name", label: "Nombre", sortable: true },
   { key: "category", field: "category", label: "Categoría", sortable: true },
   { key: "description", field: "description", label: "Descripción", sortable: false },
 ];
 
-// local UI-only state to allow display in the frontend
-const localPermissions = ref([]);
+// --- Local state ---
 
-// keep local copy in sync with fetched permissions
+const localPermissions = ref<PermissionShape[]>([]);
+
 watch(
   permissions,
-  (v) => {
-    localPermissions.value = (v || []).map((p) => ({ ...p }));
+  (v: PermissionShape[]) => {
+    localPermissions.value = (v || []).map((p: PermissionShape) => ({ ...p }));
   },
   { immediate: true }
 );
 
-const breadcrumb = [
+// --- Breadcrumb ---
+
+const breadcrumb: BreadcrumbItem[] = [
   { text: "Dashboard", icon: "pi pi-objects-column", to: "/" },
   { text: "Permisos", icon: "pi pi-shield" },
 ];
+
+// --- Lifecycle ---
 
 onMounted(async () => {
   if (!authStore.user) await authStore.fetchUser();

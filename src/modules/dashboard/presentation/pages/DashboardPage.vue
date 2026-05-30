@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { onMounted, ref } from "vue";
 import AppSidebar from "@/shared/components/AppSidebar.vue";
 import TopBar from "@/shared/components/TopBar.vue";
@@ -14,21 +14,32 @@ import AddressesModal from "@/shared/components/AddressesModal.vue";
 import { useAuthStore } from "@/core/store/auth";
 import { useLogout } from "@/shared/composables/useLogout";
 import LocalStorageGateway from "@/modules/auth/infrastructure/LocalStorageGateway";
+
+interface Address {
+  id: number;
+  alias: string;
+  street: string;
+  number: string;
+  postal_code: string;
+  mobile_phone: string;
+  is_primary: boolean;
+}
+
 const authStore = useAuthStore();
 const { logout } = useLogout();
 const storage = new LocalStorageGateway();
 
-const showEditModal = ref(false);
-const showChangePasswordModal = ref(false);
-const showAddressesModal = ref(false);
-const addresses = ref([]);
+const showEditModal = ref<boolean>(false);
+const showChangePasswordModal = ref<boolean>(false);
+const showAddressesModal = ref<boolean>(false);
+const addresses = ref<Address[]>([]);
 
-function loadAddresses() {
+function loadAddresses(): Address[] {
   try {
     const stored = storage.get("addresses");
     if (stored) {
       const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed)) return parsed;
+      if (Array.isArray(parsed)) return parsed as Address[];
     }
   } catch (e) { /* noop */ }
   return [
@@ -45,21 +56,24 @@ function loadAddresses() {
 
 addresses.value = loadAddresses();
 
-const onSaveEdited = (edited) => {
-  authStore.user = { ...authStore.user, ...edited };
+const onSaveEdited = (_edited: unknown): void => {
+  const edited = _edited as { name?: string };
+  if (authStore.user) {
+    (authStore.user as unknown as Record<string, unknown>).name = edited.name ?? authStore.user.name;
+  }
   try {
     storage.set("user", JSON.stringify(authStore.user));
   } catch (e) { /* noop */ }
 };
 
-const onSavePassword = () => {
+const onSavePassword = (): void => {
   console.log("[DashboardPage] password change requested (frontend-only)");
   try {
     storage.set("passwordChangedAt", new Date().toISOString());
   } catch (e) { /* noop */ }
 };
 
-const onSaveAddresses = (newAddresses) => {
+const onSaveAddresses = (newAddresses: Address[]): void => {
   addresses.value = newAddresses;
   try {
     storage.set("addresses", JSON.stringify(addresses.value));

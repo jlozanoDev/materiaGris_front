@@ -1,58 +1,91 @@
-<script setup>
+<script setup lang="ts">
 import { computed, ref } from "vue";
 import PermissionCategoryNode from "./PermissionCategoryNode.vue";
+import type { PermissionShape } from "@/shared/types";
 
-const props = defineProps({
-  availablePermissions: {
-    type: Array,
-    required: true,
-  },
-  modelValue: {
-    type: Array,
-    default: () => [],
-  },
+// --- Local interfaces ---
+
+interface PermissionGrant {
+  id: number;
+  grant: number;
+}
+
+interface TreeNode {
+  name: string;
+  permissions: PermissionShape[];
+  subcategories: TreeNode[];
+}
+
+interface ExpansionSignal {
+  count: number;
+  state: boolean;
+}
+
+interface Props {
+  availablePermissions: PermissionShape[];
+  modelValue: PermissionGrant[];
+}
+
+// --- Props & emits ---
+
+const props = defineProps<Props>();
+
+const emit = defineEmits<{
+  "update:modelValue": [value: PermissionGrant[]];
+}>();
+
+// --- Permission tree ---
+
+const permissionTree = computed<TreeNode[]>(() => {
+  const findOrCreate = (list: TreeNode[], name: string): TreeNode => {
+    const existing = list.find((n) => n.name === name);
+    if (existing) return existing;
+    const node: TreeNode = { name, permissions: [], subcategories: [] };
+    list.push(node);
+    return node;
+  };
+
+  const root: TreeNode[] = [];
+
+  for (const p of props.availablePermissions) {
+    const rawCategory = (p as unknown as Record<string, unknown>).category as string | undefined;
+    const parts = (rawCategory || "General").split(" > ");
+    let currentList = root;
+
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+      const node = findOrCreate(currentList, part);
+
+      if (i === parts.length - 1) {
+        node.permissions.push(p);
+      }
+
+      currentList = node.subcategories;
+    }
+  }
+
+  return root;
 });
 
-const emit = defineEmits(["update:modelValue"]);
+// --- Expansion controls ---
 
-const permissionTree = computed(() => {
-  const root = { subcategories: {} };
+const expansionSignal = ref<ExpansionSignal>({ count: 0, state: false });
 
-  props.availablePermissions.forEach((p) => {
-    const parts = (p.category || "General").split(" > ");
-    let current = root;
-
-    parts.forEach((part, index) => {
-      if (!current.subcategories[part]) {
-        current.subcategories[part] = {
-          name: part,
-          permissions: [],
-          subcategories: {},
-        };
-      }
-      if (index === parts.length - 1) {
-        current.subcategories[part].permissions.push(p);
-      }
-      current = current.subcategories[part];
-    });
-  });
-
-  return root.subcategories;
-});
-
-const expansionSignal = ref({ count: 0, state: false });
-
-function expandAll() {
+function expandAll(): void {
   expansionSignal.value = { count: expansionSignal.value.count + 1, state: true };
 }
 
-function collapseAll() {
+function collapseAll(): void {
   expansionSignal.value = { count: expansionSignal.value.count + 1, state: false };
 }
 
-function updateModel(value) {
+function updateModel(value: PermissionGrant[]): void {
   emit("update:modelValue", value);
 }
+
+// Type-bridge: PermissionCategoryNode expects PermissionNode with stricter types
+// than shared PermissionShape; both match at runtime.
+const treeForTemplate = computed(() => permissionTree.value as any);
 
 defineExpose({ expandAll, collapseAll });
 </script>
@@ -60,7 +93,7 @@ defineExpose({ expandAll, collapseAll });
 <template>
   <div class="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
     <PermissionCategoryNode
-      v-for="node in permissionTree"
+      v-for="node in treeForTemplate"
       :key="node.name"
       :node="node"
       :model-value="modelValue"

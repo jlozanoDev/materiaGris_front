@@ -80,36 +80,78 @@
   </v-data-table>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, ref, watch } from "vue";
 
-const props = defineProps({
-  value: { type: Array, default: () => [] },
-  columns: { type: Array, default: () => [] },
-  dataKey: { type: String, default: "id" },
-  filters: { type: Object, default: null },
-  globalFilterFields: { type: Array, default: () => [] },
-  sortMode: { type: String, default: null }, // Not directly used by v-data-table but kept for API compatibility
-  paginator: { type: Boolean, default: false },
-  rows: { type: Number, default: 10 },
-  rowsPerPageOptions: { type: Array, default: () => [10, 25, 50] },
-  emptyText: { type: String, default: "No hay datos." },
-  // Additional props from UiDataTable for styling, not directly mapped to v-data-table but good to keep in mind
-  stripedRows: { type: Boolean, default: false },
-  showGridlines: { type: Boolean, default: false },
-  rowHover: { type: Boolean, default: false },
-  rowClass: { type: Function, default: null },
-  tableStyle: { type: String, default: null },
+interface ColumnDef {
+  key?: string;
+  field?: string;
+  label: string;
+  sortable?: boolean;
+  align?: string;
+  emptyText?: string;
+  headerClass?: string;
+  bodyClass?: string;
+}
+
+interface FilterDef {
+  global?: { value: string | null; matchMode: string };
+}
+
+interface Props {
+  value?: any[];
+  columns?: ColumnDef[];
+  dataKey?: string;
+  filters?: FilterDef | null;
+  globalFilterFields?: string[];
+  sortMode?: string | null;
+  paginator?: boolean;
+  rows?: number;
+  rowsPerPageOptions?: number[];
+  emptyText?: string;
+  stripedRows?: boolean;
+  showGridlines?: boolean;
+  rowHover?: boolean;
+  rowClass?: ((row: unknown) => string) | null;
+  tableStyle?: string | null;
+}
+
+interface SortEntry {
+  key: string;
+  order: "asc" | "desc";
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  value: () => [],
+  columns: () => [],
+  dataKey: "id",
+  filters: null,
+  globalFilterFields: () => [],
+  sortMode: null,
+  paginator: false,
+  rows: 10,
+  rowsPerPageOptions: () => [10, 25, 50],
+  emptyText: "No hay datos.",
+  stripedRows: false,
+  showGridlines: false,
+  rowHover: false,
+  rowClass: null,
+  tableStyle: null,
 });
 
-const emit = defineEmits(["update:rows"]);
+const emit = defineEmits<{
+  (e: "update:rows", value: number): void;
+}>();
 
-// Internal state for pagination and sorting
-const currentPage = ref(1);
-const internalRowsPerPage = ref(props.rows);
-const sortBy = ref([]); // For v-data-table sort-by prop. In Vuetify 4 each entry is { key, order: 'asc'|'desc' }
+// Declare slot types explicitly to work around Vuetify template inference limits
+// Slot types declared loosely — Vue SFC cannot resolve template-literal slot names
+// from consumer templates. Consumers should cast slot props as needed.
+defineSlots<Record<string, (props: Record<string, any>) => any>>();
 
-// Watch for changes in props.rows and update internalRowsPerPage
+const currentPage = ref<number>(1);
+const internalRowsPerPage = ref<number>(props.rows);
+const sortBy = ref<SortEntry[]>([]);
+
 watch(
   () => props.rows,
   (newRows) => {
@@ -117,29 +159,24 @@ watch(
   }
 );
 
-// Emit update:rows when internalRowsPerPage changes
 watch(internalRowsPerPage, (newVal) => {
   emit("update:rows", newVal);
-  // Reset to first page when items per page changes
   currentPage.value = 1;
 });
 
-// Mapear las columnas a un formato compatible con v-data-table
 const vuetifyHeaders = computed(() => {
   return props.columns.map((col) => {
     const key = col.key || col.field || col.label;
     return {
       title: col.label,
-      value: key, // This is important for data access and sorting
-      key: key, // Also use key for slot naming
+      value: key,
+      key: key,
       sortable: !!col.sortable,
-      align: col.align || "start",
-      // Vuetify v-data-table doesn't have a direct 'field' prop in headers
-      // We can add it to meta if needed for custom slot logic, but 'value' is primary
-      field: col.field, // Keep for displayValue function
-      emptyText: col.emptyText, // Keep for displayValue function
-      class: col.headerClass, // Apply custom classes to header cells
-      cellClass: col.bodyClass, // Apply custom classes to data cells (might need custom slot)
+      align: (col.align || "start") as "start" | "end" | "center",
+      field: col.field,
+      emptyText: col.emptyText,
+      class: col.headerClass,
+      cellClass: col.bodyClass,
     };
   });
 });
@@ -152,37 +189,30 @@ const headersWithKeys = computed(() => {
   }));
 });
 
-// Global filter value from props.filters
 const globalFilterValue = computed(() => props.filters?.global?.value ?? "");
 
-// Custom getValue function, similar to the original UiDataTable
-function getValue(obj, path, emptyText) {
+function getValue(obj: unknown, path: string | undefined, emptyText: string | undefined): string {
   if (!path) return "";
   const parts = path.split(".");
-  let v = obj;
+  let v: unknown = obj;
   for (const p of parts) {
     if (v == null) return emptyText ?? "";
-    v = v[p];
+    v = (v as Record<string, unknown>)[p];
   }
-  return v == null ? emptyText ?? "" : v;
+  return v == null ? (emptyText ?? "") : String(v);
 }
 
-// Custom pagination info calculation (now driven by v-data-table's items-per-page and filtered/sorted items)
 const totalFilteredItems = computed(() => {
-  // This is a simplified approach. In a real scenario, you might need to
-  // capture `v-data-table`'s `@update:current-items` or similar events
-  // to get the exact count of filtered items. For now, we'll estimate
-  // by applying the global filter to the original value.
   if (!globalFilterValue.value) return props.value.length;
 
   const q = String(globalFilterValue.value).toLowerCase();
   const fields = props.globalFilterFields.length
     ? props.globalFilterFields
-    : props.columns.map((c) => c.field).filter(Boolean);
+    : props.columns.map((c) => c.field).filter(Boolean) as string[];
 
-  return props.value.filter((item) =>
+  return props.value.filter((item: unknown) =>
     fields.some((f) => {
-      const v = getValue(item, f);
+      const v = getValue(item, f, "");
       return v != null && String(v).toLowerCase().includes(q);
     })
   ).length;
@@ -201,7 +231,6 @@ const pageCount = computed(() => {
   return totalItems === 0 ? 1 : Math.ceil(totalItems / internalRowsPerPage.value);
 });
 
-// Show paginator if explicitly requested or when the dataset is larger than one page
 const showPaginator = computed(() => {
   try {
     const totalItems = totalFilteredItems.value;
@@ -211,15 +240,11 @@ const showPaginator = computed(() => {
   }
 });
 
-// Vuetify 4: sortBy is [{key, order: 'asc'|'desc'}]
-function colSortOrder(key) {
+function colSortOrder(key: string): "asc" | "desc" | null {
   if (!key) return null;
-  const entry = Array.isArray(sortBy.value)
-    ? sortBy.value.find((s) => s.key === key || s === key)
-    : null;
+  const entry = sortBy.value.find((s) => s.key === key) ?? null;
   if (!entry) return null;
-  // entry may be a string (Vuetify 3 compat) or object
-  return typeof entry === "object" ? entry.order ?? "asc" : "asc";
+  return entry.order ?? "asc";
 }
 </script>
 
