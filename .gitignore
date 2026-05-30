@@ -1,6 +1,7 @@
 # Dependencias
 node_modules/
 .opencode
+.atl/
 .pnp
 .pnp.js
 

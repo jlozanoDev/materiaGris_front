@@ -1,0 +1,66 @@
+schema: spec-driven
+
+context: |
+  Vue 3.5 SPA + Vite 8 with Tailwind CSS 4, Vuetify 4, PrimeVue 4.5
+  Architecture: Hexagonal/Clean — feature modules (domain/infra/app/presentation)
+  State: Pinia 3 setup stores, DI via container pattern (provideX)
+  HTTP: custom fetchClient (no axios), JWT auth with Pinia store
+  Routing: Vue Router 4, lazy-loaded pages, permission-aware guards
+  Testing: Vitest 1.x (28 spec files) + Playwright 1.42 (2 visual specs)
+  Quality: ESLint 8 + Prettier 2.8 + Husky 8 + lint-staged
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+    - Document affected modules and cross-module impacts
+  specs:
+    - Use Given/When/Then for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+    - Map scenarios to affected domains: auth, admin/users, admin/roles, admin/permissions, patients, dashboard
+  design:
+    - Document architecture decisions with rationale
+    - Follow existing Hexagonal module structure: domain/infrastructure/application/presentation
+    - New features: create module under src/modules/<feature>/ with full layering
+    - Reuse shared components from src/shared/components/
+    - Prefer @ alias imports over relative paths
+  tasks:
+    - Group by phase, use hierarchical numbering (1.1, 1.2, ...)
+    - Keep tasks completable in one session
+    - Include test tasks alongside implementation tasks
+  apply:
+    - Follow existing code patterns (module structure, container DI, fetchClient)
+    - Use Composition API with <script setup>
+    - Tailwind is the primary styling approach
+    tdd: true
+    test_command: cd frontend && npx vitest run --run
+  verify:
+    test_command: cd frontend && npx vitest run --run
+    build_command: npm run build
+    coverage_threshold: 0
+    e2e_command: npx playwright test
+  archive:
+    - Warn before merging destructive deltas
+
+testing:
+  strict_tdd: true
+  unit:
+    command: cd frontend && npx vitest run --run
+    framework: vitest
+    environment: jsdom
+    files: 26
+  e2e:
+    command: npx playwright test
+    framework: playwright
+    browser: chromium
+    files: 2
+  lint:
+    command: npm run lint
+    tool: eslint
+  format:
+    command: npm run format
+    tool: prettier
+  build:
+    command: npm run build
+    tool: vite
+  hooks:
+    pre_commit: husky + lint-staged (prettier + eslint)
