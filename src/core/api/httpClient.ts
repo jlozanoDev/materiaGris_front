@@ -1,17 +1,18 @@
 import { API_BASE } from "@/core/config/env";
+import type { FetchClientOptions, ApiError } from "@/shared/types";
 
-let onUnauthorizedCallback = null;
-let tokenGetter = null;
+let onUnauthorizedCallback: (() => void) | null = null;
+let tokenGetter: (() => string | null) | null = null;
 
-export function setUnauthorizedHandler(cb) {
+export function setUnauthorizedHandler(cb: () => void): void {
   onUnauthorizedCallback = cb;
 }
 
-export function setTokenGetter(fn) {
+export function setTokenGetter(fn: () => string | null): void {
   tokenGetter = fn;
 }
 
-export async function fetchClient(path, options = {}) {
+export async function fetchClient(path: string, options: FetchClientOptions = {}): Promise<any> {
   const opts = { ...options };
   const ignoreUnauthorized = !!opts.ignoreUnauthorized;
   if ("ignoreUnauthorized" in opts) delete opts.ignoreUnauthorized;
@@ -23,7 +24,7 @@ export async function fetchClient(path, options = {}) {
 
   const token = tokenGetter ? tokenGetter() : null;
 
-  opts.headers = { ...(opts.headers || {}) };
+  opts.headers = { ...(opts.headers || {}) } as Record<string, string>;
 
   if (token && !opts.headers.Authorization) {
     opts.headers.Authorization = `Bearer ${token}`;
@@ -39,19 +40,19 @@ export async function fetchClient(path, options = {}) {
   const timeoutId = setTimeout(() => controller.abort(), 30000);
   opts.signal = controller.signal;
 
-  let response;
+  let response: Response;
   try {
     response = await fetch(url, opts);
-  } catch (err) {
+  } catch (err: any) {
     clearTimeout(timeoutId);
     const message = err.name === "AbortError" ? "La solicitud tardó demasiado" : "Error de conexión";
-    return Promise.reject({ status: 0, body: { message } });
+    return Promise.reject({ status: 0, body: { message } } satisfies ApiError);
   }
 
   clearTimeout(timeoutId);
 
   const contentType = response.headers.get("content-type") || "";
-  let body = null;
+  let body: any = null;
   if (contentType.includes("application/json")) {
     body = await response.json().catch(() => null);
   } else {
@@ -59,16 +60,16 @@ export async function fetchClient(path, options = {}) {
   }
 
   if (response.status === 401) {
-    if (ignoreUnauthorized) return Promise.reject({ status: 401, body });
+    if (ignoreUnauthorized) return Promise.reject({ status: 401, body } satisfies ApiError);
     if (typeof onUnauthorizedCallback === "function") {
       onUnauthorizedCallback();
     } else {
       window.location.href = "/login";
     }
-    return Promise.reject({ status: 401, body });
+    return Promise.reject({ status: 401, body } satisfies ApiError);
   }
 
-  if (!response.ok) return Promise.reject({ status: response.status, body });
+  if (!response.ok) return Promise.reject({ status: response.status, body } satisfies ApiError);
 
   return body;
 }

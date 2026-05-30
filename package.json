@@ -5,18 +5,23 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest",
+    "test:run": "vitest --run",
+    "test:coverage": "vitest --coverage",
     "lint": "eslint \"src/**/*.{js,vue}\"",
     "lint:fix": "eslint --fix \"src/**/*.{js,vue}\"",
+    "typecheck": "vue-tsc --noEmit",
     "format": "prettier --write \"src/**/*.{js,vue,json,css,md}\"",
     "prepare": "husky install",
-    "test:visual": "playwright test"
+    "test:e2e": "playwright test",
+    "quality": "npm run lint && npm run typecheck && npm run test:run",
+    "verify": "npm run quality && npm run test:e2e && npm run build"
   },
   "dependencies": {
     "@tanstack/vue-table": "^8.21.3",
-"gsap": "^3.15.0",
+    "gsap": "^3.15.0",
     "lucide-vue-next": "^1.0.0",
     "pinia": "^3.0.4",
     "primeicons": "^7.0.0",
@@ -30,7 +35,9 @@
   "devDependencies": {
     "@playwright/test": "^1.42.0",
     "@tailwindcss/vite": "^4.2.2",
+    "@types/node": "^25.9.1",
     "@vitejs/plugin-vue": "^6.0.5",
+    "@vitest/coverage-v8": "^1.6.1",
     "@vue/test-utils": "^2.4.1",
     "eslint": "^8.41.0",
     "eslint-config-prettier": "^9.1.0",
@@ -40,7 +47,9 @@
     "lint-staged": "^14.0.1",
     "prettier": "^2.8.8",
     "tailwindcss": "^4.2.2",
+    "typescript": "^6.0.3",
     "vite": "^8.0.1",
-    "vitest": "^1.1.4"
+    "vitest": "^1.1.4",
+    "vue-tsc": "^3.3.3"
   }
 }

@@ -5,8 +5,14 @@ test('Usuarios CRUD (mocked API)', async ({ page }) => {
   let users = []
   let nextId = 100
 
-  // Mock any API call to prevent 401 logouts
-  await page.route(url => url.href.includes('api.materiagris.local'), async route => {
+  // Mock any API call — match by path, skip dev server (port 5173)
+  await page.route(url => {
+    try {
+      const u = new URL(url)
+      if (u.port === '5173') return false          // skip Vite dev server
+      return u.pathname.startsWith('/auth/') || u.pathname.startsWith('/admin/')
+    } catch (_) { return false }
+  }, async route => {
     const url = route.request().url()
     
     // Auth Me
@@ -18,7 +24,7 @@ test('Usuarios CRUD (mocked API)', async ({ page }) => {
       })
     }
 
-    // Users Collection
+    // Users Collection (GET / POST)
     if (url.includes('/admin/users') && !url.match(/\/admin\/users\/\d+/)) {
       const method = route.request().method()
       if (method === 'GET') {
@@ -50,6 +56,11 @@ test('Usuarios CRUD (mocked API)', async ({ page }) => {
         users = users.filter(u => u.id !== id)
         return route.fulfill({ status: 204, body: '' })
       }
+    }
+
+    // Roles / Permissions (empty lists to keep UI happy)
+    if (url.includes('/admin/roles') || url.includes('/admin/permissions')) {
+      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) })
     }
 
     // Default for any other API call
