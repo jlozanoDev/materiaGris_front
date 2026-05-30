@@ -8,13 +8,15 @@ import PatientList from "@/modules/dashboard/presentation/components/PatientList
 import ConsultationPanel from "@/modules/dashboard/presentation/components/ConsultationPanel.vue";
 import RightPanel from "@/modules/dashboard/presentation/components/RightPanel.vue";
 import EditUserModal from "@/modules/admin/users/presentation/components/EditUserModal.vue";
-import ChangePasswordModal from "@/modules/admin/users/presentation/components/ChangePasswordModal.vue";
-import AddressesModal from "@/modules/admin/users/presentation/components/AddressesModal.vue";
+import ChangePasswordModal from "@/shared/components/ChangePasswordModal.vue";
+import AddressesModal from "@/shared/components/AddressesModal.vue";
 
 import { useAuthStore } from "@/core/store/auth";
 import { useLogout } from "@/shared/composables/useLogout";
+import LocalStorageGateway from "@/modules/auth/infrastructure/LocalStorageGateway";
 const authStore = useAuthStore();
 const { logout } = useLogout();
+const storage = new LocalStorageGateway();
 
 const showEditModal = ref(false);
 const showChangePasswordModal = ref(false);
@@ -23,7 +25,7 @@ const addresses = ref([]);
 
 function loadAddresses() {
   try {
-    const stored = localStorage.getItem("addresses");
+    const stored = storage.get("addresses");
     if (stored) {
       const parsed = JSON.parse(stored);
       if (Array.isArray(parsed)) return parsed;
@@ -46,21 +48,21 @@ addresses.value = loadAddresses();
 const onSaveEdited = (edited) => {
   authStore.user = { ...authStore.user, ...edited };
   try {
-    localStorage.setItem("user", JSON.stringify(authStore.user));
+    storage.set("user", JSON.stringify(authStore.user));
   } catch (e) { /* noop */ }
 };
 
 const onSavePassword = () => {
   console.log("[DashboardPage] password change requested (frontend-only)");
   try {
-    localStorage.setItem("passwordChangedAt", new Date().toISOString());
+    storage.set("passwordChangedAt", new Date().toISOString());
   } catch (e) { /* noop */ }
 };
 
 const onSaveAddresses = (newAddresses) => {
   addresses.value = newAddresses;
   try {
-    localStorage.setItem("addresses", JSON.stringify(addresses.value));
+    storage.set("addresses", JSON.stringify(addresses.value));
   } catch (e) { /* noop */ }
 };
 

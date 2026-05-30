@@ -245,9 +245,9 @@ function colSortOrder(key) {
 }
 
 /* Ensure Vuetify icons inside table are visible and aligned */
-.app-vuetify-datatable :deep(.v-data-table__th) :deep(.v-icon),
-.app-vuetify-datatable :deep(.v-data-table__th) :deep(.v-data-table__sort-icon),
-.app-vuetify-datatable :deep(.v-data-table__th) :deep(svg) {
+.app-vuetify-datatable :deep(.v-data-table__th .v-icon),
+.app-vuetify-datatable :deep(.v-data-table__th .v-data-table__sort-icon),
+.app-vuetify-datatable :deep(.v-data-table__th svg) {
   color: inherit !important;
   width: 1rem;
   height: 1rem;
@@ -344,16 +344,16 @@ function colSortOrder(key) {
   font-size: 1rem !important;
 }
 
-.app-vuetify-datatable :deep(.v-icon) :deep(svg),
-.app-vuetify-datatable :deep(.v-icon) :deep(path) {
+.app-vuetify-datatable :deep(.v-icon svg),
+.app-vuetify-datatable :deep(.v-icon path) {
   width: 1em !important;
   height: 1em !important;
   fill: currentColor !important;
 }
 
 /* Target pagination icons specifically */
-.app-vuetify-datatable :deep(.v-pagination) :deep(.v-btn) :deep(.v-icon),
-.app-vuetify-datatable :deep(.v-pagination) :deep(.v-btn) :deep(svg) {
+.app-vuetify-datatable :deep(.v-pagination .v-btn .v-icon),
+.app-vuetify-datatable :deep(.v-pagination .v-btn svg) {
   font-size: 0.95rem !important;
   color: inherit !important;
 }

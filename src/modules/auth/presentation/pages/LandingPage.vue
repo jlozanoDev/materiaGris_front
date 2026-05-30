@@ -454,8 +454,4 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
-}
 </style>

@@ -90,7 +90,6 @@ onMounted(async () => {
 
             <div class="flex-1 min-h-0">
               <UiVuetifyDataTable
-                :key="localPermissions.length"
                 class="permissions-table"
                 :value="localPermissions"
                 data-key="id"

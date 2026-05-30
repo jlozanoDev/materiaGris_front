@@ -12,20 +12,6 @@
             <template v-else>
               <div class="modal-header">
                 <div class="flex items-center gap-3">
-                  <div
-                    v-if="$slots.icon"
-                    class="flex-shrink-0 flex items-center modal-icon"
-                    :class="iconClass"
-                  >
-                    <slot name="icon" />
-                  </div>
-                  <div
-                    v-else-if="icon"
-                    class="flex-shrink-0 flex items-center modal-icon"
-                    :class="iconClass"
-                    v-html="icon"
-                  />
-
                   <div class="min-w-0">
                     <h3 class="text-lg font-semibold text-slate-800 truncate">{{ title }}</h3>
                   </div>
@@ -58,7 +44,6 @@ const props = defineProps({
   closeOnBackdrop: { type: Boolean, default: true },
   title: { type: String, default: "" },
   customClass: { type: String, default: "" },
-  icon: { type: String, default: "" },
   iconClass: { type: String, default: "h-5 w-5 text-slate-600" },
 });
 const emit = defineEmits(["close", "backdrop-click"]);

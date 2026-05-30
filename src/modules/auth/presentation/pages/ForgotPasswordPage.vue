@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { provideForgotUseCase } from "@/modules/auth/application/containers/forgotContainer";
+import { parseApiError } from "@/shared/utils/parseApiError";
 
 const router = useRouter();
 const email = ref("");
@@ -37,37 +38,7 @@ async function submit() {
 
     success.value = true;
   } catch (e) {
-    const err = e;
-    if (err && err.body) {
-      const b = err.body;
-      if (typeof b === "string") {
-        try {
-          const parsed = JSON.parse(b);
-          error.value = parsed?.message || b;
-        } catch (parseErr) {
-          error.value = b || "Ha ocurrido un error.";
-        }
-      } else if (typeof b === "object") {
-        if (b.message) {
-          error.value = b.message;
-        } else if (b.errors) {
-          try {
-            const msgs = Object.values(b.errors).flat().join(" ");
-            error.value = msgs || "Ha ocurrido un error.";
-          } catch (ee) {
-            error.value = "Ha ocurrido un error.";
-          }
-        } else {
-          error.value = JSON.stringify(b);
-        }
-      } else {
-        error.value = "Ha ocurrido un error.";
-      }
-    } else if (err && err.status === 401) {
-      error.value = "No autorizado. Inténtalo de nuevo.";
-    } else {
-      error.value = "No se pudo conectar con el servidor";
-    }
+    error.value = parseApiError(e);
   } finally {
     loading.value = false;
   }

@@ -3,7 +3,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // mock router push
 const pushMock = vi.fn()
-vi.mock('vue-router', () => ({ useRouter: () => ({ push: pushMock }) }))
+vi.mock('vue-router', () => ({
+  useRouter: () => ({ push: pushMock }),
+  useRoute: () => ({ query: {} }),
+}))
 
 import LoginPage from '@/modules/auth/presentation/pages/LoginView.vue'
 import apiBase from '@/core/config/env'
@@ -82,6 +85,6 @@ describe('LoginPage', () => {
     await new Promise(r => setTimeout(r, 0))
 
     expect(global.fetch).toHaveBeenCalled()
-    expect(wrapper.html()).toContain('Failed to fetch')
+    expect(wrapper.html()).toContain('Error de conexión')
   })
 })

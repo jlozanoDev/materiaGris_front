@@ -51,8 +51,11 @@ export default class AuthService {
         this._clearSession();
         return false;
       }
-    } catch (_) {
-      this._clearSession();
+    } catch (e) {
+      if (e && e.status === 401) {
+        this._clearSession();
+        return false;
+      }
       return false;
     }
   }

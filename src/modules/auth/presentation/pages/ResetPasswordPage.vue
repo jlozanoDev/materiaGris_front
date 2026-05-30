@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { provideResetPasswordUseCase } from "@/modules/auth/application/containers/resetContainer";
+import { parseApiError } from "@/shared/utils/parseApiError";
 
 const router = useRouter();
 const route = useRoute();
@@ -51,36 +52,8 @@ async function submit() {
     await useCase.execute(email.value, token.value, password.value, passwordConfirmation.value);
     success.value = true;
   } catch (err) {
-    if (err && err.body) {
-      const b = err.body;
-      if (typeof b === "string") {
-        try {
-          const parsed = JSON.parse(b);
-          error.value = parsed?.message || b;
-        } catch (e) {
-          error.value = b || "Ha ocurrido un error.";
-        }
-      } else if (typeof b === "object") {
-        if (b.message) {
-          error.value = b.message;
-        } else if (b.errors) {
-          try {
-            const msgs = Object.values(b.errors).flat().join(" ");
-            error.value = msgs || "Ha ocurrido un error.";
-          } catch (e) {
-            error.value = "Ha ocurrido un error.";
-          }
-        } else {
-          error.value = JSON.stringify(b);
-        }
-      } else {
-        error.value = "Ha ocurrido un error.";
-      }
-    } else if (err && err.status === 401) {
-      error.value = "El enlace ha expirado o no es válido.";
-    } else {
-      error.value = "No se pudo conectar con el servidor. Comprueba tu conexión.";
-    }
+    error.value = parseApiError(err);
+    if (err && err.status === 401) error.value = "El enlace ha expirado o no es válido.";
   } finally {
     loading.value = false;
   }

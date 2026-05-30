@@ -1,7 +1,7 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
-import ApiUserRepository from '@/modules/auth/infrastructure/ApiUserRepository'
+import ApiAdminUserRepository from '@/modules/admin/users/infrastructure/ApiAdminUserRepository'
 
-describe('ApiUserRepository', () => {
+describe('ApiAdminUserRepository', () => {
   let originalFetch
 
   beforeEach(() => {
@@ -14,7 +14,7 @@ describe('ApiUserRepository', () => {
   })
 
   it('should call fetch for create and return parsed body', async () => {
-    const repo = new ApiUserRepository()
+    const repo = new ApiAdminUserRepository()
 
     const mockBody = { id: 1, name: 'New', email: 'new@example.com' }
 
@@ -31,7 +31,7 @@ describe('ApiUserRepository', () => {
   })
 
   it('should call fetch for update and return parsed body', async () => {
-    const repo = new ApiUserRepository()
+    const repo = new ApiAdminUserRepository()
 
     const mockBody = { id: 2, name: 'Updated' }
 
@@ -48,7 +48,7 @@ describe('ApiUserRepository', () => {
   })
 
   it('should call fetch for delete and return null body when empty', async () => {
-    const repo = new ApiUserRepository()
+    const repo = new ApiAdminUserRepository()
 
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,

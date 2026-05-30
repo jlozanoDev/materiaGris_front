@@ -103,7 +103,9 @@ function handleSaveUser(payload) {
 // Expose a `saveUser` method on the component instance for tests and external callers
 function saveUser(payload) {
   const p = payload ?? form.value;
-  return handleSaveUser(p);
+  return handleSaveUser(p).catch((_err) => {
+    // Rejection handled upstream by modal/caller
+  });
 }
 
 defineExpose({ saveUser });
@@ -258,6 +260,7 @@ onMounted(async () => {
               :roles="allRoles"
               :permissions="allPermissionsList"
               :loading-permissions="loadingPerms"
+              :is-new="isNewUser"
               @close="cancelEditUser"
               @save="handleSaveUser"
             />

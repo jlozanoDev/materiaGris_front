@@ -224,6 +224,7 @@ const props = defineProps({
   roles: { type: Array, default: () => [] },
   permissions: { type: Array, default: () => [] },
   loadingPermissions: { type: Boolean, default: false },
+  isNew: { type: Boolean, default: false },
 });
 const emit = defineEmits(["close", "save"]);
 
@@ -243,7 +244,7 @@ const availableRoles = computed(() => {
   return allRoles.value || [];
 });
 
-const isNewUser = computed(() => !props.user?.id || props.user?.id > Date.now() - 10000); // Simple heuristic: new if no id or recently generated local id
+const isNewUser = computed(() => props.isNew);
 
 // Permissions agrupados por categoría
 const permissionsByCategory = computed(() => {

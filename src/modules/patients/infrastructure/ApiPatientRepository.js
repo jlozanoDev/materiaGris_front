@@ -27,10 +27,9 @@ export default class ApiPatientRepository extends PatientRepository {
 
   async create(payload) {
     const body = { ...payload };
-    if (body.insurance_id === "") delete body.insurance_id;
-    // Remove empty-string values for nullable fields to avoid validation issues
+    // Remove empty, null, or undefined values for nullable fields
     Object.keys(body).forEach((k) => {
-      if (body[k] === "") delete body[k];
+      if (body[k] === "" || body[k] === null || body[k] === undefined) delete body[k];
     });
     return fetchClient("/patients", { method: "POST", body: JSON.stringify(body) });
   }

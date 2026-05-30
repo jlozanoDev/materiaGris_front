@@ -15,6 +15,8 @@ export function useLogout() {
       await getAuthService().logout();
       show("Sesión cerrada", "success", 900);
       setTimeout(() => router.replace({ name: "Login" }), 900);
+    } catch (_) {
+      router.replace({ name: "Login" });
     } finally {
       loading.value = false;
     }

@@ -8,7 +8,7 @@ const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
 const active = ref(0);
-const items = ["grid", "patients", "calendar", "chat", "clock", "settings"];
+const items = ["grid", "patients", "settings"];
 const { logout, loading } = useLogout();
 
 // Sidebar settings menu state
@@ -28,9 +28,6 @@ function handleItemClick(i, icon) {
   const routes = {
     grid: { name: "Dashboard" },
     patients: { name: "Patients" },
-    calendar: { name: "Calendar" },
-    chat: { name: "Chat" },
-    clock: { name: "Clock" },
   };
 
   const path = routes[icon];
@@ -46,9 +43,6 @@ function handleItemClick(i, icon) {
 function getIconForPath(p) {
   if (!p) return null;
   if (p === "/" || p === "") return "grid";
-  if (p.startsWith("/calendar")) return "calendar";
-  if (p.startsWith("/chat")) return "chat";
-  if (p.startsWith("/clock")) return "clock";
   if (p.startsWith("/patients")) return "patients";
   if (p.startsWith("/admin")) return "settings";
   return null;
@@ -57,9 +51,6 @@ function getIconForPath(p) {
 const titlesMap = {
   grid: "Inicio",
   patients: "Pacientes",
-  calendar: "Calendario",
-  chat: "Chat",
-  clock: "Reloj",
   settings: "Ajustes",
 };
 
@@ -124,9 +115,6 @@ watch(
       >
         <i v-if="icon === 'grid'" class="pi pi-th-large text-current text-lg"></i>
         <i v-else-if="icon === 'patients'" class="pi pi-users text-current text-lg"></i>
-        <i v-else-if="icon === 'calendar'" class="pi pi-calendar text-current text-lg"></i>
-        <i v-else-if="icon === 'chat'" class="pi pi-comments text-current text-lg"></i>
-        <i v-else-if="icon === 'clock'" class="pi pi-clock text-current text-lg"></i>
       </button>
 
       <!-- Settings: fuera del v-for para que settingsWrapRef sea un solo nodo DOM -->
@@ -209,7 +197,12 @@ watch(
             </li>
 
             <!-- Gestión de Permisos -->
-            <li>
+            <li
+              v-if="
+                authStore.hasPermission('admin.permission.view') ||
+                authStore.hasPermission('admin.permissions.view')
+              "
+            >
               <button
                 title="Permisos"
                 aria-label="Permisos"
@@ -222,21 +215,7 @@ watch(
                 <span>Permisos</span>
               </button>
             </li>
-            <li aria-hidden="true"><div class="mx-3 my-1 border-t border-slate-100"></div></li>
 
-            <li>
-              <button
-                title="Tipos de informes"
-                aria-label="Tipos de informes"
-                class="group w-full text-left px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 justify-start whitespace-nowrap"
-                @click.prevent="openAdminRoute({ name: 'AdminReportTypes' })"
-              >
-                <i
-                  class="pi pi-file h-5 w-5 transition-transform transform duration-150 group-hover:scale-110 text-slate-500"
-                ></i>
-                <span>Tipos de informes</span>
-              </button>
-            </li>
           </ul>
         </div>
       </div>

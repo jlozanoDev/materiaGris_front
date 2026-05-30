@@ -35,7 +35,20 @@ export async function fetchClient(path, options = {}) {
 
   if (!opts.credentials) opts.credentials = "include";
 
-  const response = await fetch(url, opts);
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000);
+  opts.signal = controller.signal;
+
+  let response;
+  try {
+    response = await fetch(url, opts);
+  } catch (err) {
+    clearTimeout(timeoutId);
+    const message = err.name === "AbortError" ? "La solicitud tardó demasiado" : "Error de conexión";
+    return Promise.reject({ status: 0, body: { message } });
+  }
+
+  clearTimeout(timeoutId);
 
   const contentType = response.headers.get("content-type") || "";
   let body = null;

@@ -67,7 +67,7 @@ describe('AuthService', () => {
       expect(storage.set).toHaveBeenCalledWith('access_token', 'new-token')
     })
 
-    it('limpia la sesión y devuelve false si el refresh falla', async () => {
+    it('devuelve false si el refresh falla sin ser 401 (no limpia sesión)', async () => {
       const storage = makeStorage()
       storage._store.access_token = 'expired-token'
       const repo = makeRepo({
@@ -79,8 +79,8 @@ describe('AuthService', () => {
       const result = await service.validateToken()
 
       expect(result).toBe(false)
-      expect(storage.remove).toHaveBeenCalledWith('access_token')
-      expect(storage.remove).toHaveBeenCalledWith('refresh_token')
+      // Session is NOT cleared on non-401 refresh failures (network errors, 5xx)
+      expect(storage._store.access_token).toBe('expired-token')
     })
   })
 

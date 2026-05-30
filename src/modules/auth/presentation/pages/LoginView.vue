@@ -1,12 +1,15 @@
 <script setup>
 import { ref, computed } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { provideAuthService } from "@/modules/auth/application/containers/authContainer";
+import { parseApiError } from "@/shared/utils/parseApiError";
 import ToggleSwitch from "@/shared/components/ToggleSwitch.vue";
 import logo from "@/assets/materiagris.svg";
 import doctor from "@/assets/doctor.png";
 
 const router = useRouter();
+const route = useRoute();
+const authService = provideAuthService();
 const email = ref("");
 const password = ref("");
 const remember = ref(false);
@@ -35,41 +38,12 @@ async function submit() {
   if (!clientValidate()) return;
   loading.value = true;
   try {
-    const authService = provideAuthService();
     await authService.login({ email: email.value, password: password.value });
-    router.push("/");
+    const redirect = route.query.redirect;
+    router.push(redirect || "/");
   } catch (e) {
-    const err = e;
-    if (err && err.body) {
-      const b = err.body;
-      if (typeof b === "string") {
-        try {
-          const parsed = JSON.parse(b);
-          error.value = parsed?.message || b;
-        } catch (parseErr) {
-          error.value = b || "Ha ocurrido un error.";
-        }
-      } else if (typeof b === "object") {
-        if (b.message) {
-          error.value = b.message;
-        } else if (b.errors) {
-          try {
-            const msgs = Object.values(b.errors).flat().join(" ");
-            error.value = msgs || "Ha ocurrido un error.";
-          } catch (ee) {
-            error.value = "Ha ocurrido un error.";
-          }
-        } else {
-          error.value = JSON.stringify(b);
-        }
-      } else {
-        error.value = "Ha ocurrido un error.";
-      }
-    } else if (err && err.status === 401) {
-      error.value = "Credenciales inválidas o sesión expirada.";
-    } else {
-      error.value = err?.message || "Error en el login";
-    }
+    error.value = parseApiError(e);
+    if (e && e.status === 401) error.value = "Credenciales inválidas o sesión expirada.";
   } finally {
     loading.value = false;
   }
@@ -208,7 +182,7 @@ async function submit() {
                   <path d="M10 3a7 7 0 00-6.32 9.39l9.71-9.71A6.98 6.98 0 0010 3z" />
                   <path
                     d="M3 3l14 14"
-                    stroke="#fff"
+                    stroke="currentColor"
                     stroke-width="2"
                     stroke-linecap="round"
                     stroke-linejoin="round"

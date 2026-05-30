@@ -12,7 +12,6 @@ export function usePermissions() {
     try {
       const useCase = provideGetAllPermissionsUseCase();
       const data = await useCase.execute();
-      console.log("[usePermissions] Fetched data:", data);
       permissions.value = data;
       return data;
     } catch (e) {

@@ -73,6 +73,6 @@ describe('ForgotPasswordPage', () => {
     await wrapper.find('form').trigger('submit.prevent')
     await new Promise(r => setTimeout(r, 0))
 
-    expect(wrapper.html()).toContain('No se pudo conectar con el servidor')
+    expect(wrapper.html()).toContain('Error de conexión')
   })
 })

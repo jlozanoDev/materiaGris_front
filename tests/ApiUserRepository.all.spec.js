@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import ApiUserRepository from '@/modules/auth/infrastructure/ApiUserRepository'
+import ApiAdminUserRepository from '@/modules/admin/users/infrastructure/ApiAdminUserRepository'
 import apiBase from '@/core/config/env'
 
-describe('ApiUserRepository.all', () => {
+describe('ApiAdminUserRepository.all', () => {
   beforeEach(() => {
     // reset global.fetch between tests
     global.fetch = undefined
@@ -17,7 +17,7 @@ describe('ApiUserRepository.all', () => {
       json: async () => fakeUsers
     }))
 
-    const repo = new ApiUserRepository()
+    const repo = new ApiAdminUserRepository()
     const res = await repo.all()
 
     expect(global.fetch).toHaveBeenCalled()
@@ -27,7 +27,7 @@ describe('ApiUserRepository.all', () => {
 
   it('throws an error when response is not ok', async () => {
     global.fetch = vi.fn(() => Promise.resolve({ ok: false, text: async () => 'error' }))
-    const repo = new ApiUserRepository()
+    const repo = new ApiAdminUserRepository()
     await expect(repo.all()).rejects.toThrow('Error al obtener usuarios')
   })
 })

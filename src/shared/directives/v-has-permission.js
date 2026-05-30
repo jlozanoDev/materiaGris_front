@@ -55,7 +55,10 @@ export default {
     const auth = useAuthStore();
     const updateVisibility = () => {
       const value = binding.value;
-      if (!value) return;
+      if (!value) {
+        el.style.display = "";
+        return;
+      }
 
       const mode = binding.arg || "any";
       const allowed = Array.isArray(value)

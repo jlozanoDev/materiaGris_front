@@ -2,7 +2,8 @@
 import { ref, computed } from "vue";
 
 /* ── Calendar ─────────────────────────────────────── */
-const today = { year: 2026, month: 2, day: 28 }; // March 28, 2026
+const now = new Date();
+const today = { year: now.getFullYear(), month: now.getMonth(), day: now.getDate() };
 
 const viewDate = ref(new Date(today.year, today.month, 1));
 
