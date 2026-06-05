@@ -24,7 +24,27 @@ module.exports = {
         emerald: '#10B981',
         danger: '#FB7185',
         muted: '#6b6375',
-        bg: '#F7FBF9'
+        bg: '#F7FBF9',
+        mg: {
+          'bg-dark': '#0f0a1e',
+          'bg': '#f6f7fb',
+          'surface': '#ffffff',
+          'fg': '#0b0817',
+          'fg-on-dark': '#e8e4f0',
+          'muted': '#6b6b7b',
+          'muted-on-dark': '#9690a8',
+          'border': '#e2e0e8',
+          'accent': '#7c3aed',
+          'accent-hover': '#6d28d9',
+          'accent-soft': 'rgba(124,58,237,0.10)',
+          'accent-glow': '#a78bfa',
+          'cyan': '#06b6d4',
+          'cyan-glow': 'rgba(6,182,212,0.25)',
+          'cyan-soft': 'rgba(6,182,212,0.08)',
+          'success': '#10b981',
+          'warn': '#f59e0b',
+          'danger': '#ef4444',
+        }
       },
       borderRadius: {
         'xl': '1rem',

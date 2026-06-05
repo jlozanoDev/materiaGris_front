@@ -432,6 +432,34 @@ button,
   .landing-doctor { right: 7rem; top: 2.5rem; }
 }
 
+/* Glassmorphism utility (from maqueta design handoff) */
+.glass {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 20px;
+}
+.glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 32px;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+.glass-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 40px rgba(124, 58, 237, 0.15);
+}
+
+/* Checkmark mask for pricing lists */
+.mask-check {
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E") center/contain no-repeat;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+
   /* Utilidad para campos readonly que se quieran destacar en templates */
   .readonly-input {
     background-color: #fbfdff;

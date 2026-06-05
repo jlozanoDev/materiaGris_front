@@ -13,7 +13,7 @@ const routes: RouteRecordRaw[] = [
   },
   { path: "/patients", name: "Patients", component: () => import("@/modules/patients/presentation/pages/PatientsPage.vue"), meta: { requiresAuth: true } },
   { path: "/login", name: "Login", component: () => import("@/modules/auth/presentation/pages/LoginView.vue") },
-  { path: "/welcome", name: "Landing", component: () => import("@/modules/auth/presentation/pages/LandingPage.vue") },
+  { path: "/welcome", name: "Landing", component: () => import("@/modules/landing/presentation/pages/LandingPage.vue") },
   { path: "/forgot-password", name: "ForgotPassword", component: () => import("@/modules/auth/presentation/pages/ForgotPasswordPage.vue") },
   { path: "/reset-password", name: "ResetPassword", component: () => import("@/modules/auth/presentation/pages/ResetPasswordPage.vue") },
 ];
