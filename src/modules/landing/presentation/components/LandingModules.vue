@@ -3,7 +3,7 @@ import sangreBg from '@/assets/sangre-bg.png'
 </script>
 
 <template>
-  <section class="section relative overflow-hidden" style="padding-bottom: 0;">
+  <section id="modulos" class="section relative overflow-hidden" style="padding-bottom: 0;">
     <!-- Blood cells background -->
     <div
       class="absolute inset-0 pointer-events-none z-0 bg-cover bg-center bg-no-repeat"

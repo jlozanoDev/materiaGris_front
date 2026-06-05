@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { RouterLink } from 'vue-router'
+
 const emit = defineEmits<{
   login: []
   demo: []
@@ -8,21 +10,21 @@ const emit = defineEmits<{
 <template>
   <header
     class="fixed top-0 left-0 right-0 z-100"
-    style="background: rgba(15, 10, 30, 0.75); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255, 255, 255, 0.06);"
+    style="background: #0f0a1e; border-bottom: 1px solid rgba(255, 255, 255, 0.06);"
   >
     <div class="flex items-center justify-between h-16 px-7 mx-auto" style="max-width: 1140px;">
       <!-- Logo -->
-      <span class="flex items-center gap-2.5 font-sans text-xl font-bold text-white tracking-tight">
+      <RouterLink to="/welcome" class="flex items-center gap-2.5 font-sans text-xl font-bold text-white tracking-tight no-underline">
         <img src="@/assets/logo-materiagris.svg" alt="MaterIA Gris" width="28" height="28" class="object-contain" />
         MaterIA Gris
-      </span>
+      </RouterLink>
 
       <!-- Nav links -->
       <nav class="hidden md:flex gap-8">
-        <a href="#modulos" class="text-sm font-medium transition-colors duration-150" style="color: #9690a8;">Plataforma</a>
-        <a href="#precios" class="text-sm font-medium transition-colors duration-150" style="color: #9690a8;">Precios</a>
-        <a href="#" class="text-sm font-medium transition-colors duration-150" style="color: #9690a8;">Blog</a>
-        <a href="#" class="text-sm font-medium transition-colors duration-150" style="color: #9690a8;">Documentación</a>
+        <RouterLink to="/welcome#modulos" class="text-sm font-medium transition-colors duration-150" style="color: #9690a8;">Plataforma</RouterLink>
+        <RouterLink to="/welcome#precios" class="text-sm font-medium transition-colors duration-150" style="color: #9690a8;">Precios</RouterLink>
+        <RouterLink to="/welcome" class="text-sm font-medium transition-colors duration-150" style="color: #9690a8;">Blog</RouterLink>
+        <RouterLink to="/welcome" class="text-sm font-medium transition-colors duration-150" style="color: #9690a8;">Documentación</RouterLink>
       </nav>
 
       <!-- Actions -->
