@@ -70,7 +70,8 @@ function select(i: number): void {
     <div class="flex items-center justify-between mb-4">
       <h3 class="text-base font-semibold text-slate-800">Lista de pacientes</h3>
       <button
-        class="flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50 transition"
+        class="flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition"
+        style="border-color: rgba(124, 58, 237, 0.15); color: #7c3aed;"
       >
         Hoy
         <svg
@@ -94,8 +95,9 @@ function select(i: number): void {
         :key="i"
         :class="[
           'flex cursor-pointer items-center gap-3 rounded-2xl px-3 py-2.5 transition',
-          selected === i ? 'bg-indigo-50' : 'hover:bg-slate-50',
+          selected === i ? 'bg-[#7c3aed]/10' : 'hover:bg-[#7c3aed]/5',
         ]"
+        :style="selected === i ? { borderLeft: '3px solid #7c3aed', paddingLeft: '9px' } : {}"
         @click="select(i)"
       >
         <!-- Avatar -->
@@ -116,7 +118,8 @@ function select(i: number): void {
 
         <!-- Time badge -->
         <span
-          class="rounded-full bg-cyan-100 px-2.5 py-0.5 text-xs font-medium text-cyan-700 whitespace-nowrap"
+          class="rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap"
+          style="background: rgba(124, 58, 237, 0.10); color: #7c3aed;"
         >
           {{ p.time }}
         </span>
@@ -130,8 +133,9 @@ function select(i: number): void {
         :key="n"
         :class="[
           'h-1.5 rounded-full transition',
-          n === 1 ? 'w-4 bg-indigo-500' : 'w-1.5 bg-slate-300',
+          n === 1 ? 'w-4' : 'w-1.5',
         ]"
+        :style="n === 1 ? { background: '#7c3aed' } : { background: 'rgba(124,58,237,0.20)' }"
       />
     </div>
   </div>

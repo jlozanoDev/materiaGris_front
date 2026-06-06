@@ -6,6 +6,7 @@ const pushMock = vi.fn()
 vi.mock('vue-router', () => ({
   useRouter: () => ({ push: pushMock }),
   useRoute: () => ({ query: {} }),
+  RouterLink: { template: '<a><slot /></a>' },
 }))
 
 import LoginPage from '@/modules/auth/presentation/pages/LoginView.vue'

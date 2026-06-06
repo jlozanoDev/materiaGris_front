@@ -16,9 +16,22 @@ Gestiona el ciclo completo de autenticación de usuarios: inicio de sesión, lan
 
 | Componente | Ubicación | Propósito |
 |------------|-----------|-----------|
+| `AuthLayout.vue` | `modules/auth/presentation/components/` | Layout compartido: gradiente bg, logo, card blanca, footer oscuro |
 | `LoginForm.vue` | `modules/auth/presentation/components/` | Formulario de login reutilizable |
 | `AppSidebar.vue` | `shared/components/` | Menú de navegación (logout) |
 | `TopBar.vue` | `shared/components/` | Avatar y menú de usuario |
+
+## UI y Diseño
+
+Las 3 páginas de autenticación (Login, ForgotPassword, ResetPassword) comparten el layout `AuthLayout.vue`:
+
+- **Fondo**: Gradiente suave violeta→cyan (`rgba(124,58,237,0.10)` → `rgba(6,182,212,0.06)`)
+- **Card**: Blanca, `rounded-2xl`, sombra sutil
+- **Branding**: Logo `logo-materiagris.svg` + "MaterIA Gris" (link a `/welcome`)
+- **Botones**: Violeta `#7c3aed` con glow shadow (consistente con landing)
+- **Inputs**: `rounded-xl`, focus ring violeta
+- **Footer**: Fondo oscuro `#0f0a1e`, texto `#9690a8`, links legales
+- **Layout**: Una columna centrada, `max-w-md`
 
 ## Lógica de Estado
 

@@ -124,6 +124,23 @@ Each legal page (LegalNoticePage, PrivacyPage, TermsPage) follows:
 }
 ```
 
+### Auth Pages (Light Theme with Brand Accents)
+
+Used on `/login`, `/forgot-password`, `/reset-password`.
+
+| Element | Style |
+|---------|-------|
+| Page background | `linear-gradient(135deg, rgba(124,58,237,0.10) 0%, rgba(6,182,212,0.06) 100%)` |
+| Auth card | White bg, `rounded-2xl`, `box-shadow: 0 8px 32px rgba(30, 35, 80, 0.1)` |
+| Layout | Single column centered, `max-w-md` |
+| Logo + brand | `logo-materiagris.svg` 32x32 + "MaterIA Gris" (link to `/welcome`) |
+| Primary button | `#7c3aed` bg with glow `0 1px 12px rgba(124,58,237,0.30)` |
+| Inputs | `rounded-xl`, white bg, focus ring `#7c3aed` |
+| Links | `#7c3aed` with `hover:underline` |
+| Footer | `#0f0a1e` bg, `#9690a8` text, copyright + legal links (Aviso legal, Privacidad, Términos) |
+
+Shared via `AuthLayout.vue` (`src/modules/auth/presentation/components/AuthLayout.vue`) which wraps all three auth pages with gradient background, logo header, white card slot, and dark footer.
+
 ### Landing Section IDs (hash navigation)
 | Nav link     | Target section      | Component           |
 |-------------|---------------------|----------------------|

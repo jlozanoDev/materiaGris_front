@@ -1,9 +1,13 @@
 <template>
-  <header class="card flex items-center gap-4 px-5 py-3">
+  <header
+    class="flex items-center gap-4 px-5 py-3 bg-white/80 backdrop-blur-md rounded-2xl"
+    style="box-shadow: 0 8px 32px rgba(30, 35, 80, 0.06); border: 1px solid rgba(124, 58, 237, 0.06);"
+  >
     <!-- Search -->
     <div class="relative flex-1 max-w-sm">
       <svg
-        class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400"
+        class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4"
+        style="color: #9690a8;"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -22,7 +26,8 @@
     <!-- Icons -->
     <button class="icon-btn group">
       <svg
-        class="h-5 w-5 text-current transform transition duration-150 group-hover:scale-110 group-hover:rotate-6 group-hover:text-indigo-600"
+        class="h-5 w-5 transform transition duration-150 group-hover:scale-110 group-hover:rotate-6"
+        style="color: #9690a8;"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -35,7 +40,8 @@
     </button>
     <button class="icon-btn group">
       <svg
-        class="h-5 w-5 text-current transform transition duration-150 group-hover:scale-110 group-hover:-rotate-6 group-hover:text-indigo-600"
+        class="h-5 w-5 transform transition duration-150 group-hover:scale-110 group-hover:-rotate-6"
+        style="color: #9690a8;"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -65,13 +71,13 @@
         >
           {{ initials }}
         </div>
-        <span class="text-sm font-medium text-slate-700">{{ displayName }}</span>
+        <span class="text-sm font-medium" style="color: #0b0817;">{{ displayName }}</span>
         <svg
           :class="[
-            'h-4 w-4 text-slate-400 transition-transform duration-150',
+            'h-4 w-4 transition-transform duration-150',
             menuOpen ? 'rotate-180' : '',
-            'group-hover:text-slate-600',
           ]"
+          style="color: #9690a8;"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -87,17 +93,20 @@
         <div
           v-if="menuOpen"
           ref="menuRef"
-          class="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-md border border-slate-100 z-50"
+          class="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-md z-50"
+          style="border: 1px solid rgba(124, 58, 237, 0.10); box-shadow: 0 8px 32px rgba(30, 35, 80, 0.1);"
         >
           <ul class="py-1">
             <li>
               <button
-                class="group w-full text-right px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 justify-end whitespace-nowrap"
+                class="group w-full text-right px-3 py-1.5 text-sm flex items-center gap-2 justify-end whitespace-nowrap"
+                style="color: #0b0817;"
                 @click="onEdit"
               >
                 <span>Editar</span>
                 <svg
-                  class="h-5 w-5 transition-transform transform duration-150 group-hover:scale-110 text-slate-500"
+                  class="h-5 w-5 transition-transform transform duration-150 group-hover:scale-110"
+                  style="color: #9690a8;"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -111,16 +120,18 @@
               </button>
             </li>
             <li aria-hidden="true">
-              <div class="mx-3 my-1 border-t border-slate-100"></div>
+              <div class="mx-3 my-1" style="border-top: 1px solid rgba(124, 58, 237, 0.08);"></div>
             </li>
             <li>
               <button
-                class="group w-full text-right px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 justify-end whitespace-nowrap"
+                class="group w-full text-right px-3 py-1.5 text-sm flex items-center gap-2 justify-end whitespace-nowrap"
+                style="color: #0b0817;"
                 @click="onChangePassword"
               >
                 <span>Cambiar contraseña</span>
                 <svg
-                  class="h-5 w-5 transition-transform transform duration-150 group-hover:scale-110 text-slate-500"
+                  class="h-5 w-5 transition-transform transform duration-150 group-hover:scale-110"
+                  style="color: #9690a8;"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -134,16 +145,18 @@
               </button>
             </li>
             <li aria-hidden="true">
-              <div class="mx-3 my-1 border-t border-slate-100"></div>
+              <div class="mx-3 my-1" style="border-top: 1px solid rgba(124, 58, 237, 0.08);"></div>
             </li>
             <li>
               <button
-                class="group w-full text-right px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 justify-end whitespace-nowrap"
+                class="group w-full text-right px-3 py-1.5 text-sm flex items-center gap-2 justify-end whitespace-nowrap"
+                style="color: #0b0817;"
                 @click="onManageAddresses"
               >
                 <span>Direcciones</span>
                 <svg
-                  class="h-5 w-5 transition-transform transform duration-150 group-hover:scale-110 text-slate-500"
+                  class="h-5 w-5 transition-transform transform duration-150 group-hover:scale-110"
+                  style="color: #9690a8;"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -157,16 +170,18 @@
               </button>
             </li>
             <li aria-hidden="true">
-              <div class="mx-3 my-1 border-t border-slate-100"></div>
+              <div class="mx-3 my-1" style="border-top: 1px solid rgba(124, 58, 237, 0.08);"></div>
             </li>
             <li>
               <button
-                class="group w-full text-right px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 justify-end whitespace-nowrap"
+                class="group w-full text-right px-3 py-1.5 text-sm flex items-center gap-2 justify-end whitespace-nowrap"
+                style="color: #0b0817;"
                 @click="onLogout"
               >
                 <span>Cerrar sesión</span>
                 <svg
-                  class="h-5 w-5 transition-transform transform duration-150 group-hover:scale-110 text-slate-500"
+                  class="h-5 w-5 transition-transform transform duration-150 group-hover:scale-110"
+                  style="color: #9690a8;"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"

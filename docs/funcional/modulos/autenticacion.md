@@ -33,6 +33,15 @@ Permitir el acceso seguro al sistema solo a usuarios autorizados, garantizando q
 - Si el token expira, se intenta un refresco automático; si falla, se redirige a login
 - La recuperación de contraseña requiere acceso al email registrado
 
+## Apariencia Visual
+Las páginas de autenticación (login, forgot-password, reset-password) comparten un diseño coherente con el branding de MaterIA Gris:
+
+- Fondo con gradiente violeta-cyan sutil
+- Card blanca centrada con el formulario
+- Logo "MaterIA Gris" en la parte superior (enlace a la landing)
+- Botones violeta con efecto de brillo
+- Footer oscuro con enlaces legales y copyright
+
 ## Flujo Principal
 1. Usuario accede a la aplicación → ve la Landing Page (`/welcome`)
 2. Hace clic en "Iniciar Sesión" → navega a `/login`

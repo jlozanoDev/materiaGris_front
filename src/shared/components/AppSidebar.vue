@@ -15,6 +15,7 @@ const { logout, loading } = useLogout();
 
 const menuOpen = ref<boolean>(false);
 const settingsWrapRef = ref<HTMLElement | null>(null);
+const settingsMenuRef = ref<HTMLElement | null>(null);
 
 function handleItemClick(i: number, icon: SidebarIcon, _event?: Event): void {
   active.value = i;
@@ -65,9 +66,10 @@ function openAdminRoute(path: { name: string }): void {
 
 function onClickOutside(e: MouseEvent): void {
   if (!menuOpen.value) return;
-  const target = e.target as HTMLElement | null;
+  const target = e.target as Node | null;
   if (!target) return;
-  if (settingsWrapRef.value && settingsWrapRef.value.contains(target)) return;
+  if (settingsWrapRef.value?.contains(target)) return;
+  if (settingsMenuRef.value?.contains(target)) return;
   menuOpen.value = false;
 }
 
@@ -124,16 +126,22 @@ watch(
               ? 'sidebar-item--active'
               : 'sidebar-item--inactive',
           ]"
-          @click="handleItemClick(items.indexOf('settings'), 'settings', $event)"
+          @click.stop="handleItemClick(items.indexOf('settings'), 'settings', $event)"
         >
           <i class="pi pi-cog text-current text-lg"></i>
         </button>
 
         <div
           v-if="menuOpen"
-          class="absolute left-full top-0 w-64 bg-white rounded-2xl shadow-md border border-slate-100 z-50 ml-1"
+          ref="settingsMenuRef"
+          class="absolute left-full top-0 w-64 bg-white rounded-2xl z-50 ml-2"
+          style="border: 1px solid rgba(124, 58, 237, 0.12); box-shadow: 0 8px 32px rgba(30, 35, 80, 0.12);"
         >
-          <ul class="py-1">
+          <!-- Cabecera del dropdown -->
+          <div class="px-4 pt-3 pb-2" style="border-bottom: 1px solid rgba(124, 58, 237, 0.06);">
+            <p class="text-xs font-semibold uppercase tracking-wider" style="color: #7c3aed;">Ajustes</p>
+          </div>
+          <ul class="py-2">
             <!-- Gestión de Usuarios: plural y singular -->
             <li
               v-if="
@@ -144,11 +152,13 @@ watch(
               <button
                 title="Usuarios"
                 aria-label="Usuarios"
-                class="group w-full text-left px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 justify-start whitespace-nowrap"
+                class="sidebar-dropdown-item w-full text-left px-4 py-2 text-sm flex items-center gap-3 justify-start whitespace-nowrap transition"
+                style="color: #0b0817;"
                 @click.prevent="openAdminRoute({ name: 'AdminUsers' })"
               >
                 <i
-                  class="pi pi-user h-5 w-5 transition-transform transform duration-150 group-hover:scale-110 text-slate-500"
+                  class="pi pi-user text-base transition-transform duration-150 group-hover:scale-110"
+                  style="color: #9690a8; width: 20px; text-align: center;"
                 ></i>
                 <span>Usuarios</span>
               </button>
@@ -160,7 +170,7 @@ watch(
               "
               aria-hidden="true"
             >
-              <div class="mx-3 my-1 border-t border-slate-100"></div>
+              <div class="mx-4 my-1" style="border-top: 1px solid rgba(124, 58, 237, 0.06);"></div>
             </li>
 
             <!-- Gestión de Roles: plural y singular -->
@@ -173,11 +183,13 @@ watch(
               <button
                 title="Roles"
                 aria-label="Roles"
-                class="group w-full text-left px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 justify-start whitespace-nowrap"
+                class="sidebar-dropdown-item w-full text-left px-4 py-2 text-sm flex items-center gap-3 justify-start whitespace-nowrap transition"
+                style="color: #0b0817;"
                 @click.prevent="openAdminRoute({ name: 'AdminRoles' })"
               >
                 <i
-                  class="pi pi-users h-5 w-5 transition-transform transform duration-150 group-hover:scale-110 text-slate-500"
+                  class="pi pi-users text-base transition-transform duration-150 group-hover:scale-110"
+                  style="color: #9690a8; width: 20px; text-align: center;"
                 ></i>
                 <span>Roles</span>
               </button>
@@ -189,7 +201,7 @@ watch(
               "
               aria-hidden="true"
             >
-              <div class="mx-3 my-1 border-t border-slate-100"></div>
+              <div class="mx-4 my-1" style="border-top: 1px solid rgba(124, 58, 237, 0.06);"></div>
             </li>
 
             <!-- Gestión de Permisos -->
@@ -202,11 +214,13 @@ watch(
               <button
                 title="Permisos"
                 aria-label="Permisos"
-                class="group w-full text-left px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 justify-start whitespace-nowrap"
+                class="sidebar-dropdown-item w-full text-left px-4 py-2 text-sm flex items-center gap-3 justify-start whitespace-nowrap transition"
+                style="color: #0b0817;"
                 @click.prevent="openAdminRoute({ name: 'AdminPermissions' })"
               >
                 <i
-                  class="pi pi-shield h-5 w-5 transition-transform transform duration-150 group-hover:scale-110 text-slate-500"
+                  class="pi pi-shield text-base transition-transform duration-150 group-hover:scale-110"
+                  style="color: #9690a8; width: 20px; text-align: center;"
                 ></i>
                 <span>Permisos</span>
               </button>

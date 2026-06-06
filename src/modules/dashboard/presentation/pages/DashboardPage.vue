@@ -88,7 +88,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex h-screen overflow-hidden bg-[#EEF2FF]">
+  <div class="flex h-screen overflow-hidden bg-[#f5f3ff]">
     <AppSidebar />
 
     <div class="flex flex-1 min-w-0 overflow-hidden">

@@ -4,7 +4,8 @@ import { routerKey } from 'vue-router'
 import LandingPage from '@/modules/landing/presentation/pages/LandingPage.vue'
 
 function makeRouter({ push = vi.fn() } = {}) {
-  return { push, replace: vi.fn(), currentRoute: { value: {} } }
+  const route = { matched: [], redirectedFrom: undefined, href: '/' }
+  return { push, replace: vi.fn(), resolve: vi.fn(), currentRoute: { value: route } }
 }
 
 function mountPage(options = {}) {

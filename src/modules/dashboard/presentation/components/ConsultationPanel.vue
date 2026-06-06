@@ -29,7 +29,10 @@ const patient = ref<Patient>({
     <h3 class="mb-4 text-base font-semibold text-slate-800">Consulta</h3>
 
     <!-- Patient card -->
-    <div class="flex items-center gap-3 rounded-2xl border border-slate-100 p-3 mb-4">
+    <div
+      class="flex items-center gap-3 rounded-2xl p-3 mb-4"
+      style="border: 1px solid rgba(124, 58, 237, 0.10);"
+    >
       <div
         :class="[
           'h-10 w-10 flex-shrink-0 rounded-full flex items-center justify-center text-white text-sm font-bold select-none',
@@ -40,9 +43,9 @@ const patient = ref<Patient>({
       </div>
       <div>
         <p class="font-semibold text-sm text-slate-800">{{ patient.name }}</p>
-        <p class="text-xs text-slate-400">{{ patient.info }}</p>
+        <p class="text-xs" style="color: #9690a8;">{{ patient.info }}</p>
       </div>
-      <button class="ml-auto text-slate-400 hover:text-slate-600 transition">
+      <button class="ml-auto transition" style="color: #9690a8;">
         <svg
           class="h-4 w-4"
           viewBox="0 0 24 24"
@@ -64,16 +67,16 @@ const patient = ref<Patient>({
     <!-- Detail rows -->
     <dl class="space-y-3 text-sm">
       <div class="grid grid-cols-[7rem_1fr] gap-2">
-        <dt class="text-slate-400 font-medium">Última revisión</dt>
-        <dd class="text-slate-700 leading-snug text-xs">{{ patient.lastChecked }}</dd>
+        <dt class="font-medium" style="color: #7c3aed;">Última revisión</dt>
+        <dd class="leading-snug text-xs" style="color: #6b6b7b;">{{ patient.lastChecked }}</dd>
       </div>
       <div class="grid grid-cols-[7rem_1fr] gap-2">
-        <dt class="text-slate-400 font-medium">Observación</dt>
-        <dd class="text-slate-700 leading-snug text-xs">{{ patient.observation }}</dd>
+        <dt class="font-medium" style="color: #7c3aed;">Observación</dt>
+        <dd class="leading-snug text-xs" style="color: #6b6b7b;">{{ patient.observation }}</dd>
       </div>
       <div class="grid grid-cols-[7rem_1fr] gap-2">
-        <dt class="text-slate-400 font-medium">Prescripción</dt>
-        <dd class="text-slate-700 leading-snug text-xs whitespace-pre-line">
+        <dt class="font-medium" style="color: #7c3aed;">Prescripción</dt>
+        <dd class="leading-snug text-xs whitespace-pre-line" style="color: #6b6b7b;">
           {{ patient.prescription }}
         </dd>
       </div>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import logoSvg from '@/assets/logo-materiagris.svg'
 
 interface User {
   name?: string;
@@ -19,13 +20,13 @@ const displayName = computed<string>(() => props.user?.name || props.user?.email
 
 <template>
   <div class="hero-card relative overflow-hidden p-6 text-white min-h-[200px] md:w-1/2">
-    <!-- Decorative blobs -->
-    <div
-      class="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/10 blur-3xl"
-    ></div>
-    <div
-      class="pointer-events-none absolute bottom-0 right-1/3 h-40 w-40 rounded-full bg-white/10 blur-2xl"
-    ></div>
+    <!-- Brand watermark -->
+    <img
+      :src="logoSvg"
+      alt=""
+      class="pointer-events-none absolute select-none opacity-[0.08]"
+      style="width: 180px; height: auto; bottom: -20px; right: 80px;"
+    />
 
     <div class="relative z-10 flex items-end justify-between gap-6">
       <!-- Left: text + stats -->
@@ -40,7 +41,10 @@ const displayName = computed<string>(() => props.user?.name || props.user?.email
 
         <div class="mt-6 flex flex-wrap gap-3">
           <!-- New Patients -->
-          <div class="rounded-2xl bg-white/25 backdrop-blur-sm px-4 py-3">
+          <div
+            class="rounded-2xl px-4 py-3 backdrop-blur-xl"
+            style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.20);"
+          >
             <p class="text-xs text-white/80">Nuevos pacientes</p>
             <div class="mt-1 flex items-center gap-2.5">
               <span class="text-2xl font-bold">40</span>
@@ -52,7 +56,10 @@ const displayName = computed<string>(() => props.user?.name || props.user?.email
             </div>
           </div>
           <!-- Old Patients -->
-          <div class="rounded-2xl bg-white/25 backdrop-blur-sm px-4 py-3">
+          <div
+            class="rounded-2xl px-4 py-3 backdrop-blur-xl"
+            style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.20);"
+          >
             <p class="text-xs text-white/80">Pacientes antiguos</p>
             <div class="mt-1 flex items-center gap-2.5">
               <span class="text-2xl font-bold">64</span>

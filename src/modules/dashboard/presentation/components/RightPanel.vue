@@ -44,16 +44,18 @@ const isToday = (day: number | null): boolean =>
 
 <template>
   <aside
-    class="flex w-[288px] flex-none flex-col gap-5 overflow-y-auto border-l border-slate-100 bg-white px-5 py-5"
+    class="flex w-[288px] flex-none flex-col gap-5 overflow-y-auto bg-white px-5 py-5"
+    style="border-left: 1px solid rgba(124, 58, 237, 0.06);"
   >
     <!-- ── Calendar ─────────────────────────────── -->
     <div>
       <!-- encabezado -->
       <div class="mb-3 flex items-center justify-between">
-        <h3 class="text-sm font-semibold text-slate-800">Calendario</h3>
+        <h3 class="text-sm font-semibold" style="color: #0b0817;">Calendario</h3>
         <div class="flex gap-1">
           <button
-            class="flex h-6 w-6 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition"
+            class="flex h-6 w-6 items-center justify-center rounded-full transition"
+            style="color: #9690a8;"
             @click="prevMonth"
           >
             <svg
@@ -69,7 +71,8 @@ const isToday = (day: number | null): boolean =>
             </svg>
           </button>
           <button
-            class="flex h-6 w-6 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition"
+            class="flex h-6 w-6 items-center justify-center rounded-full transition"
+            style="color: #9690a8;"
             @click="nextMonth"
           >
             <svg
@@ -86,14 +89,15 @@ const isToday = (day: number | null): boolean =>
           </button>
         </div>
       </div>
-      <p class="mb-3 text-xs text-slate-500">{{ monthName }} {{ yearNum }}</p>
+      <p class="mb-3 text-xs" style="color: #9690a8;">{{ monthName }} {{ yearNum }}</p>
 
       <!-- days of week -->
       <div class="mb-1 grid grid-cols-7 text-center">
         <span
           v-for="d in ['D', 'L', 'M', 'X', 'J', 'V', 'S']"
           :key="d"
-          class="text-[10px] font-semibold text-slate-400 py-1"
+          class="text-[10px] font-semibold py-1"
+          style="color: #9690a8;"
           >{{ d }}</span
         >
       </div>
@@ -109,16 +113,19 @@ const isToday = (day: number | null): boolean =>
             v-if="day"
             :class="[
               'relative flex h-6 w-6 items-center justify-center rounded-full text-xs transition',
-              isToday(day)
-                ? 'bg-indigo-600 text-white font-bold'
-                : 'text-slate-700 hover:bg-indigo-50 cursor-pointer',
             ]"
+            :style="isToday(day)
+              ? { background: '#7c3aed', color: '#ffffff', fontWeight: 700 }
+              : { color: '#0b0817' }"
+            @mouseenter="(e) => { if (!isToday(day)) { (e.target as HTMLElement).style.background = 'rgba(124,58,237,0.08)' } }"
+            @mouseleave="(e) => { if (!isToday(day)) { (e.target as HTMLElement).style.background = 'transparent' } }"
           >
             {{ day }}
             <!-- dot -->
             <span
               v-if="dotDays.has(day) && !isToday(day)"
-              class="absolute bottom-0.5 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-red-500"
+              class="absolute bottom-0.5 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full"
+              style="background: #06b6d4;"
             ></span>
           </span>
         </div>
@@ -128,45 +135,50 @@ const isToday = (day: number | null): boolean =>
     <!-- ── Próximos ───────────────────────────── -->
     <div>
       <div class="mb-3 flex items-center justify-between">
-        <h3 class="text-sm font-semibold text-slate-800">Próximos</h3>
-        <button class="text-xs font-medium text-indigo-600 hover:text-indigo-800 transition">
+        <h3 class="text-sm font-semibold" style="color: #0b0817;">Próximos</h3>
+        <button class="text-xs font-medium transition" style="color: #7c3aed;">
           Ver todo
         </button>
       </div>
-      <div class="card p-3 bg-indigo-50 border-indigo-100 flex items-start gap-3">
+      <div
+        class="flex items-start gap-3 p-3 rounded-2xl"
+        style="background: rgba(124, 58, 237, 0.06); border: 1px solid rgba(124, 58, 237, 0.10);"
+      >
         <div
-          class="h-8 w-8 flex-shrink-0 rounded-full bg-indigo-500 flex items-center justify-center text-white text-sm font-bold"
+          class="h-8 w-8 flex-shrink-0 rounded-full flex items-center justify-center text-white text-sm font-bold"
+          style="background: #7c3aed;"
         >
           M
         </div>
         <div>
-          <p class="text-xs font-semibold text-slate-800">Reunión mensual de doctores</p>
-          <p class="mt-0.5 text-[11px] text-slate-500">8 abril, 2026 · 16:00</p>
+          <p class="text-xs font-semibold" style="color: #0b0817;">Reunión mensual de doctores</p>
+          <p class="mt-0.5 text-[11px]" style="color: #9690a8;">8 abril, 2026 · 16:00</p>
         </div>
       </div>
     </div>
 
     <!-- ── Daily Read ─────────────────────────── -->
-    <div class="card overflow-hidden border border-slate-200 shadow-sm">
+    <div class="card overflow-hidden" style="border: 1px solid rgba(124, 58, 237, 0.08);">
       <!-- Image placeholder -->
       <div class="hero-card relative h-28 flex items-end p-3">
-        <div class="absolute inset-0 flex items-center justify-end pr-4 opacity-60">
+        <div class="absolute inset-0 flex items-center justify-end pr-4 opacity-40">
           <!-- medical cross SVG decoration -->
-          <svg class="h-16 w-16 text-white/40" viewBox="0 0 48 48" fill="currentColor">
+          <svg class="h-16 w-16 text-white/30" viewBox="0 0 48 48" fill="currentColor">
             <path d="M20 0h8v20h20v8H28v20h-8V28H0v-8h20z" />
           </svg>
         </div>
         <span
-          class="relative rounded px-1.5 py-0.5 bg-cyan-700/60 text-[10px] uppercase tracking-widest text-cyan-100 font-semibold"
+          class="relative rounded px-1.5 py-0.5 text-[10px] uppercase tracking-widest font-semibold"
+          style="background: rgba(124,58,237,0.50); color: #ffffff;"
         >
           Lectura diaria
         </span>
       </div>
       <div class="p-3">
-        <p class="text-xs font-semibold text-slate-800 leading-snug">
+        <p class="text-xs font-semibold leading-snug" style="color: #0b0817;">
           Educación médica equitativa con esfuerzos hacia un cambio real
         </p>
-        <p class="mt-1 text-[11px] text-slate-400">medscape.com · 4 min lectura</p>
+        <p class="mt-1 text-[11px]" style="color: #9690a8;">medscape.com · 4 min lectura</p>
       </div>
     </div>
   </aside>

@@ -3,9 +3,9 @@
 /* ── Tokens personalizados (Design System): mantenemos fallback local hasta unificar con Tailwind plugin ────────────────── */
 @theme {
   /* Brand (Design System) */
-  --color-primary: #5860fe;
-  --color-primary-600: #4858e6;
-  --color-primary-700: #384ad6;
+  --color-primary: #7c3aed;
+  --color-primary-600: #6d28d9;
+  --color-primary-700: #5b21b6;
   --color-secondary: #7867d2;
   --color-tertiary: #b75395;
   --color-accent: #60a5fa;
@@ -13,7 +13,7 @@
   --color-muted: #79729d;
 
   /* Page / layout */
-  --color-page-bg: #f7fbf9;
+  --color-page-bg: #f5f3ff;
   --color-sidebar-from: #3d2ab5;
   --color-sidebar-to: #6448f8;
 
@@ -28,7 +28,7 @@
   /* Gradients */
   --background-image-sidebar-grad: linear-gradient(180deg, #3d2ab5 0%, #6448f8 100%);
   --background-image-hero-grad: linear-gradient(135deg, #5ba6ff 0%, #7b52f4 100%);
-  --background-image-stats-grad: linear-gradient(90deg, #60a5fa 0%, #7c3aed 100%);
+  --background-image-stats-grad: linear-gradient(90deg, #7c3aed 0%, #6d28d9 100%);
 }
 
 /* Design System: utilidades y componentes base */
@@ -63,15 +63,17 @@
   .card {
     @apply bg-white rounded-2xl p-4;
     box-shadow: var(--shadow-card);
+    border: 1px solid rgba(124, 58, 237, 0.06);
   }
 
   /* Sidebar */
   .sidebar {
     background: var(--background-image-sidebar-grad);
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
   }
   .sidebar-item {
     @apply relative flex h-10 w-10 items-center justify-center rounded-2xl transition;
-    color: rgba(255, 255, 255, 0.6);
+    color: #9690a8;
   }
   .sidebar-item--active {
     background-color: #ffffff;
@@ -94,7 +96,8 @@
     @apply relative inline-flex items-center justify-center h-9 w-9 rounded-xl transition transform duration-150 text-slate-500;
   }
   .icon-btn:hover {
-    @apply bg-indigo-50 text-indigo-600;
+    background-color: rgba(124, 58, 237, 0.08);
+    color: #7c3aed;
   }
   .avatar-gradient {
     background-image: var(--background-image-hero-grad);
@@ -186,12 +189,20 @@
     transform: translateX(1.25rem);
   }
 
-  /* Small button variant */
+    /* Small button variant */
   .btn-sm {
     @apply inline-flex items-center justify-center text-sm px-2 py-1 rounded;
   }
   .btn-ghost {
     @apply bg-transparent border-0 text-slate-700 hover:bg-slate-50;
+  }
+
+  /* Sidebar dropdown items */
+  .sidebar-dropdown-item:hover {
+    background-color: rgba(124, 58, 237, 0.06);
+  }
+  .sidebar-dropdown-item:hover i {
+    color: #7c3aed !important;
   }
 }
 
@@ -515,9 +526,27 @@ body.ds-modal-open .modal-container * {
   textarea:not([disabled]):not([readonly]):focus,
   select:not([disabled]):not([readonly]):focus {
     outline: none;
-    border-color: #6366f1; /* indigo-500 */
-    box-shadow: 0 10px 40px rgba(99, 102, 241, 0.12);
+    border-color: #7c3aed;
+    box-shadow: 0 10px 40px rgba(124, 58, 237, 0.12);
     transform: translateY(-1px);
+  }
+
+  /* Prevenir fondo amarillo/gris del autofill del navegador */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus,
+  select:-webkit-autofill,
+  select:-webkit-autofill:hover,
+  select:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+    box-shadow: 0 0 0 1000px #ffffff inset !important;
+    -webkit-text-fill-color: #0f172a !important;
+    background-color: transparent !important;
+    background-clip: content-box !important;
   }
 
   /* Utilidad para forzar estilo 'enabled' desde templates */
@@ -529,8 +558,8 @@ body.ds-modal-open .modal-container * {
   }
   .enabled-input:focus {
     outline: none;
-    border-color: #6366f1;
-    box-shadow: 0 10px 40px rgba(99, 102, 241, 0.12);
+    border-color: #7c3aed;
+    box-shadow: 0 10px 40px rgba(124, 58, 237, 0.12);
     transform: translateY(-1px);
   }
 }
