@@ -1,5 +1,5 @@
 <template>
-  <Modal :show="show" size="lg" icon-class="h-6 w-6 text-indigo-600" @close="close">
+  <Modal :show="show" size="lg" icon-class="h-6 w-6 text-[#7c3aed]" @close="close">
     <template #icon>
       <svg
         viewBox="0 0 24 24"
@@ -15,7 +15,7 @@
       </svg>
     </template>
     <template #header>
-      <h3 class="text-lg font-semibold text-slate-800 mb-4">
+      <h3 class="text-lg font-semibold text-[#0b0817] mb-4">
         {{ isNewUser ? "Crear usuario" : "Editar usuario" }}
       </h3>
     </template>
@@ -23,13 +23,13 @@
     <form class="space-y-4" @submit.prevent="onSave">
       <!-- Nombre -->
       <div class="mb-4">
-        <label class="block text-sm font-medium text-slate-600 mb-1">Nombre</label>
+        <label class="block text-sm font-medium text-[#6b6b7b] mb-1">Nombre</label>
         <input v-model="name" type="text" placeholder="Nombre" class="form-input" />
       </div>
 
       <!-- Email -->
       <div class="mb-4">
-        <label class="block text-sm font-medium text-slate-600 mb-1">Email</label>
+        <label class="block text-sm font-medium text-[#6b6b7b] mb-1">Email</label>
         <template v-if="isNewUser">
           <input v-model="email" type="email" placeholder="Email" class="form-input" required />
         </template>
@@ -47,17 +47,17 @@
 
       <!-- Roles -->
       <div class="mb-4">
-        <label class="block text-sm font-medium text-slate-600 mb-2">Roles</label>
+        <label class="block text-sm font-medium text-[#6b6b7b] mb-2">Roles</label>
         <div class="space-y-2 max-h-40 overflow-y-auto">
           <label
             v-for="role in availableRoles"
             :key="role.id"
             :class="[
-              'flex items-center gap-2 p-2 rounded border border-slate-200',
+              'flex items-center gap-2 p-2 rounded border border-[rgba(124,58,237,0.10)]',
               role.is_system
-                ? 'opacity-60 cursor-not-allowed bg-slate-50'
-                : 'cursor-pointer hover:bg-slate-50',
-              selectedRoleIds.includes(role.id) ? 'bg-slate-100' : '',
+                ? 'opacity-60 cursor-not-allowed bg-[#f5f3ff]'
+                : 'cursor-pointer hover:bg-[#f5f3ff]',
+              selectedRoleIds.includes(role.id) ? 'bg-[#ede9fe]' : '',
             ]"
             :title="role.is_system ? 'Rol del sistema: no editable' : ''"
           >
@@ -69,7 +69,7 @@
               class="form-checkbox"
               @change="toggleRole(role.id)"
             />
-            <span class="text-sm text-slate-700">{{ role.name }}</span>
+            <span class="text-sm text-[#0b0817]">{{ role.name }}</span>
             <span v-if="role.is_system" class="badge badge--secondary text-xs">Sistema</span>
           </label>
         </div>
@@ -87,32 +87,32 @@
       <!-- Permisos Individuales Editables -->
       <div class="mb-4">
         <div class="flex items-center justify-between mb-2">
-          <label class="block text-sm font-medium text-slate-600">Permisos Individuales</label>
+          <label class="block text-sm font-medium text-[#6b6b7b]">Permisos Individuales</label>
           <button type="button" class="btn btn-ghost btn-sm" @click="resetPermissions">
             Restaurar permisos
           </button>
         </div>
 
-        <div v-if="loadingPermissions" class="text-sm text-slate-500">Cargando permisos...</div>
+        <div v-if="loadingPermissions" class="text-sm text-[#9690a8]">Cargando permisos...</div>
 
         <div v-else class="space-y-3 max-h-60 overflow-y-auto">
           <div
             v-for="category in permissionsByCategory"
             :key="category.id"
-            class="border rounded p-2"
+            class="border border-[rgba(124,58,237,0.10)] rounded p-2"
           >
-            <div class="text-sm font-medium text-slate-700 mb-1">{{ category.name }}</div>
+            <div class="text-sm font-medium text-[#0b0817] mb-1">{{ category.name }}</div>
             <div class="space-y-1">
               <div
                 v-for="perm in category.permissions"
                 :key="perm.id"
                 class="flex items-center gap-2 text-sm"
               >
-                <span class="w-32 truncate text-slate-600" :title="perm.slug">{{ perm.slug }}</span>
+                <span class="w-32 truncate text-[#6b6b7b]" :title="perm.slug">{{ perm.slug }}</span>
 
                 <!-- Si viene de rol, mostrar solo lectura -->
                 <template v-if="isPermissionFromRole(perm.id)">
-                  <span class="text-xs px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
+                  <span class="text-xs px-1.5 py-0.5 rounded bg-[#ede9fe] text-[#6b6b7b]">
                     de rol
                   </span>
                   <span
@@ -152,7 +152,7 @@
                       class="form-radio"
                       @change="setPermission(perm.id, 0)"
                     />
-                    <span class="text-slate-400 text-xs">ninguno</span>
+                    <span class="text-[#9690a8] text-xs">ninguno</span>
                   </label>
                 </template>
               </div>
@@ -162,8 +162,8 @@
       </div>
 
       <!-- Permisos Efectivos (resultado) -->
-      <div class="mb-4 p-3 bg-slate-50 rounded">
-        <label class="block text-sm font-medium text-slate-600 mb-2"
+      <div class="mb-4 p-3 bg-[#f5f3ff] rounded">
+        <label class="block text-sm font-medium text-[#6b6b7b] mb-2"
           >Permisos Efectivos (resultado)</label
         >
         <div class="flex flex-wrap gap-1">
@@ -177,7 +177,7 @@
           </span>
           <span
             v-if="Object.keys(effectivePermissionsMap).length === 0"
-            class="text-sm text-slate-400"
+            class="text-sm text-[#9690a8]"
           >
             Sin permisos
           </span>

@@ -93,20 +93,23 @@
         <div
           v-if="menuOpen"
           ref="menuRef"
-          class="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-md z-50"
-          style="border: 1px solid rgba(124, 58, 237, 0.10); box-shadow: 0 8px 32px rgba(30, 35, 80, 0.1);"
+          class="absolute right-0 mt-2 w-64 bg-white rounded-2xl z-50"
+          style="border: 1px solid rgba(124, 58, 237, 0.12); box-shadow: 0 8px 32px rgba(30, 35, 80, 0.12);"
         >
-          <ul class="py-1">
+          <!-- Cabecera -->
+          <div class="px-4 pt-3 pb-2" style="border-bottom: 1px solid rgba(124, 58, 237, 0.06);">
+            <p class="text-xs font-semibold uppercase tracking-wider" style="color: #7c3aed;">Mi cuenta</p>
+          </div>
+          <ul class="py-2">
             <li>
               <button
-                class="group w-full text-right px-3 py-1.5 text-sm flex items-center gap-2 justify-end whitespace-nowrap"
+                class="sidebar-dropdown-item w-full text-left px-4 py-2 text-sm flex items-center gap-3 justify-start whitespace-nowrap transition"
                 style="color: #0b0817;"
                 @click="onEdit"
               >
-                <span>Editar</span>
                 <svg
-                  class="h-5 w-5 transition-transform transform duration-150 group-hover:scale-110"
-                  style="color: #9690a8;"
+                  class="h-5 w-5 transition-transform duration-150 group-hover:scale-110"
+                  style="color: #9690a8; flex-shrink: 0;"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -117,21 +120,21 @@
                   <path d="M12 20h9" />
                   <path d="M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4 12.5-12.5z" />
                 </svg>
+                <span>Editar perfil</span>
               </button>
             </li>
             <li aria-hidden="true">
-              <div class="mx-3 my-1" style="border-top: 1px solid rgba(124, 58, 237, 0.08);"></div>
+              <div class="mx-4 my-1" style="border-top: 1px solid rgba(124, 58, 237, 0.06);"></div>
             </li>
             <li>
               <button
-                class="group w-full text-right px-3 py-1.5 text-sm flex items-center gap-2 justify-end whitespace-nowrap"
+                class="sidebar-dropdown-item w-full text-left px-4 py-2 text-sm flex items-center gap-3 justify-start whitespace-nowrap transition"
                 style="color: #0b0817;"
                 @click="onChangePassword"
               >
-                <span>Cambiar contraseña</span>
                 <svg
-                  class="h-5 w-5 transition-transform transform duration-150 group-hover:scale-110"
-                  style="color: #9690a8;"
+                  class="h-5 w-5 transition-transform duration-150 group-hover:scale-110"
+                  style="color: #9690a8; flex-shrink: 0;"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -142,21 +145,21 @@
                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                   <path d="M7 11V7a5 5 0 0110 0v4"></path>
                 </svg>
+                <span>Cambiar contraseña</span>
               </button>
             </li>
             <li aria-hidden="true">
-              <div class="mx-3 my-1" style="border-top: 1px solid rgba(124, 58, 237, 0.08);"></div>
+              <div class="mx-4 my-1" style="border-top: 1px solid rgba(124, 58, 237, 0.06);"></div>
             </li>
             <li>
               <button
-                class="group w-full text-right px-3 py-1.5 text-sm flex items-center gap-2 justify-end whitespace-nowrap"
+                class="sidebar-dropdown-item w-full text-left px-4 py-2 text-sm flex items-center gap-3 justify-start whitespace-nowrap transition"
                 style="color: #0b0817;"
                 @click="onManageAddresses"
               >
-                <span>Direcciones</span>
                 <svg
-                  class="h-5 w-5 transition-transform transform duration-150 group-hover:scale-110"
-                  style="color: #9690a8;"
+                  class="h-5 w-5 transition-transform duration-150 group-hover:scale-110"
+                  style="color: #9690a8; flex-shrink: 0;"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -167,21 +170,21 @@
                   <path d="M21 10c0 6-9 12-9 12S3 16 3 10a9 9 0 1118 0z"></path>
                   <circle cx="12" cy="10" r="3"></circle>
                 </svg>
+                <span>Direcciones</span>
               </button>
             </li>
             <li aria-hidden="true">
-              <div class="mx-3 my-1" style="border-top: 1px solid rgba(124, 58, 237, 0.08);"></div>
+              <div class="mx-4 my-1" style="border-top: 1px solid rgba(124, 58, 237, 0.06);"></div>
             </li>
             <li>
               <button
-                class="group w-full text-right px-3 py-1.5 text-sm flex items-center gap-2 justify-end whitespace-nowrap"
-                style="color: #0b0817;"
+                class="sidebar-dropdown-item w-full text-left px-4 py-2 text-sm flex items-center gap-3 justify-start whitespace-nowrap transition"
+                style="color: #ef4444;"
                 @click="onLogout"
               >
-                <span>Cerrar sesión</span>
                 <svg
-                  class="h-5 w-5 transition-transform transform duration-150 group-hover:scale-110"
-                  style="color: #9690a8;"
+                  class="h-5 w-5 transition-transform duration-150 group-hover:scale-110"
+                  style="color: #ef4444; flex-shrink: 0;"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -193,6 +196,7 @@
                   <polyline points="16 17 21 12 16 7" />
                   <line x1="21" y1="12" x2="9" y2="12" />
                 </svg>
+                <span>Cerrar sesión</span>
               </button>
             </li>
           </ul>

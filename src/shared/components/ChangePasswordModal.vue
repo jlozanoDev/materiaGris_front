@@ -1,5 +1,5 @@
 <template>
-  <Modal :show="show" size="md" icon-class="h-6 w-6 text-rose-500" @close="close">
+  <Modal :show="show" size="md" icon-class="h-6 w-6 text-[#7c3aed]" @close="close">
     <template #icon>
       <svg
         viewBox="0 0 24 24"
@@ -14,12 +14,12 @@
       </svg>
     </template>
     <template #header>
-      <h3 class="text-lg font-semibold text-slate-800 mb-4">Cambiar contraseña</h3>
+      <h3 class="text-lg font-semibold text-[#0b0817] mb-4">Cambiar contraseña</h3>
     </template>
 
     <form @submit.prevent="onSave">
       <div class="mb-4">
-        <label class="block text-sm font-medium text-slate-600 mb-1">Contraseña actual</label>
+        <label class="block text-sm font-medium text-[#6b6b7b] mb-1">Contraseña actual</label>
         <input
           v-model="oldPassword"
           type="password"
@@ -29,7 +29,7 @@
       </div>
 
       <div class="mb-4">
-        <label class="block text-sm font-medium text-slate-600 mb-1">Nueva contraseña</label>
+        <label class="block text-sm font-medium text-[#6b6b7b] mb-1">Nueva contraseña</label>
         <input
           v-model="password"
           type="password"
@@ -39,7 +39,7 @@
       </div>
 
       <div class="mb-6">
-        <label class="block text-sm font-medium text-slate-600 mb-1">Confirmar contraseña</label>
+        <label class="block text-sm font-medium text-[#6b6b7b] mb-1">Confirmar contraseña</label>
         <input
           v-model="confirm"
           type="password"

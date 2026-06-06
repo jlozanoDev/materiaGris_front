@@ -10,9 +10,9 @@ module.exports = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#5860fe',
-          600: '#4858e6',
-          700: '#384ad6'
+          DEFAULT: '#7c3aed',
+          600: '#6d28d9',
+          700: '#5b21b6'
         },
         secondary: '#7867d2',
         tertiary: '#b75395',
@@ -23,8 +23,8 @@ module.exports = {
         },
         emerald: '#10B981',
         danger: '#FB7185',
-        muted: '#6b6375',
-        bg: '#F7FBF9',
+        muted: '#79729d',
+        bg: '#f5f3ff',
         mg: {
           'bg-dark': '#0f0a1e',
           'bg': '#f6f7fb',
@@ -52,12 +52,12 @@ module.exports = {
         '3xl': '2rem'
       },
       boxShadow: {
-        soft: '0 12px 40px rgba(16,37,31,0.08)',
-        card: '0 24px 60px rgba(15,23,42,0.12)'
+        soft: '0 4px 20px rgba(30,35,80,0.07)',
+        card: '0 8px 32px rgba(30,35,80,0.10)'
       },
       backgroundImage: {
-        'stats-grad': 'linear-gradient(90deg,#60A5FA 0%,#7C3AED 100%)',
-        'sidebar-grad': 'linear-gradient(180deg,#5B3CF7,#6F3BFF)'
+        'stats-grad': 'linear-gradient(90deg,#7c3aed 0%,#6d28d9 100%)',
+        'sidebar-grad': 'linear-gradient(180deg,#3d2ab5,#6448f8)'
       },
       fontFamily: {
         sans: ['Inter','ui-sans-serif','system-ui']

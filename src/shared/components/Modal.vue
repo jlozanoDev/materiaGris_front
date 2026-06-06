@@ -5,19 +5,20 @@
         <div class="modal-backdrop" @click="handleBackdropClick" />
 
         <div :class="['modal-container', sizeClass, customClass]" role="dialog" aria-modal="true">
-          <div v-if="$slots.header || title" class="modal-header">
-            <template v-if="$slots.header">
-              <slot name="header" />
-            </template>
-            <template v-else>
-              <div class="modal-header">
-                <div class="flex items-center gap-3">
-                  <div class="min-w-0">
-                    <h3 class="text-lg font-semibold text-slate-800 truncate">{{ title }}</h3>
-                  </div>
-                </div>
+          <div v-if="$slots.header || title || $slots.icon" class="modal-header">
+            <div class="flex items-center gap-3">
+              <div v-if="$slots.icon" class="modal-icon flex-shrink-0" :class="iconClass">
+                <slot name="icon" />
               </div>
-            </template>
+              <div class="min-w-0 flex-1">
+                <template v-if="$slots.header">
+                  <slot name="header" />
+                </template>
+                <h3 v-else-if="title" class="text-lg font-semibold text-[#0b0817] truncate">
+                  {{ title }}
+                </h3>
+              </div>
+            </div>
           </div>
 
           <div class="modal-body">
@@ -53,7 +54,7 @@ const props = withDefaults(defineProps<Props>(), {
   closeOnBackdrop: true,
   title: "",
   customClass: "",
-  iconClass: "h-5 w-5 text-slate-600",
+  iconClass: "h-5 w-5 text-[#9690a8]",
 });
 
 const emit = defineEmits<{
@@ -125,11 +126,6 @@ onUnmounted(() => {
 }
 .modal-icon svg {
   display: block;
-  vertical-align: middle;
-}
-.modal-icon svg {
-  height: 1.5rem;
-  width: 1.5rem;
 }
 .modal-header h3 {
   margin: 0;
