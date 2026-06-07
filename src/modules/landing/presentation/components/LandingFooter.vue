@@ -11,7 +11,7 @@ import logoSvg from '@/assets/logo-materiagris.svg'
             <img :src="logoSvg" alt="MaterIA Gris" width="22" height="22" style="object-fit: contain;" />
             MaterIA Gris
           </span>
-          <span style="font-size: 13px; color: #9690a8;">Tu socio de IA para una práctica clínica optimizada y humana.</span>
+          <span style="font-size: 13px; color: #9690a8;">Tu socio de IA para una clínica inteligente y humana.</span>
         </div>
         <div class="flex gap-8" style="font-size: 13px;">
           <span>© 2026</span>

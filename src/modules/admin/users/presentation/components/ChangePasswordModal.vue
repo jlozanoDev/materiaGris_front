@@ -20,32 +20,62 @@
     <form @submit.prevent="onSave">
       <div class="mb-4">
         <label class="block text-sm font-medium text-slate-600 mb-1">Contraseña actual</label>
-        <input
-          v-model="oldPassword"
-          type="password"
-          placeholder="Contraseña actual"
-          class="form-input"
-        />
+        <div class="relative">
+          <input
+            v-model="oldPassword"
+            :type="showOldPassword ? 'text' : 'password'"
+            placeholder="Contraseña actual"
+            class="form-input"
+          />
+          <button
+            type="button"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            @click="showOldPassword = !showOldPassword"
+          >
+            <EyeOff v-if="!showOldPassword" class="h-5 w-5" />
+            <Eye v-else class="h-5 w-5" />
+          </button>
+        </div>
       </div>
 
       <div class="mb-4">
         <label class="block text-sm font-medium text-slate-600 mb-1">Nueva contraseña</label>
-        <input
-          v-model="password"
-          type="password"
-          placeholder="Nueva contraseña"
-          class="form-input"
-        />
+        <div class="relative">
+          <input
+            v-model="password"
+            :type="showNewPassword ? 'text' : 'password'"
+            placeholder="Nueva contraseña"
+            class="form-input"
+          />
+          <button
+            type="button"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            @click="showNewPassword = !showNewPassword"
+          >
+            <EyeOff v-if="!showNewPassword" class="h-5 w-5" />
+            <Eye v-else class="h-5 w-5" />
+          </button>
+        </div>
       </div>
 
       <div class="mb-6">
         <label class="block text-sm font-medium text-slate-600 mb-1">Confirmar contraseña</label>
-        <input
-          v-model="confirm"
-          type="password"
-          placeholder="Repetir contraseña"
-          class="form-input"
-        />
+        <div class="relative">
+          <input
+            v-model="confirm"
+            :type="showConfirmPassword ? 'text' : 'password'"
+            placeholder="Repetir contraseña"
+            class="form-input"
+          />
+          <button
+            type="button"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            @click="showConfirmPassword = !showConfirmPassword"
+          >
+            <EyeOff v-if="!showConfirmPassword" class="h-5 w-5" />
+            <Eye v-else class="h-5 w-5" />
+          </button>
+        </div>
       </div>
 
       <div class="flex justify-end gap-3">
@@ -60,6 +90,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
+import { Eye, EyeOff } from "lucide-vue-next";
 import Modal from "@/shared/components/Modal.vue";
 
 interface Props {
@@ -80,6 +111,9 @@ const emit = defineEmits<{
 const oldPassword = ref<string>("");
 const password = ref<string>("");
 const confirm = ref<string>("");
+const showOldPassword = ref<boolean>(false);
+const showNewPassword = ref<boolean>(false);
+const showConfirmPassword = ref<boolean>(false);
 
 const canSave = computed<boolean>(
   () =>

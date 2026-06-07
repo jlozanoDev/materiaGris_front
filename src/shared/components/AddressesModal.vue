@@ -1,5 +1,5 @@
 <template>
-  <Modal :show="show" size="max-w-5xl" icon-class="h-6 w-6 text-indigo-600" @close="onClose">
+  <Modal :show="show" size="xl" icon-class="h-6 w-6 text-[#7c3aed]" @close="onClose">
     <template #icon>
       <svg
         viewBox="0 0 24 24"
@@ -9,169 +9,174 @@
         stroke-linecap="round"
         stroke-linejoin="round"
       >
-        <path d="M21 10c0 6-9 12-9 12S3 16 3 10a9 9 0 1118 0z"></path>
-        <circle cx="12" cy="10" r="3"></circle>
+        <path d="M21 10c0 6-9 12-9 12S3 16 3 10a9 9 0 1118 0z" />
+        <circle cx="12" cy="10" r="3" />
       </svg>
     </template>
     <template #header>
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-semibold text-slate-800">Gestionar direcciones</h3>
-        <span
-          v-if="editing"
-          class="inline-flex items-center px-2 py-1 rounded-2xl text-xs font-medium bg-yellow-100 text-yellow-800"
-          >Editando...</span
-        >
-      </div>
+      <h3 class="text-lg font-semibold text-[#0b0817] mb-4">
+        Gestionar direcciones
+      </h3>
     </template>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div class="md:col-span-2">
-        <div class="flex items-center justify-between mb-3">
-          <input
-            v-model="globalFilter"
-            placeholder="Buscar..."
-            aria-label="Buscar direcciones"
-            class="form-input md:w-1/3"
-          />
-        </div>
-
-        <UiVuetifyDataTable
-          class="addresses-table"
-          :value="localAddresses"
-          data-key="id"
-          :filters="filters"
-          :global-filter-fields="['alias', 'street', 'number', 'postal_code', 'mobile_phone']"
-          :columns="columns"
+    <div class="flex items-center justify-between gap-3 mb-4">
+      <div class="relative flex-1 md:max-w-xs">
+        <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-[#9690a8] text-sm pointer-events-none" />
+        <input
+          v-model="globalFilter"
+          placeholder="Buscar direcciones..."
+          class="form-input pl-9 pr-8"
+        />
+        <button
+          v-if="globalFilter"
+          type="button"
+          class="absolute right-2 top-1/2 -translate-y-1/2 text-[#9690a8] hover:text-[#6b6b7b] transition-colors"
+          @click="globalFilter = ''"
         >
-          <template #body-alias="{ data }">
-            <div class="px-3 py-2 text-sm">{{ data.alias || data.street }}</div>
-          </template>
-
-          <template #body-street="{ data }">
-            <div class="px-3 py-2 text-sm">{{ data.street }}</div>
-          </template>
-
-          <template #body-number="{ data }">
-            <div class="px-3 py-2 text-sm">{{ data.number }}</div>
-          </template>
-
-          <template #body-postal_code="{ data }">
-            <div class="px-3 py-2 text-sm">{{ data.postal_code }}</div>
-          </template>
-
-          <template #body-mobile_phone="{ data }">
-            <div class="px-3 py-2 text-sm">{{ data.mobile_phone }}</div>
-          </template>
-
-          <template #body-is_primary="{ data }">
-            <div class="px-3 py-2 text-sm">
-              <span v-if="data.is_primary" class="badge badge--primary">Principal</span>
-            </div>
-          </template>
-
-          <template #body-actions="{ data }">
-            <div class="px-3 py-2 text-right">
-              <div class="flex items-center justify-end gap-2">
-                <button aria-label="Editar" class="icon-action group" @click="startEdit(data)">
-                  <i
-                    class="pi pi-pencil h-4 w-4 transition-colors duration-150 text-current group-hover:text-indigo-600"
-                  ></i>
-                  <span
-                    class="absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-800 text-white text-xs py-1 px-2 rounded opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity"
-                    >Editar</span
-                  >
-                </button>
-                <button
-                  aria-label="Eliminar"
-                  class="icon-action icon-action--danger group"
-                  @click="confirmDelete(data)"
-                >
-                  <i class="pi pi-trash h-4 w-4 transition-colors duration-150"></i>
-                  <span
-                    class="absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-800 text-white text-xs py-1 px-2 rounded opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity"
-                    >Eliminar</span
-                  >
-                </button>
-              </div>
-            </div>
-          </template>
-
-          <template #empty>
-            <div class="px-3 py-2 text-slate-500">No hay direcciones.</div>
-          </template>
-        </UiVuetifyDataTable>
-
-        <div class="mt-3">
-          <button class="btn btn-primary" @click="startNew">Agregar dirección</button>
-        </div>
+          <i class="pi pi-times text-sm" />
+        </button>
       </div>
-
-      <div class="md:col-span-2">
-        <div v-if="editing" class="w-full">
-          <div class="form-row">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <i class="pi pi-pencil h-5 w-5 text-indigo-600"></i>
-                <h4 class="font-medium text-slate-800">
-                  {{ isNew ? "Nueva dirección" : "Editando dirección" }}
-                </h4>
-              </div>
-            </div>
-            <form class="space-y-3" @submit.prevent="saveEdit">
-              <div>
-                <label class="block text-sm font-medium text-slate-600 mb-1">Alias</label>
-                <input v-model="form.alias" placeholder="Alias" class="form-input" />
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-slate-600 mb-1">Calle</label>
-                <input v-model="form.street" placeholder="Calle" class="form-input" />
-              </div>
-
-              <div class="flex gap-2">
-                <div class="w-1/3">
-                  <label class="block text-sm font-medium text-slate-600 mb-1">Número</label>
-                  <input v-model="form.number" placeholder="Número" class="form-input" />
-                </div>
-                <div class="w-1/3">
-                  <label class="block text-sm font-medium text-slate-600 mb-1">CP</label>
-                  <input v-model="form.postal_code" placeholder="CP" class="form-input" />
-                </div>
-                <div class="w-1/3">
-                  <label class="block text-sm font-medium text-slate-600 mb-1">Móvil</label>
-                  <input v-model="form.mobile_phone" placeholder="Móvil" class="form-input" />
-                </div>
-              </div>
-
-              <div class="flex items-center gap-3">
-                <button
-                  type="button"
-                  :aria-pressed="form.is_primary"
-                  :class="['toggle', form.is_primary ? 'toggle--on' : '']"
-                  @click="form.is_primary = !form.is_primary"
-                >
-                  <span class="sr-only">Dirección principal</span>
-                  <span class="toggle-thumb"></span>
-                </button>
-                <label class="text-sm text-slate-600 select-none">Dirección principal</label>
-              </div>
-
-              <div class="flex justify-end gap-3">
-                <button type="button" class="btn btn-ghost" @click="cancelEdit">Cancelar</button>
-                <button type="submit" class="btn btn-primary">Guardar</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
+      <button class="btn btn-primary whitespace-nowrap" @click="startNew">
+        + Agregar dirección
+      </button>
     </div>
 
-    <template #footer>
-      <div class="pt-4 flex items-center justify-end gap-3 mt-4">
-        <button class="btn btn-ghost" @click="onClose">Cerrar</button>
-        <button class="btn btn-primary" @click="saveAll">Guardar cambios</button>
+    <UiVuetifyDataTable
+      class="addresses-table"
+      :value="localAddresses"
+      data-key="id"
+      :filters="filters"
+      :global-filter-fields="['alias', 'street', 'number', 'postal_code', 'mobile_phone']"
+      :columns="columns"
+      :paginator="true"
+      :rows="10"
+      :rows-per-page-options="[5, 10, 25, 50]"
+    >
+      <template #body-alias="{ data }">
+        <div class="px-3 py-2 text-sm font-medium text-[#0b0817]">
+          {{ data.alias || data.street }}
+        </div>
+      </template>
+
+      <template #body-street="{ data }">
+        <div class="px-3 py-2 text-sm text-[#6b6b7b]">{{ data.street }}</div>
+      </template>
+
+      <template #body-number="{ data }">
+        <div class="px-3 py-2 text-sm text-[#6b6b7b]">{{ data.number }}</div>
+      </template>
+
+      <template #body-postal_code="{ data }">
+        <div class="px-3 py-2 text-sm text-[#6b6b7b]">{{ data.postal_code }}</div>
+      </template>
+
+      <template #body-mobile_phone="{ data }">
+        <div class="px-3 py-2 text-sm text-[#6b6b7b]">{{ data.mobile_phone }}</div>
+      </template>
+
+      <template #body-is_primary="{ data }">
+        <div class="px-3 py-2">
+          <span
+            v-if="data.is_primary"
+            class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#ede9fe] text-[#7c3aed]"
+          >
+            Principal
+          </span>
+        </div>
+      </template>
+
+      <template #body-actions="{ data }">
+        <div class="px-3 py-2 flex items-center justify-end gap-1.5">
+          <button
+            aria-label="Editar dirección"
+            class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-[#f5f3ff] border border-[#ede9fe] text-[#7c3aed] hover:bg-[#7c3aed] hover:text-white hover:border-[#7c3aed] hover:shadow-sm active:scale-90 transition-all duration-150 relative group"
+            @click="startEdit(data)"
+          >
+            <i class="pi pi-pencil text-xs" />
+            <span
+              class="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-[#0b0817] text-white text-[11px] leading-none py-1.5 px-2.5 rounded-md opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-150 z-10 shadow-sm"
+            >
+              Editar
+            </span>
+          </button>
+          <button
+            aria-label="Eliminar dirección"
+            class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-red-50 border border-red-100 text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 hover:shadow-sm active:scale-90 transition-all duration-150 relative group"
+            @click="confirmDelete(data)"
+          >
+            <i class="pi pi-trash text-xs" />
+            <span
+              class="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-[#0b0817] text-white text-[11px] leading-none py-1.5 px-2.5 rounded-md opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-150 z-10 shadow-sm"
+            >
+              Eliminar
+            </span>
+          </button>
+        </div>
+      </template>
+
+      <template #empty>
+        <div class="px-3 py-4 text-center text-[#9690a8]">
+          No hay direcciones registradas.
+        </div>
+      </template>
+    </UiVuetifyDataTable>
+
+    <transition name="modal-fade">
+      <div
+        v-if="editing"
+        class="mt-4 p-4 bg-[#f5f3ff] rounded-lg border border-[rgba(124,58,237,0.12)]"
+      >
+        <div class="flex items-center gap-2 mb-4">
+          <i class="pi pi-pencil text-[#7c3aed] text-sm" />
+          <h4 class="text-sm font-semibold text-[#0b0817]">
+            {{ isNew ? "Nueva dirección" : "Editar dirección" }}
+          </h4>
+        </div>
+
+        <form @submit.prevent="saveEdit">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3">
+            <div>
+              <label class="block text-sm font-medium text-[#6b6b7b] mb-1">Alias</label>
+              <input v-model="form.alias" placeholder="Ej: Casa, Oficina..." class="form-input" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-[#6b6b7b] mb-1">Calle</label>
+              <input v-model="form.street" placeholder="Nombre de la calle" class="form-input" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-[#6b6b7b] mb-1">Número</label>
+              <input v-model="form.number" placeholder="Nº" class="form-input" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-[#6b6b7b] mb-1">Código Postal</label>
+              <input v-model="form.postal_code" placeholder="CP" class="form-input" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-[#6b6b7b] mb-1">Teléfono Móvil</label>
+              <input v-model="form.mobile_phone" placeholder="Móvil" class="form-input" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-[#6b6b7b] mb-1">Teléfono Fijo</label>
+              <input v-model="form.landline_phone" placeholder="Fijo (opcional)" class="form-input" />
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-[#6b6b7b] mb-1">Email de contacto</label>
+              <input v-model="form.contact_email" placeholder="Email (opcional)" class="form-input" />
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 mt-3">
+            <ToggleSwitch v-model="form.is_primary" />
+            <label class="text-sm text-[#6b6b7b] select-none">Dirección principal</label>
+          </div>
+
+          <div class="flex justify-end gap-3 mt-4 pt-2 border-t border-[rgba(124,58,237,0.10)]">
+            <button type="button" class="btn btn-ghost" @click="cancelEdit">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Guardar dirección</button>
+          </div>
+        </form>
       </div>
-    </template>
+    </transition>
   </Modal>
 </template>
 
@@ -179,6 +184,8 @@
 import { ref, watch } from "vue";
 import Modal from "@/shared/components/Modal.vue";
 import UiVuetifyDataTable from "@/shared/components/UiVuetifyDataTable.vue";
+import ToggleSwitch from "@/shared/components/ToggleSwitch.vue";
+import { useToast } from "@/shared/composables/useToast";
 
 interface Address {
   id: number;
@@ -202,6 +209,7 @@ interface ColumnDef {
   field?: string;
   label: string;
   sortable: boolean;
+  align?: string;
 }
 
 interface FilterDef {
@@ -219,7 +227,8 @@ const editing = ref<boolean>(false);
 const isNew = ref<boolean>(false);
 const form = ref<Address>({} as Address);
 
-// Búsqueda/filtrado global para DataTable
+const { show: showToast } = useToast();
+
 const globalFilter = ref<string>("");
 const filters = ref<FilterDef>({ global: { value: null, matchMode: "contains" } });
 
@@ -233,8 +242,8 @@ const columns: ColumnDef[] = [
   { key: "number", field: "number", label: "Número", sortable: true },
   { key: "postal_code", field: "postal_code", label: "CP", sortable: true },
   { key: "mobile_phone", field: "mobile_phone", label: "Móvil", sortable: true },
-  { key: "is_primary", field: "is_primary", label: "", sortable: true },
-  { key: "actions", label: "", sortable: false },
+  { key: "is_primary", field: "is_primary", label: "Principal", sortable: true },
+  { key: "actions", label: "", sortable: false, align: "end" },
 ];
 
 watch(
@@ -274,7 +283,12 @@ function cancelEdit(): void {
 }
 
 function saveEdit(): void {
-  // ensure single principal
+  const requiredFields = ["alias", "street", "number", "postal_code", "mobile_phone", "landline_phone", "contact_email"] as const;
+  const hasData = requiredFields.some((f) => (form.value[f] as string)?.trim() !== "");
+  if (!hasData) {
+    showToast("Completa al menos un campo para guardar la dirección", "error");
+    return;
+  }
   if (form.value.is_primary) {
     localAddresses.value = localAddresses.value.map((a) => ({ ...a, is_primary: false }));
   }
@@ -287,16 +301,78 @@ function saveEdit(): void {
 }
 
 function confirmDelete(addr: Record<string, unknown>): void {
-  if (!confirm("Eliminar dirección?")) return;
+  if (!confirm("¿Eliminar esta dirección?")) return;
   localAddresses.value = localAddresses.value.filter((a) => a.id !== (addr.id as number));
 }
 
-function saveAll(): void {
-  emit("save", localAddresses.value);
-  emit("close");
-}
-
 function onClose(): void {
+  if (editing.value && (form.value.alias || form.value.street)) {
+    if (!confirm("Hay cambios sin guardar. ¿Cerrar de todas formas?")) return;
+  }
   emit("close");
 }
 </script>
+
+<style scoped>
+/* ── Header cell: remove Vuetify's 0 16px padding, set height auto ── */
+.addresses-table :deep(.v-data-table__table > thead > tr > th) {
+  padding: 0 !important;
+  height: auto !important;
+  background-color: #f5f3ff !important;
+  border: none !important;
+}
+
+/* ── Header inner content (slot div) ── */
+.addresses-table :deep(.v-data-table__table > thead > tr > th > div) {
+  padding: 10px 12px;
+  color: #7c3aed !important;
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-bottom: 2px solid rgba(124, 58, 237, 0.12);
+  width: 100% !important;
+  display: flex !important;
+  align-items: center;
+  gap: 0.5rem;
+  box-sizing: border-box;
+}
+
+/* ── Sort icons ── */
+.addresses-table :deep(.v-data-table__table > thead > tr > th .mdi-swap-vertical) {
+  color: #c4b5e3 !important;
+}
+
+.addresses-table :deep(.v-data-table__table > thead > tr > th .mdi-arrow-up),
+.addresses-table :deep(.v-data-table__table > thead > tr > th .mdi-arrow-down) {
+  color: #7c3aed !important;
+}
+
+/* ── Body rows ── */
+.addresses-table :deep(.v-data-table__table > tbody > tr) {
+  background-color: #ffffff !important;
+  transition: background-color 0.12s ease;
+}
+
+.addresses-table :deep(.v-data-table__table > tbody > tr:hover) {
+  background-color: #faf9ff !important;
+}
+
+.addresses-table :deep(.v-data-table__table > tbody > tr:nth-child(even)) {
+  background-color: #fcfbff !important;
+}
+
+.addresses-table :deep(.v-data-table__table > tbody > tr:nth-child(even):hover) {
+  background-color: #f6f3ff !important;
+}
+
+/* ── Body cells ── */
+.addresses-table :deep(.v-data-table__table > tbody > tr > td) {
+  border-bottom: 1px solid rgba(124, 58, 237, 0.05) !important;
+  padding: 10px 12px !important;
+}
+
+.addresses-table :deep(.v-data-table__table > tbody > tr:last-child > td) {
+  border-bottom: none !important;
+}
+</style>

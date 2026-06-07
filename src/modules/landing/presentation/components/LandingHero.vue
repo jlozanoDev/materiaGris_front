@@ -1,11 +1,16 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import logoSvg from '@/assets/logo-materiagris.svg'
 import heroBgRight from '@/assets/hero-bg-right.png'
+import { useParticleNetwork } from '@/modules/auth/presentation/composables/useParticleNetwork'
 
 const emit = defineEmits<{
   demo: []
   viewPlatform: []
 }>()
+
+const canvasRef = ref<HTMLCanvasElement | null>(null)
+useParticleNetwork(canvasRef)
 </script>
 
 <template>
@@ -14,6 +19,17 @@ const emit = defineEmits<{
     class="relative min-h-screen flex flex-col justify-center overflow-hidden"
     style="background: #0f0a1e; padding-top: 80px;"
   >
+    <!-- Particle network canvas -->
+    <div
+      class="absolute inset-0 pointer-events-none select-none overflow-hidden"
+      style="z-index: 0;"
+    >
+      <canvas
+        ref="canvasRef"
+        class="absolute inset-0 w-full h-full"
+      />
+    </div>
+
     <!-- Glow orbs -->
     <div class="absolute w-[500px] h-[500px] rounded-full pointer-events-none" style="background: rgba(124,58,237,0.08); filter: blur(80px); top: -200px; left: -100px;"></div>
     <div class="absolute w-[400px] h-[400px] rounded-full pointer-events-none" style="background: rgba(6,182,212,0.05); filter: blur(80px); bottom: -100px; right: -80px;"></div>
@@ -41,7 +57,7 @@ const emit = defineEmits<{
           <!-- H1 -->
           <h1 class="font-sans font-extrabold text-white" style="font-size: clamp(40px, 5.5vw, 68px); line-height: 1.04; letter-spacing: -0.025em; margin-bottom: 20px;">
             Tu socio de IA para una<br>
-            <span class="bg-clip-text text-transparent" style="background-image: linear-gradient(135deg, #a78bfa, #06b6d4);">práctica clínica optimizada y humana</span>
+            <span class="bg-clip-text text-transparent" style="background-image: linear-gradient(135deg, #a78bfa, #06b6d4);">clínica inteligente y humana</span>
           </h1>
 
           <!-- Lead -->

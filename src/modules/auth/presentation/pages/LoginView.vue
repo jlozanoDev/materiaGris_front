@@ -3,6 +3,7 @@ import { ref, computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { provideAuthService } from "@/modules/auth/application/containers/authContainer";
 import { parseApiError } from "@/shared/utils/parseApiError";
+import { Eye, EyeOff } from "lucide-vue-next";
 import ToggleSwitch from "@/shared/components/ToggleSwitch.vue";
 import AuthLayout from "@/modules/auth/presentation/components/AuthLayout.vue";
 
@@ -78,43 +79,8 @@ async function submit(): Promise<void> {
             class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
             @click="showPassword = !showPassword"
           >
-            <svg
-              v-if="!showPassword"
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-              />
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-              />
-            </svg>
-            <svg
-              v-else
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path d="M10 3a7 7 0 00-6.32 9.39l9.71-9.71A6.98 6.98 0 0010 3z" />
-              <path
-                d="M3 3l14 14"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
+            <EyeOff v-if="!showPassword" class="h-5 w-5" />
+            <Eye v-else class="h-5 w-5" />
           </button>
         </div>
       </div>

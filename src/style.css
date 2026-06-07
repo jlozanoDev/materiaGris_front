@@ -45,6 +45,8 @@
     background-color: var(--color-primary-600);
   }
   .btn-primary:disabled {
+    background-color: var(--color-primary);
+    color: #ffffff;
     opacity: 0.5;
     cursor: not-allowed;
   }
@@ -341,7 +343,7 @@ button,
   left: 50%;
   transform: translateX(-50%);
   top: 16px;
-  z-index: 9998;
+  z-index: 2147483002;
   min-width: 240px;
   max-width: 90%;
   padding: 0.6rem 1rem;
