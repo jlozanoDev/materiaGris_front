@@ -91,7 +91,7 @@ defineExpose({ expandAll, collapseAll });
 </script>
 
 <template>
-  <div class="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+  <div class="space-y-4">
     <PermissionCategoryNode
       v-for="node in treeForTemplate"
       :key="node.name"
@@ -110,19 +110,3 @@ defineExpose({ expandAll, collapseAll });
     </div>
   </div>
 </template>
-
-<style scoped>
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 10px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-</style>

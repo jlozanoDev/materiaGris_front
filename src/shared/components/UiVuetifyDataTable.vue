@@ -393,11 +393,89 @@ function colSortOrder(key: string): "asc" | "desc" | null {
   fill: currentColor !important;
 }
 
-/* Target pagination icons specifically */
+/* Paginador — alineado al diseño purple/violet del header */
+.app-vuetify-datatable :deep(.v-pagination) {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+
+.app-vuetify-datatable :deep(.v-pagination .v-btn) {
+  min-width: 32px !important;
+  height: 32px !important;
+  padding: 0 4px !important;
+  border-radius: 6px !important;
+  font-size: 0.8125rem !important;
+  font-weight: 500 !important;
+  color: #475569 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transition: all 0.15s ease !important;
+}
+
+.app-vuetify-datatable :deep(.v-pagination .v-btn:hover) {
+  background: #f5f3ff !important;
+  color: #7c3aed !important;
+}
+
+.app-vuetify-datatable :deep(.v-pagination .v-btn--disabled) {
+  opacity: 0.3 !important;
+  pointer-events: none !important;
+}
+
+.app-vuetify-datatable :deep(.v-pagination .v-btn--disabled:hover) {
+  background: transparent !important;
+  color: #475569 !important;
+}
+
+.app-vuetify-datatable :deep(.v-pagination .v-btn--active),
+.app-vuetify-datatable :deep(.v-pagination .v-btn.v-btn--density-compact--active) {
+  background: #7c3aed !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  box-shadow: 0 1px 3px rgba(124, 58, 237, 0.3) !important;
+}
+
+.app-vuetify-datatable :deep(.v-pagination .v-btn--active:hover) {
+  background: #6d28d9 !important;
+}
+
+.app-vuetify-datatable :deep(.v-pagination .v-btn .v-btn__content) {
+  font-size: 0.8125rem !important;
+}
+
 .app-vuetify-datatable :deep(.v-pagination .v-btn .v-icon),
 .app-vuetify-datatable :deep(.v-pagination .v-btn svg) {
-  font-size: 0.95rem !important;
+  font-size: 1rem !important;
   color: inherit !important;
 }
-/* Header styling is handled by Tailwind classes in the header slot */
+
+/* Selector de filas por página */
+.app-vuetify-datatable :deep(select#rowsPerPageSelect) {
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 4px 28px 4px 10px;
+  font-size: 0.8125rem;
+  color: #475569;
+  background: #ffffff url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23475569' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") no-repeat right 8px center/12px;
+  appearance: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.app-vuetify-datatable :deep(select#rowsPerPageSelect:hover) {
+  border-color: #7c3aed;
+}
+
+.app-vuetify-datatable :deep(select#rowsPerPageSelect:focus) {
+  outline: none;
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.15);
+}
+
+/* Texto informativo "Mostrando X – Y de Z" */
+.app-vuetify-datatable :deep(.v-pagination__info),
+.app-vuetify-datatable .text-slate-600 {
+  font-size: 0.8125rem;
+}
 </style>

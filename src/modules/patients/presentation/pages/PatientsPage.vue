@@ -5,8 +5,6 @@ import TopBar from "@/shared/components/TopBar.vue";
 import Breadcrumb from "@/shared/components/Breadcrumb.vue";
 import UiVuetifyDataTable from "@/shared/components/UiVuetifyDataTable.vue";
 import Modal from "@/shared/components/Modal.vue";
-import Slider from "primevue/slider";
-import Chips from "primevue/chips";
 import { useAuthStore } from "@/core/store/auth";
 import { useLogout } from "@/shared/composables/useLogout";
 import { useToast } from "@/shared/composables/useToast";
@@ -27,11 +25,8 @@ interface DataTableFilters {
 }
 
 interface PatientSearchFilters {
-  age_min: string | number;
-  age_max: string | number;
   gender: string;
   city: string;
-  insurance: string[];
   registered_from: string;
   registered_to: string;
   last_visit_from: string;
@@ -73,8 +68,6 @@ interface PatientFormData {
 
 interface PatientFiltersPayload {
   q?: string;
-  age_min?: string | number;
-  age_max?: string | number;
   gender?: string;
   city?: string;
   registered_from?: string;
@@ -82,7 +75,6 @@ interface PatientFiltersPayload {
   last_visit_from?: string;
   last_visit_to?: string;
   is_active?: string;
-  insurance?: string[];
 }
 
 // --- Composables ---
@@ -115,10 +107,10 @@ const { show } = useToast();
 const columns: DataTableColumn[] = [
   { key: "medical_record_number", field: "medical_record_number", label: "NHC", sortable: true },
   { key: "national_id", field: "national_id", label: "DNI", sortable: true },
-  { key: "email", field: "email", label: "Email", sortable: true },
-  { key: "phone", field: "phone", label: "Teléfono", sortable: true },
   { key: "first_name", field: "first_name", label: "Nombre", sortable: true },
   { key: "last_name", field: "last_name", label: "Apellidos", sortable: true },
+  { key: "email", field: "email", label: "Email", sortable: true },
+  { key: "phone", field: "phone", label: "Teléfono", sortable: true },
   { key: "city", field: "city", label: "Ciudad", sortable: true },
   { key: "is_active", field: "is_active", label: "Activo", sortable: true },
   { key: "actions", label: "", sortable: false },
@@ -129,11 +121,8 @@ const columns: DataTableColumn[] = [
 const advancedOpen = ref<boolean>(false);
 
 const defaultSearchFilters = (): PatientSearchFilters => ({
-  age_min: "",
-  age_max: "",
   gender: "",
   city: "",
-  insurance: [],
   registered_from: "",
   registered_to: "",
   last_visit_from: "",
@@ -143,25 +132,13 @@ const defaultSearchFilters = (): PatientSearchFilters => ({
 
 const searchFilters = ref<PatientSearchFilters>(defaultSearchFilters());
 
-// Insurance chips input for UI
-const insuranceChips = ref<string[]>([]);
-
 function toggleAdvanced(): void {
   advancedOpen.value = !advancedOpen.value;
-  if (advancedOpen.value) {
-    const ins = searchFilters.value.insurance;
-    insuranceChips.value = Array.isArray(ins) ? ins.map((i: string) => String(i)) : [];
-    const min = Number(searchFilters.value.age_min) || 0;
-    const max = Number(searchFilters.value.age_max) || 120;
-    ageRange.value = [min, max];
-  }
 }
 
 function resetFilters(): void {
   globalFilter.value = "";
   searchFilters.value = defaultSearchFilters();
-  ageRange.value = [0, 120];
-  insuranceChips.value = [];
   fetchPatients();
 }
 
@@ -170,15 +147,8 @@ function resetFilters(): void {
 const activeFiltersList = computed<ActiveFilterItem[]>(() => {
   const f = searchFilters.value || {};
   const list: ActiveFilterItem[] = [];
-  if (f.age_min || f.age_max) {
-    const min = f.age_min || "0";
-    const max = f.age_max || "120";
-    list.push({ key: "age", label: `Edad: ${min}–${max}` });
-  }
   if (f.gender) list.push({ key: "gender", label: `Género: ${f.gender}` });
   if (f.city) list.push({ key: "city", label: `Ciudad: ${f.city}` });
-  if (Array.isArray(f.insurance) && f.insurance.length)
-    f.insurance.forEach((i: string) => list.push({ key: "insurance", label: `Aseg: ${i}`, value: i }));
   if (f.registered_from || f.registered_to)
     list.push({
       key: "registered",
@@ -196,55 +166,16 @@ const activeFiltersList = computed<ActiveFilterItem[]>(() => {
 
 const activeAdvancedCount = computed<number>(() => activeFiltersList.value.length);
 
-// --- Age range slider ---
-
-const ageRange = ref<[number, number]>([
-  Number(searchFilters.value.age_min) || 0,
-  Number(searchFilters.value.age_max) || 120,
-]);
-
-const ageMin = computed<number>({
-  get: () => ageRange.value[0],
-  set: (v: number) => {
-    ageRange.value = [Number(v) || 0, ageRange.value[1]];
-  },
-});
-
-const ageMax = computed<number>({
-  get: () => ageRange.value[1],
-  set: (v: number) => {
-    ageRange.value = [ageRange.value[0], Number(v) || 120];
-  },
-});
-
 // --- Filter actions ---
 
 function applyFilters(): void {
-  if (!insuranceChips.value || insuranceChips.value.length === 0) {
-    searchFilters.value.insurance = [];
-  } else {
-    searchFilters.value.insurance = insuranceChips.value
-      .map((s: string) => String(s).trim())
-      .filter((s: string) => s !== "");
-  }
-  const [min, max] = Array.isArray(ageRange.value) ? ageRange.value : [0, 120];
-  searchFilters.value.age_min = min && Number(min) > 0 ? Number(min) : "";
-  searchFilters.value.age_max = max && Number(max) < 120 ? Number(max) : "";
   fetchPatients();
 }
 
 function removeFilter(item: ActiveFilterItem): void {
   if (!item || !item.key) return;
   const key = item.key;
-  if (key === "insurance") {
-    searchFilters.value.insurance = (searchFilters.value.insurance || []).filter(
-      (i: string) => String(i) !== String(item.value)
-    );
-  } else if (key === "age") {
-    searchFilters.value.age_min = "";
-    searchFilters.value.age_max = "";
-    ageRange.value = [0, 120];
-  } else if (key === "gender") {
+  if (key === "gender") {
     searchFilters.value.gender = "";
   } else if (key === "city") {
     searchFilters.value.city = "";
@@ -257,9 +188,6 @@ function removeFilter(item: ActiveFilterItem): void {
   } else if (key === "is_active") {
     searchFilters.value.is_active = "all";
   }
-  insuranceChips.value = Array.isArray(searchFilters.value.insurance)
-    ? searchFilters.value.insurance.map((i: string) => String(i))
-    : [];
   fetchPatients();
 }
 
@@ -337,8 +265,6 @@ function fetchPatients(): void {
   const f = searchFilters.value;
   const payload: PatientFiltersPayload = {
     q: globalFilter.value || undefined,
-    age_min: f.age_min || undefined,
-    age_max: f.age_max || undefined,
     gender: f.gender || undefined,
     city: f.city || undefined,
     registered_from: f.registered_from || undefined,
@@ -346,7 +272,6 @@ function fetchPatients(): void {
     last_visit_from: f.last_visit_from || undefined,
     last_visit_to: f.last_visit_to || undefined,
     is_active: f.is_active !== "all" ? f.is_active : undefined,
-    insurance: Array.isArray(f.insurance) && f.insurance.length > 0 ? f.insurance : undefined,
   };
   fetchPatientsUseCase(payload as Record<string, unknown>);
 }
@@ -426,7 +351,36 @@ onMounted(async () => {
             </button>
           </div>
 
-          <div v-if="loading" class="text-sm text-slate-500">Cargando pacientes...</div>
+          <div v-if="loading" class="card p-6">
+            <div class="flex items-center justify-between mb-4">
+              <div class="h-8 w-32 bg-slate-200 rounded-md animate-pulse" />
+              <div class="h-10 w-40 bg-slate-200 rounded-md animate-pulse" />
+            </div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-3 w-full md:w-1/3">
+                <div class="h-10 bg-slate-200 rounded-xl flex-1 animate-pulse" />
+                <div class="h-10 w-24 bg-slate-200 rounded-xl animate-pulse" />
+              </div>
+              <div class="h-10 w-20 bg-slate-200 rounded-xl animate-pulse" />
+            </div>
+            <div class="space-y-0">
+              <div
+                v-for="i in 8"
+                :key="i"
+                class="flex items-center gap-4 py-3 border-b border-slate-100 last:border-b-0"
+              >
+                <div class="h-4 bg-slate-200 rounded w-16 animate-pulse" />
+                <div class="h-4 bg-slate-200 rounded w-20 animate-pulse" />
+                <div class="h-4 bg-slate-200 rounded w-32 animate-pulse" />
+                <div class="h-4 bg-slate-200 rounded w-24 animate-pulse" />
+                <div class="h-4 bg-slate-200 rounded w-24 animate-pulse" />
+                <div class="h-4 bg-slate-200 rounded w-24 animate-pulse" />
+                <div class="h-4 bg-slate-200 rounded w-20 animate-pulse" />
+                <div class="h-4 bg-slate-200 rounded w-12 animate-pulse" />
+                <div class="h-8 w-8 bg-slate-200 rounded-2xl ml-auto animate-pulse" />
+              </div>
+            </div>
+          </div>
 
           <div v-else>
             <div class="flex items-center justify-between mb-3">
@@ -494,31 +448,6 @@ onMounted(async () => {
               class="mb-3 mt-2 p-4 bg-slate-50 rounded-2xl border border-slate-100"
             >
               <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-                <div class="md:col-span-1">
-                  <label class="block text-sm text-slate-600 mb-1">Edad</label>
-                  <div class="flex items-center gap-2">
-                    <input
-                      v-model.number="ageMin"
-                      type="number"
-                      min="0"
-                      max="120"
-                      aria-label="Edad mínima"
-                      class="w-20 text-sm rounded-xl bg-white pl-2 pr-2 py-1 border border-slate-100"
-                    />
-                    <span class="text-sm text-slate-500">—</span>
-                    <input
-                      v-model.number="ageMax"
-                      type="number"
-                      min="0"
-                      max="120"
-                      aria-label="Edad máxima"
-                      class="w-20 text-sm rounded-xl bg-white pl-2 pr-2 py-1 border border-slate-100"
-                    />
-                  </div>
-                  <div class="mt-2">
-                    <Slider v-model="ageRange" :range="true" :min="0" :max="120" class="h-3" />
-                  </div>
-                </div>
                 <div>
                   <label class="block text-sm text-slate-600 mb-1">Género</label>
                   <select
@@ -538,16 +467,6 @@ onMounted(async () => {
                     placeholder="Ciudad"
                     class="w-full rounded-xl bg-white pl-3 pr-3 py-2 text-sm border border-slate-100"
                   />
-                </div>
-                <div>
-                  <label class="block text-sm text-slate-600 mb-1">Aseguradoras (IDs)</label>
-                  <div class="w-full rounded-xl bg-white pl-2 pr-2 py-2 border border-slate-100">
-                    <Chips
-                      v-model="insuranceChips"
-                      placeholder="Añade ID y presiona Enter"
-                      class="w-full"
-                    />
-                  </div>
                 </div>
                 <div>
                   <label class="block text-sm text-slate-600 mb-1">Activo</label>
@@ -668,15 +587,15 @@ onMounted(async () => {
                   </template>
 
                   <template #body-actions="{ data }">
-                    <div class="px-3 py-2 text-right">
+                    <div class="px-3 py-2 flex items-center justify-end">
                       <button
+                        data-action-btn
                         aria-label="Editar"
-                        class="group inline-flex items-center justify-center h-8 w-8 rounded-2xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-200 mr-2"
+                        class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-[#f5f3ff] border border-[#ede9fe] text-[#7c3aed] hover:bg-[#7c3aed] hover:text-white hover:border-[#7c3aed] hover:shadow-sm transition-all duration-150 relative group"
                         @click="editPatient(data)"
                       >
-                        <i
-                          class="pi pi-pencil h-4 w-4 transition-colors duration-150 text-current group-hover:text-indigo-600"
-                        ></i>
+                        <i class="pi pi-pencil text-xs" />
+                        <span class="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-[#0b0817] text-white text-[11px] leading-none py-1.5 px-2.5 rounded-md opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-150 z-10 shadow-sm">Editar</span>
                       </button>
                     </div>
                   </template>

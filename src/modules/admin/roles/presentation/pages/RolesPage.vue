@@ -272,7 +272,27 @@ onMounted(async () => {
             </h1>
           </div>
 
-          <div v-if="loading && !editing" class="text-sm text-slate-500">Cargando roles...</div>
+          <div v-if="loading && !editing" class="card p-6">
+            <div class="flex items-center justify-between mb-4">
+              <div class="h-8 w-48 bg-slate-200 rounded-md animate-pulse" />
+            </div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="h-10 bg-slate-200 rounded-md w-1/3 animate-pulse" />
+              <div class="h-10 w-36 bg-slate-200 rounded-md animate-pulse" />
+            </div>
+            <div class="space-y-0">
+              <div
+                v-for="i in 8"
+                :key="i"
+                class="flex items-center gap-4 py-3 border-b border-slate-100 last:border-b-0"
+              >
+                <div class="h-4 bg-slate-200 rounded w-1/4 animate-pulse" />
+                <div class="h-4 bg-slate-200 rounded w-2/5 animate-pulse" />
+                <div class="h-4 bg-slate-200 rounded w-16 animate-pulse" />
+                <div class="h-8 w-20 bg-slate-200 rounded ml-auto animate-pulse" />
+              </div>
+            </div>
+          </div>
 
           <div v-else>
             <div class="flex items-center justify-between mb-3">
@@ -302,6 +322,9 @@ onMounted(async () => {
                 :filters="filters"
                 :global-filter-fields="['name', 'description']"
                 :columns="columns"
+                :paginator="true"
+                :rows="10"
+                :rows-per-page-options="[5, 10, 25, 50]"
               >
                 <template #body-name="{ data }">
                   <div class="px-3 py-2">
@@ -327,30 +350,28 @@ onMounted(async () => {
                 </template>
 
                 <template #body-actions="{ data }">
-                  <div class="px-3 py-2 text-right">
-                    <div class="flex items-center justify-end gap-2">
-                      <button
-                        v-has-permission="'admin.role.update'"
-                        aria-label="Editar"
-                        class="icon-action group"
-                        @click="startEditRole(data)"
-                      >
-                        <i
-                          class="pi pi-pencil h-4 w-4 transition-colors duration-150 text-current group-hover:text-indigo-600"
-                        ></i>
-                      </button>
-                      <button
-                        v-if="!data.is_system"
-                        v-has-permission="'admin.role.delete'"
-                        aria-label="Eliminar"
-                        class="icon-action group hover:bg-red-50"
-                        @click="confirmDelete(data)"
-                      >
-                        <i
-                          class="pi pi-trash h-4 w-4 transition-colors duration-150 text-current group-hover:text-red-600"
-                        ></i>
-                      </button>
-                    </div>
+                  <div class="px-3 py-2 flex items-center justify-end gap-1.5">
+                    <button
+                      v-has-permission="'admin.role.update'"
+                      data-action-btn
+                      aria-label="Editar"
+                      class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-[#f5f3ff] border border-[#ede9fe] text-[#7c3aed] hover:bg-[#7c3aed] hover:text-white hover:border-[#7c3aed] hover:shadow-sm transition-all duration-150 relative group"
+                      @click="startEditRole(data)"
+                    >
+                      <i class="pi pi-pencil text-xs" />
+                      <span class="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-[#0b0817] text-white text-[11px] leading-none py-1.5 px-2.5 rounded-md opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-150 z-10 shadow-sm">Editar</span>
+                    </button>
+                    <button
+                      v-if="!data.is_system"
+                      v-has-permission="'admin.role.delete'"
+                      data-action-btn
+                      aria-label="Eliminar"
+                      class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-red-50 border border-red-100 text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 hover:shadow-sm transition-all duration-150 relative group"
+                      @click="confirmDelete(data)"
+                    >
+                      <i class="pi pi-trash text-xs" />
+                      <span class="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-[#0b0817] text-white text-[11px] leading-none py-1.5 px-2.5 rounded-md opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-150 z-10 shadow-sm">Eliminar</span>
+                    </button>
                   </div>
                 </template>
 
@@ -370,16 +391,41 @@ onMounted(async () => {
                 </div>
               </template>
 
-              <div
-                v-if="loadingRole"
-                class="py-20 flex flex-col items-center justify-center text-slate-500"
-              >
-                <i class="pi pi-spin pi-spinner text-4xl mb-4"></i>
-                Cargando configuración...
+              <div v-if="loadingRole" class="space-y-6 py-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <div class="h-4 w-32 bg-slate-200 rounded mb-2 animate-pulse" />
+                    <div class="h-10 bg-slate-200 rounded-md animate-pulse" />
+                  </div>
+                  <div>
+                    <div class="h-4 w-40 bg-slate-200 rounded mb-2 animate-pulse" />
+                    <div class="h-10 bg-slate-200 rounded-md animate-pulse" />
+                  </div>
+                </div>
+                <div class="border-t border-slate-200 pt-4">
+                  <div class="flex items-center justify-between mb-4">
+                    <div class="h-4 w-52 bg-slate-200 rounded animate-pulse" />
+                    <div class="flex gap-2">
+                      <div class="h-4 w-28 bg-slate-200 rounded animate-pulse" />
+                      <div class="h-4 w-4 bg-slate-200 rounded animate-pulse" />
+                      <div class="h-4 w-24 bg-slate-200 rounded animate-pulse" />
+                    </div>
+                  </div>
+                  <div class="space-y-2">
+                    <div v-for="i in 4" :key="i" class="h-8 bg-slate-200 rounded animate-pulse" />
+                  </div>
+                </div>
+                <div class="border-t border-slate-200 pt-4">
+                  <div class="h-8 w-48 bg-slate-200 rounded mb-3 animate-pulse" />
+                  <div class="flex justify-end gap-3">
+                    <div class="h-10 w-24 bg-slate-200 rounded-md animate-pulse" />
+                    <div class="h-10 w-36 bg-slate-200 rounded-md animate-pulse" />
+                  </div>
+                </div>
               </div>
 
               <div v-else class="space-y-6">
-                <form class="space-y-6" @submit.prevent="saveRole">
+                <form id="role-form" class="space-y-6" @submit.prevent="saveRole">
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label class="block text-sm font-bold text-slate-700 mb-1"
@@ -439,24 +485,21 @@ onMounted(async () => {
                   <div class="border-t border-slate-200 pt-4">
                     <p class="text-xs text-slate-500 mb-3">
                       <span class="font-semibold text-green-600">Permitir</span>: concede el permiso
-                      al rol.
-                      <br />
-                      <span class="font-semibold text-red-600">Denegar</span>: deniega
-                      explícitamente el permiso en el rol; aunque otro rol lo conceda, este
-                      prevalece y no lo permitirá.
-                      <br />
-                      <span class="font-semibold text-slate-400">Neutral</span>: ni concedido ni
-                      denegado.
+                      al rol. Si un permiso no está marcado como Permitido, el rol no lo
+                      tiene. Haz clic en el botón para activarlo o desactivarlo.
                     </p>
-                    <div class="flex justify-end gap-3">
-                      <button type="button" class="btn btn-ghost" @click="cancelEdit">
-                        Cancelar
-                      </button>
-                      <button type="submit" class="btn btn-primary px-8">Guardar Cambios</button>
-                    </div>
                   </div>
                 </form>
               </div>
+
+              <template #footer>
+                <div class="flex justify-end gap-3 w-full">
+                  <button type="button" class="btn btn-ghost" @click="cancelEdit">
+                    Cancelar
+                  </button>
+                  <button type="submit" form="role-form" class="btn btn-primary px-8">Guardar Cambios</button>
+                </div>
+              </template>
             </Modal>
           </div>
         </div>

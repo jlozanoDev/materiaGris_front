@@ -117,7 +117,10 @@ function updateModel(value: PermissionGrant[]): void {
           :key="permission.id"
           class="px-4 py-3 flex items-center justify-between hover:bg-indigo-50/30 transition-colors group"
         >
-          <div class="flex-1 mr-4 pl-2 border-l-2 border-transparent group-hover:border-indigo-200">
+          <div
+            class="flex-1 mr-4 pl-2 border-l-2 border-transparent group-hover:border-indigo-200 cursor-pointer"
+            @click="setGrant(permission.id, getGrant(permission.id) === 1 ? 0 : 1)"
+          >
             <div
               class="text-sm font-semibold text-slate-800 group-hover:text-indigo-700 transition-colors"
             >
@@ -140,35 +143,9 @@ function updateModel(value: PermissionGrant[]): void {
                   ? 'bg-green-600 text-white shadow-md'
                   : 'text-slate-500 hover:bg-slate-200',
               ]"
-              @click="setGrant(permission.id, 1)"
+              @click="setGrant(permission.id, getGrant(permission.id) === 1 ? 0 : 1)"
             >
-              Permitir
-            </button>
-            <button
-              type="button"
-              title="Neutral"
-              :class="[
-                'px-3 py-1.5 text-[10px] font-bold rounded-lg transition-all duration-200 uppercase tracking-tighter',
-                getGrant(permission.id) === 0
-                  ? 'bg-slate-400 text-white shadow-md'
-                  : 'text-slate-500 hover:bg-slate-200',
-              ]"
-              @click="setGrant(permission.id, 0)"
-            >
-              Neutral
-            </button>
-            <button
-              type="button"
-              title="Denegar"
-              :class="[
-                'px-3 py-1.5 text-[10px] font-bold rounded-lg transition-all duration-200 uppercase tracking-tighter',
-                getGrant(permission.id) === -1
-                  ? 'bg-red-600 text-white shadow-md'
-                  : 'text-slate-500 hover:bg-slate-200',
-              ]"
-              @click="setGrant(permission.id, -1)"
-            >
-              Denegar
+              {{ getGrant(permission.id) === 1 ? 'Permitido' : 'Permitir' }}
             </button>
           </div>
         </div>

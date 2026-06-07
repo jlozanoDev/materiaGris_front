@@ -21,13 +21,6 @@ const permsForModal = computed(() => allPermissionsList.value as any);
 
 // --- Local interfaces ---
 
-interface UserPermission {
-  id: number | string;
-  slug: string;
-  grant: number;
-  origin: string;
-}
-
 interface DataTableColumn {
   key: string;
   field?: string;
@@ -84,7 +77,6 @@ const columns: DataTableColumn[] = [
   { key: "name", field: "name", label: "Nombre", sortable: true },
   { key: "email", field: "email", label: "Email", sortable: true },
   { key: "roles", field: "roles", label: "Roles", sortable: false },
-  { key: "override", field: "user_permissions", label: "Permisos Individuales", sortable: false },
   { key: "actions", label: "", sortable: false },
 ];
 
@@ -122,14 +114,6 @@ watch(
   },
   { immediate: true }
 );
-
-// --- Utility functions ---
-
-function getUserPermissions(user: any): UserPermission[] {
-  return ((user?.user_permissions as UserPermission[] | undefined) || []).filter(
-    (p: UserPermission) => p.origin === "user"
-  );
-}
 
 // --- CRUD actions ---
 
@@ -253,7 +237,24 @@ onMounted(async () => {
             Usuarios
           </h1>
 
-          <div v-if="loading" class="text-sm text-slate-500">Cargando usuarios...</div>
+          <div v-if="loading" class="card p-6">
+            <div class="flex items-center justify-between gap-3 mb-4">
+              <div class="h-10 bg-slate-200 rounded-md flex-1 max-w-xs animate-pulse" />
+              <div class="h-10 w-40 bg-slate-200 rounded-md animate-pulse" />
+            </div>
+            <div class="space-y-0">
+              <div
+                v-for="i in 8"
+                :key="i"
+                class="flex items-center gap-4 py-3 border-b border-slate-100 last:border-b-0"
+              >
+                <div class="h-4 bg-slate-200 rounded w-1/4 animate-pulse" />
+                <div class="h-4 bg-slate-200 rounded w-1/4 animate-pulse" />
+                <div class="h-4 bg-slate-200 rounded w-1/5 animate-pulse" />
+                <div class="h-8 w-20 bg-slate-200 rounded ml-auto animate-pulse" />
+              </div>
+            </div>
+          </div>
 
           <div v-else>
             <div class="flex items-center justify-between gap-3 mb-3">
@@ -291,6 +292,9 @@ onMounted(async () => {
                 :filters="filters"
                 :global-filter-fields="['name', 'email']"
                 :columns="columns"
+                :paginator="true"
+                :rows="10"
+                :rows-per-page-options="[5, 10, 25, 50]"
               >
                 <template #body-name="{ data }">
                   <div class="px-3 py-2 text-sm">{{ data?.name }}</div>
@@ -313,49 +317,31 @@ onMounted(async () => {
                   </div>
                 </template>
 
-                <template #body-override="{ data }">
-                  <div class="px-3 py-2 flex flex-wrap gap-1">
-                    <template v-for="perm in getUserPermissions(data)" :key="perm.id">
-                      <span v-if="perm.grant === 1" class="badge badge--success text-xs"
-                        >+ {{ perm.slug }}</span
-                      >
-                      <span v-else-if="perm.grant === -1" class="badge badge--danger text-xs"
-                        >- {{ perm.slug }}</span
-                      >
-                    </template>
-                    <span v-if="!getUserPermissions(data).length" class="text-sm text-slate-400"
-                      >-</span
-                    >
-                  </div>
-                </template>
-
                 <template #body-actions="{ data }">
-                  <div class="px-3 py-2 text-right">
-                    <div class="flex items-center justify-end gap-2">
-                      <button
-                        v-has-permission="'admin.user.update'"
-                        aria-label="Editar"
-                        class="icon-action group"
-                        @click="startEditUser(data)"
-                      >
-                        <i
-                          class="pi pi-pencil h-4 w-4 transition-colors duration-150 text-current group-hover:text-primary"
-                        ></i>
-                      </button>
-                      <button
-                        v-has-permission="'admin.user.delete'"
-                        :aria-label="data?.active === false ? 'Reactivar' : 'Desactivar'"
-                        :class="[
-                          'icon-action group',
-                          data?.active === false
-                            ? 'bg-green-600 text-white hover:bg-green-700'
-                            : 'bg-amber-500 text-white hover:bg-amber-600',
-                        ]"
-                        @click="confirmDeactivate(data)"
-                      >
-                        <i class="pi pi-ban h-4 w-4 transition-colors duration-150"></i>
-                      </button>
-                    </div>
+                  <div class="px-3 py-2 flex items-center justify-end gap-1.5">
+                    <button
+                      v-has-permission="'admin.user.update'"
+                      data-action-btn
+                      aria-label="Editar"
+                      class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-[#f5f3ff] border border-[#ede9fe] text-[#7c3aed] hover:bg-[#7c3aed] hover:text-white hover:border-[#7c3aed] hover:shadow-sm transition-all duration-150 relative group"
+                      @click="startEditUser(data)"
+                    >
+                      <i class="pi pi-pencil text-xs" />
+                      <span class="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-[#0b0817] text-white text-[11px] leading-none py-1.5 px-2.5 rounded-md opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-150 z-10 shadow-sm">Editar</span>
+                    </button>
+                    <button
+                      v-has-permission="'admin.user.delete'"
+                      data-action-btn
+                      :aria-label="data?.active === false ? 'Reactivar' : 'Desactivar'"
+                      class="inline-flex items-center justify-center h-9 w-9 rounded-full transition-all duration-150 relative group"
+                      :class="data?.active === false
+                        ? 'bg-green-600 text-white hover:bg-green-700 hover:shadow-sm'
+                        : 'bg-amber-500 text-white hover:bg-amber-600 hover:shadow-sm'"
+                      @click="confirmDeactivate(data)"
+                    >
+                      <i class="pi pi-ban text-xs" />
+                      <span class="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-[#0b0817] text-white text-[11px] leading-none py-1.5 px-2.5 rounded-md opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-150 z-10 shadow-sm">{{ data?.active === false ? 'Reactivar' : 'Desactivar' }}</span>
+                    </button>
                   </div>
                 </template>
 

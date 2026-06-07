@@ -165,7 +165,23 @@ onMounted(async () => {
             Permisos
           </h1>
 
-          <div v-if="loading" class="text-sm text-slate-500 mb-4 italic">Cargando permisos...</div>
+          <div v-if="loading" class="card p-6">
+            <div class="flex items-center justify-between mb-3">
+              <div class="h-10 bg-slate-200 rounded-md w-1/3 animate-pulse" />
+            </div>
+            <div class="space-y-0">
+              <div
+                v-for="i in 8"
+                :key="i"
+                class="flex items-center gap-4 py-3 border-b border-slate-100 last:border-b-0"
+              >
+                <div class="h-4 bg-slate-200 rounded w-1/5 animate-pulse" />
+                <div class="h-4 bg-slate-200 rounded w-1/5 animate-pulse" />
+                <div class="h-4 bg-slate-200 rounded w-1/6 animate-pulse" />
+                <div class="h-4 bg-slate-200 rounded w-2/5 animate-pulse" />
+              </div>
+            </div>
+          </div>
 
           <div v-else>
             <div class="flex items-center justify-between mb-3">
@@ -185,6 +201,9 @@ onMounted(async () => {
                 :filters="filters"
                 :global-filter-fields="['slug', 'name', 'category', 'description']"
                 :columns="columns"
+                :paginator="true"
+                :rows="10"
+                :rows-per-page-options="[5, 10, 25, 50]"
               >
                 <template #body-slug="{ data }">
                   <div class="px-3 py-2 text-sm font-mono text-indigo-600">{{ data.slug }}</div>
