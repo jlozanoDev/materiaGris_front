@@ -7,6 +7,9 @@ import { useAuthStore } from "@/core/store/auth";
 import { useLogout } from "@/shared/composables/useLogout";
 import UiVuetifyDataTable from "@/shared/components/UiVuetifyDataTable.vue";
 import { usePermissions } from "@/modules/admin/permissions/presentation/composables/usePermissions";
+import EditUserModal from "@/modules/admin/users/presentation/components/EditUserModal.vue";
+import ChangePasswordModal from "@/shared/components/ChangePasswordModal.vue";
+import AddressesModal from "@/shared/components/AddressesModal.vue";
 import type { PermissionShape } from "@/shared/types";
 
 // --- Local interfaces ---
@@ -20,6 +23,16 @@ interface DataTableColumn {
 
 interface DataTableFilters {
   global: { value: string | null; matchMode: string };
+}
+
+interface Address {
+  id: number;
+  alias: string;
+  street: string;
+  number: string;
+  postal_code: string;
+  mobile_phone: string;
+  is_primary: boolean;
 }
 
 interface BreadcrumbItem {
@@ -53,6 +66,26 @@ const columns: DataTableColumn[] = [
 
 const localPermissions = ref<PermissionShape[]>([]);
 
+const showProfileEditModal = ref<boolean>(false);
+const showChangePasswordModal = ref<boolean>(false);
+const showAddressesModal = ref<boolean>(false);
+const addresses = ref<Address[]>([]);
+
+function loadAddresses(): Address[] {
+  try {
+    const stored = localStorage.getItem("addresses");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) return parsed as Address[];
+    }
+  } catch (e) { /* noop */ }
+  return [
+    { id: 1, alias: "Casa", street: "C. Falsa", number: "123", postal_code: "28001", mobile_phone: "600123456", is_primary: true },
+    { id: 2, alias: "Oficina", street: "Av. Siempre Viva", number: "742", postal_code: "28002", mobile_phone: "600654321", is_primary: false },
+  ];
+}
+addresses.value = loadAddresses();
+
 watch(
   permissions,
   (v: PermissionShape[]) => {
@@ -60,6 +93,29 @@ watch(
   },
   { immediate: true }
 );
+
+const onSaveEdited = (_edited: unknown): void => {
+  const edited = _edited as { name?: string };
+  if (authStore.user) {
+    (authStore.user as unknown as Record<string, unknown>).name = edited.name ?? authStore.user.name;
+  }
+  try {
+    localStorage.setItem("user", JSON.stringify(authStore.user));
+  } catch (e) { /* noop */ }
+};
+
+const onSavePassword = (): void => {
+  try {
+    localStorage.setItem("passwordChangedAt", new Date().toISOString());
+  } catch (e) { /* noop */ }
+};
+
+const onSaveAddresses = (newAddresses: Address[]): void => {
+  addresses.value = newAddresses;
+  try {
+    localStorage.setItem("addresses", JSON.stringify(addresses.value));
+  } catch (e) { /* noop */ }
+};
 
 // --- Breadcrumb ---
 
@@ -83,12 +139,19 @@ onMounted(async () => {
     <AppSidebar />
 
     <div class="flex flex-1 min-w-0 overflow-hidden">
-      <main class="flex flex-1 min-w-0 flex-col overflow-y-auto p-5 gap-5">
-        <div class="flex flex-col gap-0">
+      <main class="flex flex-1 min-w-0 flex-col p-5 gap-5 min-h-0">
+        <div class="flex flex-col gap-0 shrink-0 relative z-10">
           <Breadcrumb :items="breadcrumb" />
-          <TopBar :user="authStore.user" @logout="logout" />
+          <TopBar
+            :user="authStore.user"
+            @open-edit="showProfileEditModal = true"
+            @open-change-password="showChangePasswordModal = true"
+            @manage-addresses="showAddressesModal = true"
+            @logout="logout"
+          />
         </div>
 
+        <div class="flex-1 overflow-y-auto min-h-0">
         <div
           v-if="authStore.hasPermission('admin.permission.view')"
           class="card p-6 flex flex-col flex-1 min-h-0"
@@ -156,7 +219,26 @@ onMounted(async () => {
         <div v-else class="card p-6 flex items-center justify-center">
           <p class="text-slate-500">No tienes permiso para ver esta sección.</p>
         </div>
+        </div>
       </main>
     </div>
   </div>
+
+  <EditUserModal
+    :show="showProfileEditModal"
+    :user="authStore.user"
+    @close="showProfileEditModal = false"
+    @save="onSaveEdited"
+  />
+  <ChangePasswordModal
+    :show="showChangePasswordModal"
+    @close="showChangePasswordModal = false"
+    @save="onSavePassword"
+  />
+  <AddressesModal
+    :show="showAddressesModal"
+    :addresses="addresses"
+    @close="showAddressesModal = false"
+    @save="onSaveAddresses"
+  />
 </template>

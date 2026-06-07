@@ -9,6 +9,8 @@ import { useLogout } from "@/shared/composables/useLogout";
 import { useUsers } from "@/modules/admin/users/presentation/composables/useUsers";
 import { useRoles } from "@/modules/admin/roles/presentation/composables/useRoles";
 import { usePermissions } from "@/modules/admin/permissions/presentation/composables/usePermissions";
+import ChangePasswordModal from "@/shared/components/ChangePasswordModal.vue";
+import AddressesModal from "@/shared/components/AddressesModal.vue";
 import UiVuetifyDataTable from "@/shared/components/UiVuetifyDataTable.vue";
 import type { AdminUser } from "@/shared/types";
 
@@ -44,6 +46,16 @@ interface UserFormData {
   active?: boolean;
   role?: string | Record<string, unknown>;
   [key: string]: unknown;
+}
+
+interface Address {
+  id: number;
+  alias: string;
+  street: string;
+  number: string;
+  postal_code: string;
+  mobile_phone: string;
+  is_primary: boolean;
 }
 
 interface BreadcrumbItem {
@@ -82,6 +94,26 @@ const localUsers = ref<AdminUser[]>([]);
 const editing = ref<boolean>(false);
 const isNewUser = ref<boolean>(false);
 const form = ref<UserFormData>({ name: "", email: "" });
+
+const showProfileEditModal = ref<boolean>(false);
+const showChangePasswordModal = ref<boolean>(false);
+const showAddressesModal = ref<boolean>(false);
+const addresses = ref<Address[]>([]);
+
+function loadAddresses(): Address[] {
+  try {
+    const stored = localStorage.getItem("addresses");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) return parsed as Address[];
+    }
+  } catch (e) { /* noop */ }
+  return [
+    { id: 1, alias: "Casa", street: "C. Falsa", number: "123", postal_code: "28001", mobile_phone: "600123456", is_primary: true },
+    { id: 2, alias: "Oficina", street: "Av. Siempre Viva", number: "742", postal_code: "28002", mobile_phone: "600654321", is_primary: false },
+  ];
+}
+addresses.value = loadAddresses();
 
 watch(
   users,
@@ -154,6 +186,29 @@ function saveUser(payload?: Record<string, unknown>): Promise<void> {
 
 defineExpose({ saveUser });
 
+const onSaveEdited = (_edited: unknown): void => {
+  const edited = _edited as { name?: string };
+  if (authStore.user) {
+    (authStore.user as unknown as Record<string, unknown>).name = edited.name ?? authStore.user.name;
+  }
+  try {
+    localStorage.setItem("user", JSON.stringify(authStore.user));
+  } catch (e) { /* noop */ }
+};
+
+const onSavePassword = (): void => {
+  try {
+    localStorage.setItem("passwordChangedAt", new Date().toISOString());
+  } catch (e) { /* noop */ }
+};
+
+const onSaveAddresses = (newAddresses: Address[]): void => {
+  addresses.value = newAddresses;
+  try {
+    localStorage.setItem("addresses", JSON.stringify(addresses.value));
+  } catch (e) { /* noop */ }
+};
+
 // --- Breadcrumb ---
 
 const breadcrumb: BreadcrumbItem[] = [
@@ -172,44 +227,60 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="flex h-screen overflow-hidden bg-[#EEF2FF]">
+  <div class="flex h-screen overflow-hidden bg-[#f5f3ff]">
     <AppSidebar />
 
     <div class="flex flex-1 min-w-0 overflow-hidden">
-      <main class="flex flex-1 min-w-0 flex-col overflow-y-auto p-5 gap-5">
-        <div class="flex flex-col gap-0">
+      <main class="flex flex-1 min-w-0 flex-col p-5 gap-5 min-h-0">
+        <div class="flex flex-col gap-0 shrink-0 relative z-10">
           <Breadcrumb :items="breadcrumb" />
-          <TopBar :user="authStore.user" @logout="logout" />
+          <TopBar
+            :user="authStore.user"
+            @open-edit="showProfileEditModal = true"
+            @open-change-password="showChangePasswordModal = true"
+            @manage-addresses="showAddressesModal = true"
+            @logout="logout"
+          />
         </div>
 
+        <div class="flex-1 overflow-y-auto min-h-0">
         <div
           v-if="authStore.hasPermission('admin.user.view')"
           class="card p-6 flex flex-col flex-1 min-h-0"
         >
-          <h1 class="text-2xl text-indigo-600 font-bold mb-4">
-            <i class="pi pi-user text-indigo-600" style="font-size: 1.1rem" aria-hidden="true"></i>
+          <h1 class="text-2xl font-bold mb-4 text-primary">
+            <i class="pi pi-user text-primary" style="font-size: 1.1rem" aria-hidden="true"></i>
             Usuarios
           </h1>
 
           <div v-if="loading" class="text-sm text-slate-500">Cargando usuarios...</div>
 
           <div v-else>
-            <div class="flex items-center justify-between mb-3">
-              <input
-                v-model="globalFilter"
-                placeholder="Buscar..."
-                aria-label="Buscar usuarios"
-                class="form-input md:w-1/3"
-              />
-              <div class="ml-4">
+            <div class="flex items-center justify-between gap-3 mb-3">
+              <div class="relative flex-1 md:max-w-xs">
+                <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-[#9690a8] text-sm pointer-events-none" />
+                <input
+                  v-model="globalFilter"
+                  placeholder="Buscar usuarios..."
+                  aria-label="Buscar usuarios"
+                  class="form-input pl-9 pr-8"
+                />
                 <button
-                  v-has-permission="'admin.user.create'"
-                  class="btn btn-primary"
-                  @click="startNewUser"
+                  v-if="globalFilter"
+                  type="button"
+                  class="absolute right-2 top-1/2 -translate-y-1/2 text-[#9690a8] hover:text-[#6b6b7b] transition-colors"
+                  @click="globalFilter = ''"
                 >
-                  Agregar usuario
+                  <i class="pi pi-times text-sm" />
                 </button>
               </div>
+              <button
+                v-has-permission="'admin.user.create'"
+                class="btn btn-primary whitespace-nowrap"
+                @click="startNewUser"
+              >
+                + Agregar usuario
+              </button>
             </div>
 
             <div class="flex-1 min-h-0">
@@ -268,7 +339,7 @@ onMounted(async () => {
                         @click="startEditUser(data)"
                       >
                         <i
-                          class="pi pi-pencil h-4 w-4 transition-colors duration-150 text-current group-hover:text-indigo-600"
+                          class="pi pi-pencil h-4 w-4 transition-colors duration-150 text-current group-hover:text-primary"
                         ></i>
                       </button>
                       <button
@@ -289,7 +360,7 @@ onMounted(async () => {
                 </template>
 
                 <template #empty>
-                  <div class="px-3 py-4 text-slate-500">No hay usuarios para mostrar.</div>
+                  <div class="px-3 py-4 text-center text-[#9690a8]">No hay usuarios para mostrar.</div>
                 </template>
               </UiVuetifyDataTable>
             </div>
@@ -307,7 +378,85 @@ onMounted(async () => {
             />
           </div>
         </div>
+        </div>
       </main>
     </div>
   </div>
+
+  <EditUserModal
+    :show="showProfileEditModal"
+    :user="authStore.user"
+    @close="showProfileEditModal = false"
+    @save="onSaveEdited"
+  />
+  <ChangePasswordModal
+    :show="showChangePasswordModal"
+    @close="showChangePasswordModal = false"
+    @save="onSavePassword"
+  />
+  <AddressesModal
+    :show="showAddressesModal"
+    :addresses="addresses"
+    @close="showAddressesModal = false"
+    @save="onSaveAddresses"
+  />
 </template>
+
+<style scoped>
+.users-table :deep(.v-data-table__table > thead > tr > th) {
+  padding: 0 !important;
+  height: auto !important;
+  background-color: #f5f3ff !important;
+  border: none !important;
+}
+
+.users-table :deep(.v-data-table__table > thead > tr > th > div) {
+  padding: 10px 12px;
+  color: #7c3aed !important;
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-bottom: 2px solid rgba(124, 58, 237, 0.12);
+  width: 100% !important;
+  display: flex !important;
+  align-items: center;
+  gap: 0.5rem;
+  box-sizing: border-box;
+}
+
+.users-table :deep(.v-data-table__table > thead > tr > th .mdi-swap-vertical) {
+  color: #c4b5e3 !important;
+}
+
+.users-table :deep(.v-data-table__table > thead > tr > th .mdi-arrow-up),
+.users-table :deep(.v-data-table__table > thead > tr > th .mdi-arrow-down) {
+  color: #7c3aed !important;
+}
+
+.users-table :deep(.v-data-table__table > tbody > tr) {
+  background-color: #ffffff !important;
+  transition: background-color 0.12s ease;
+}
+
+.users-table :deep(.v-data-table__table > tbody > tr:hover) {
+  background-color: #faf9ff !important;
+}
+
+.users-table :deep(.v-data-table__table > tbody > tr:nth-child(even)) {
+  background-color: #fcfbff !important;
+}
+
+.users-table :deep(.v-data-table__table > tbody > tr:nth-child(even):hover) {
+  background-color: #f6f3ff !important;
+}
+
+.users-table :deep(.v-data-table__table > tbody > tr > td) {
+  border-bottom: 1px solid rgba(124, 58, 237, 0.05) !important;
+  padding: 10px 12px !important;
+}
+
+.users-table :deep(.v-data-table__table > tbody > tr:last-child > td) {
+  border-bottom: none !important;
+}
+</style>

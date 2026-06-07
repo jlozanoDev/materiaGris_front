@@ -7,7 +7,7 @@
     :items="value"
     :items-per-page-options="paginator ? rowsPerPageOptions : []"
     :no-data-text="emptyText"
-    class="app-vuetify-datatable"
+    :class="['app-vuetify-datatable', { 'striped-rows': stripedRows }]"
     density="compact"
     :search="globalFilterValue"
   >
@@ -15,7 +15,8 @@
     <template v-for="(header, idx) in headersWithKeys" :key="idx" #[`header.${header.key}`]="{ column }">
       <slot :name="`header-${header.key}`" :column="column">
         <div
-          class="px-3 py-2 text-sm font-semibold text-slate-700 bg-slate-50 inline-flex items-center gap-2"
+          class="px-3 py-2 text-xs font-semibold tracking-wide uppercase flex items-center gap-2 w-full h-full"
+          style="color: #7c3aed; background-color: #f5f3ff; border-bottom: 2px solid rgba(124, 58, 237, 0.12);"
         >
           <span>{{ column.title }}</span>
           <i
@@ -23,13 +24,17 @@
             :class="[
               'v-icon notranslate mdi',
               colSortOrder(header.key) === 'asc'
-                ? 'mdi-arrow-up text-indigo-600'
+                ? 'mdi-arrow-up'
                 : colSortOrder(header.key) === 'desc'
-                ? 'mdi-arrow-down text-indigo-600'
-                : 'mdi-swap-vertical text-slate-400',
+                ? 'mdi-arrow-down'
+                : 'mdi-swap-vertical',
             ]"
             aria-hidden="true"
-            style="font-size: 1rem; line-height: 1"
+            :style="{
+              fontSize: '1rem',
+              lineHeight: '1',
+              color: colSortOrder(header.key) ? '#7c3aed' : '#c4b5e3',
+            }"
           ></i>
         </div>
       </slot>
@@ -132,7 +137,7 @@ const props = withDefaults(defineProps<Props>(), {
   rows: 10,
   rowsPerPageOptions: () => [10, 25, 50],
   emptyText: "No hay datos.",
-  stripedRows: false,
+  stripedRows: true,
   showGridlines: false,
   rowHover: false,
   rowClass: null,
@@ -250,7 +255,11 @@ function colSortOrder(key: string): "asc" | "desc" | null {
 
 <style scoped>
 .app-vuetify-datatable :deep(.v-data-table__td) {
-  padding: 8px 12px; /* Adjust padding to match original UiDataTable px-3 py-2 */
+  padding: 8px 12px;
+}
+
+.app-vuetify-datatable :deep(.v-data-table__th) {
+  padding: 0 !important;
 }
 
 /* Custom styles for pagination to match existing design if needed */
@@ -311,9 +320,13 @@ function colSortOrder(key: string): "asc" | "desc" | null {
   background-color: transparent !important;
 }
 
-/* Add subtle borders to separate rows when dark theme would remove them */
+/* Subtle border between rows — on td because table uses border-collapse: separate */
 .app-vuetify-datatable :deep(.v-data-table__td) {
-  border-color: rgba(15, 23, 42, 0.04) !important;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06) !important;
+}
+
+.app-vuetify-datatable :deep(.v-data-table__tr:last-child .v-data-table__td) {
+  border-bottom: none !important;
 }
 
 /* Force Vuetify theme variables locally to light values to counter dark themes */
@@ -330,13 +343,17 @@ function colSortOrder(key: string): "asc" | "desc" | null {
 .app-vuetify-datatable :deep(.v-data-table__wrapper),
 .app-vuetify-datatable :deep(.v-data-table__thead),
 .app-vuetify-datatable :deep(.v-data-table__tbody),
-.app-vuetify-datatable :deep(.v-data-table__tr),
 .app-vuetify-datatable :deep(.v-data-table__th),
 .app-vuetify-datatable :deep(.v-data-table__td) {
   background-color: #ffffff !important;
   color: #0f172a !important;
   box-shadow: none !important;
   background-image: none !important;
+}
+
+/* Alternating row backgrounds for striped mode */
+.app-vuetify-datatable.striped-rows :deep(.v-data-table__tr:nth-child(even) .v-data-table__td) {
+  background-color: #f8fafc !important;
 }
 
 /* Ensure SVG/icon fills are visible */

@@ -88,8 +88,9 @@
       <template #body-actions="{ data }">
         <div class="px-3 py-2 flex items-center justify-end gap-1.5">
           <button
+            data-action-btn
             aria-label="Editar dirección"
-            class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-[#f5f3ff] border border-[#ede9fe] text-[#7c3aed] hover:bg-[#7c3aed] hover:text-white hover:border-[#7c3aed] hover:shadow-sm active:scale-90 transition-all duration-150 relative group"
+            class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-[#f5f3ff] border border-[#ede9fe] text-[#7c3aed] hover:bg-[#7c3aed] hover:text-white hover:border-[#7c3aed] hover:shadow-sm transition-all duration-150 relative group"
             @click="startEdit(data)"
           >
             <i class="pi pi-pencil text-xs" />
@@ -100,8 +101,9 @@
             </span>
           </button>
           <button
+            data-action-btn
             aria-label="Eliminar dirección"
-            class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-red-50 border border-red-100 text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 hover:shadow-sm active:scale-90 transition-all duration-150 relative group"
+            class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-red-50 border border-red-100 text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 hover:shadow-sm transition-all duration-150 relative group"
             @click="confirmDelete(data)"
           >
             <i class="pi pi-trash text-xs" />
@@ -181,7 +183,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch, onUnmounted } from "vue";
+import { animate } from "animejs";
 import Modal from "@/shared/components/Modal.vue";
 import UiVuetifyDataTable from "@/shared/components/UiVuetifyDataTable.vue";
 import ToggleSwitch from "@/shared/components/ToggleSwitch.vue";
@@ -231,6 +234,23 @@ const { show: showToast } = useToast();
 
 const globalFilter = ref<string>("");
 const filters = ref<FilterDef>({ global: { value: null, matchMode: "contains" } });
+
+function attachHover(): void {
+  document.querySelectorAll("[data-action-btn]:not([data-hover-ready])").forEach((btn) => {
+    btn.setAttribute("data-hover-ready", "");
+    btn.addEventListener("mouseenter", () => {
+      animate({ targets: btn, scale: [1, 1.2, 1], duration: 500, easing: "outElastic" });
+    });
+  });
+}
+
+watch(() => props.show, (v) => { if (v) setTimeout(attachHover, 300); });
+
+onUnmounted(() => {
+  document.querySelectorAll("[data-action-btn]").forEach((btn) => {
+    btn.removeAttribute("data-hover-ready");
+  });
+});
 
 watch(globalFilter, (val: string) => {
   filters.value = { global: { value: val, matchMode: "contains" } };

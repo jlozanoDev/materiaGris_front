@@ -92,8 +92,8 @@ onMounted(() => {
     <AppSidebar />
 
     <div class="flex flex-1 min-w-0 overflow-hidden">
-      <main class="flex flex-1 min-w-0 flex-col overflow-y-auto p-5 gap-5">
-        <div class="flex flex-col gap-1">
+      <main class="flex flex-1 min-w-0 flex-col p-5 gap-5 min-h-0">
+        <div class="flex flex-col gap-1 shrink-0 relative z-10">
           <Breadcrumb :items="breadcrumb" />
           <TopBar
             :user="authStore.user"
@@ -103,6 +103,7 @@ onMounted(() => {
               @logout="logout"
           />
         </div>
+        <div class="flex-1 overflow-y-auto min-h-0">
         <div class="flex gap-5">
           <HeroCard :user="authStore.user" class="flex-1" />
           <div class="w-160">
@@ -111,6 +112,7 @@ onMounted(() => {
         </div>
         <div class="mt-5">
           <ConsultationPanel />
+        </div>
         </div>
       </main>
 
