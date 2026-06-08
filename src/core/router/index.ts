@@ -11,6 +11,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import("@/modules/admin/permissions/presentation/pages/PermissionsPage.vue"),
     meta: { requiresAuth: true },
   },
+  {
+    path: "/admin/tipo-informe",
+    name: "AdminTipoInforme",
+    component: () => import("@/modules/admin/tipo-informe/presentation/pages/TipoInformePage.vue"),
+    meta: { requiresAuth: true },
+  },
   { path: "/patients", name: "Patients", component: () => import("@/modules/patients/presentation/pages/PatientsPage.vue"), meta: { requiresAuth: true } },
   { path: "/login", name: "Login", component: () => import("@/modules/auth/presentation/pages/LoginView.vue") },
   { path: "/welcome", name: "Landing", component: () => import("@/modules/landing/presentation/pages/LandingPage.vue") },

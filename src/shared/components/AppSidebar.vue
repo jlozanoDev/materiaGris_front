@@ -225,6 +225,31 @@ watch(
                 <span>Permisos</span>
               </button>
             </li>
+            <li
+              v-if="authStore.hasPermission('admin.tipoinforme.view')"
+              aria-hidden="true"
+            >
+              <div class="mx-4 my-1" style="border-top: 1px solid rgba(124, 58, 237, 0.06);"></div>
+            </li>
+
+            <!-- Gestión de Tipos de Informes -->
+            <li
+              v-if="authStore.hasPermission('admin.tipoinforme.view')"
+            >
+              <button
+                title="Tipos de informes"
+                aria-label="Tipos de informes"
+                class="sidebar-dropdown-item w-full text-left px-4 py-2 text-sm flex items-center gap-3 justify-start whitespace-nowrap transition"
+                style="color: #0b0817;"
+                @click.prevent="openAdminRoute({ name: 'AdminTipoInforme' })"
+              >
+                <i
+                  class="pi pi-file text-base transition-transform duration-150 group-hover:scale-110"
+                  style="color: #9690a8; width: 20px; text-align: center;"
+                ></i>
+                <span>Tipos de informes</span>
+              </button>
+            </li>
 
           </ul>
         </div>
