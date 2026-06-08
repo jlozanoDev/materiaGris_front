@@ -9,214 +9,378 @@
         stroke-linecap="round"
         stroke-linejoin="round"
       >
-        <path d="M20 21v-2a4 4 0 00-3-3.87"></path>
-        <path d="M4 21v-2a4 4 0 013-3.87"></path>
-        <circle cx="12" cy="7" r="4"></circle>
+        <path d="M20 21v-2a4 4 0 00-3-3.87" />
+        <path d="M4 21v-2a4 4 0 013-3.87" />
+        <circle cx="12" cy="7" r="4" />
       </svg>
     </template>
     <template #header>
-      <h3 class="text-lg font-semibold text-[#0b0817] mb-4">
+      <h3 class="text-lg font-semibold text-[#0b0817]">
         {{ isNewUser ? "Crear usuario" : "Editar usuario" }}
       </h3>
     </template>
 
-    <form class="space-y-4" @submit.prevent="onSave">
-      <!-- Nombre -->
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-[#6b6b7b] mb-1">Nombre</label>
-        <input v-model="name" type="text" placeholder="Nombre" class="form-input" />
-      </div>
-
-      <!-- Email -->
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-[#6b6b7b] mb-1">Email</label>
-        <template v-if="isNewUser">
-          <input v-model="email" type="email" placeholder="Email" class="form-input" required />
-        </template>
-        <template v-else>
-          <input
-            :value="email"
-            readonly
-            aria-readonly="true"
-            type="email"
-            class="form-input readonly-input"
-          />
-          <p class="text-xs text-red-400 mt-1">No es posible cambiar el email</p>
-        </template>
-      </div>
-
-      <!-- Roles -->
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-[#6b6b7b] mb-2">Roles</label>
-        <div class="space-y-2 max-h-40 overflow-y-auto">
-          <label
-            v-for="role in availableRoles"
-            :key="role.id"
-            :class="[
-              'flex items-center gap-2 p-2 rounded border border-[rgba(124,58,237,0.10)]',
-              role.is_system
-                ? 'opacity-60 cursor-not-allowed bg-[#f5f3ff]'
-                : 'cursor-pointer hover:bg-[#f5f3ff]',
-              selectedRoleIds.includes(role.id) ? 'bg-[#ede9fe]' : '',
-            ]"
-            :title="role.is_system ? 'Rol del sistema: no editable' : ''"
-          >
-            <input
-              type="checkbox"
-              :value="role.id"
-              :checked="selectedRoleIds.includes(role.id)"
-              :disabled="role.is_system"
-              class="form-checkbox"
-              @change="toggleRole(role.id)"
-            />
-            <span class="text-sm text-[#0b0817]">{{ role.name }}</span>
-            <span v-if="role.is_system" class="badge badge--secondary text-xs">Sistema</span>
-          </label>
-        </div>
-        <div v-if="selectedRoleIds.length > 0" class="flex flex-wrap gap-1 mt-2">
-          <span
-            v-for="roleId in selectedRoleIds"
-            :key="'badge-' + roleId"
-            class="badge badge--primary"
-          >
-            {{ getRoleName(roleId) }}
-          </span>
-        </div>
-      </div>
-
-      <!-- Permisos Individuales Editables -->
-      <div class="mb-4">
-        <div class="flex items-center justify-between mb-2">
-          <label class="block text-sm font-medium text-[#6b6b7b]">Permisos Individuales</label>
-          <button type="button" class="btn btn-ghost btn-sm" @click="resetPermissions">
-            Restaurar permisos
-          </button>
-        </div>
-
-        <div v-if="loadingPermissions" class="text-sm text-[#9690a8]">Cargando permisos...</div>
-
-        <div v-else class="space-y-3 max-h-60 overflow-y-auto">
-          <div
-            v-for="category in permissionsByCategory"
-            :key="category.id"
-            class="border border-[rgba(124,58,237,0.10)] rounded p-2"
-          >
-            <div class="text-sm font-medium text-[#0b0817] mb-1">{{ category.name }}</div>
-            <div class="space-y-1">
-              <div
-                v-for="perm in category.permissions"
-                :key="perm.id"
-                class="flex items-center gap-2 text-sm"
-              >
-                <span class="w-32 truncate text-[#6b6b7b]" :title="perm.slug">{{ perm.slug }}</span>
-
-                <!-- Si viene de rol, mostrar solo lectura -->
-                <template v-if="isPermissionFromRole(perm.id)">
-                  <span class="text-xs px-1.5 py-0.5 rounded bg-[#ede9fe] text-[#6b6b7b]">
-                    de rol
-                  </span>
-                  <span
-                    :class="getEffectiveGrant(perm.id) === 1 ? 'text-green-600' : 'text-red-500'"
-                  >
-                    {{ getEffectiveGrant(perm.id) === 1 ? "(+)" : "(-)" }}
-                  </span>
-                </template>
-
-                <!-- Si es override individual, permitir editar -->
-                <template v-else>
-                  <label class="flex items-center gap-1 cursor-pointer">
-                    <input
-                      type="radio"
-                      :name="'perm-' + perm.id"
-                      :checked="selectedPermissions[perm.id] === 1"
-                      class="form-radio"
-                      @change="setPermission(perm.id, 1)"
-                    />
-                    <span class="text-green-600 text-xs">+</span>
-                  </label>
-                  <label class="flex items-center gap-1 cursor-pointer">
-                    <input
-                      type="radio"
-                      :name="'perm-' + perm.id"
-                      :checked="selectedPermissions[perm.id] === -1"
-                      class="form-radio"
-                      @change="setPermission(perm.id, -1)"
-                    />
-                    <span class="text-red-500 text-xs">-</span>
-                  </label>
-                  <label class="flex items-center gap-1 cursor-pointer">
-                    <input
-                      type="radio"
-                      :name="'perm-' + perm.id"
-                      :checked="selectedPermissions[perm.id] === 0 || !selectedPermissions[perm.id]"
-                      class="form-radio"
-                      @change="setPermission(perm.id, 0)"
-                    />
-                    <span class="text-[#9690a8] text-xs">ninguno</span>
-                  </label>
-                </template>
-              </div>
-            </div>
+    <form id="edit-user-form" class="space-y-6" @submit.prevent="onSave">
+      <!-- Información general -->
+      <div>
+        <h4 class="text-xs font-semibold uppercase tracking-wider text-[#7c3aed] mb-3">
+          Información general
+        </h4>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-[#6b6b7b] mb-1">Nombre</label>
+            <input v-model="name" type="text" placeholder="Nombre completo" class="form-input" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#6b6b7b] mb-1">Email</label>
+            <template v-if="isNewUser">
+              <input v-model="email" type="email" placeholder="correo@ejemplo.com" class="form-input" required />
+            </template>
+            <template v-else>
+              <input
+                :value="email"
+                readonly
+                aria-readonly="true"
+                type="email"
+                class="form-input readonly-input"
+              />
+              <p class="text-xs text-red-400 mt-1.5 flex items-center gap-1">
+                <svg class="h-3 w-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                No es posible cambiar el email
+              </p>
+            </template>
           </div>
         </div>
       </div>
 
-      <!-- Permisos Efectivos (resultado) -->
-      <div class="mb-4 p-3 bg-[#f5f3ff] rounded">
-        <label class="block text-sm font-medium text-[#6b6b7b] mb-2"
-          >Permisos Efectivos (resultado)</label
-        >
-        <div class="flex flex-wrap gap-1">
-          <span
-            v-for="(grant, slug) in effectivePermissionsMap"
-            :key="slug"
-            class="text-xs px-2 py-1 rounded"
-            :class="grant === 1 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'"
-          >
-            {{ grant === 1 ? "+" : "-" }} {{ slug }}
-          </span>
-          <span
-            v-if="Object.keys(effectivePermissionsMap).length === 0"
-            class="text-sm text-[#9690a8]"
-          >
-            Sin permisos
-          </span>
+      <hr class="border-[rgba(124,58,237,0.08)]" />
+
+      <!-- Roles -->
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <h4 class="text-xs font-semibold uppercase tracking-wider text-[#7c3aed]">
+            Roles
+          </h4>
+          <div v-if="selectedRoleIds.length > 0" class="flex flex-wrap gap-1">
+            <span
+              v-for="roleId in selectedRoleIds"
+              :key="'badge-' + roleId"
+              class="badge badge--primary"
+            >
+              {{ getRoleName(roleId) }}
+            </span>
+          </div>
         </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div
+            v-for="role in availableRoles"
+            :key="role.id"
+            class="border border-[rgba(124,58,237,0.10)] rounded-lg overflow-hidden"
+            :class="selectedRoleIds.includes(role.id) ? 'bg-[#ede9fe]' : 'bg-white'"
+          >
+            <div class="flex items-center gap-2 px-3 py-2.5">
+              <label
+                :class="[
+                  'flex items-center gap-3 flex-1 min-w-0 cursor-pointer',
+                ]"
+              >
+                <div
+                  :class="[
+                    'h-4 w-4 rounded flex items-center justify-center border-2 transition-all duration-150 shrink-0',
+                    selectedRoleIds.includes(role.id)
+                      ? 'bg-[#7c3aed] border-[#7c3aed]'
+                      : 'border-[#c4b5e3] bg-white',
+                  ]"
+                >
+                  <svg v-if="selectedRoleIds.includes(role.id)" class="h-2.5 w-2.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </div>
+                <input
+                  type="checkbox"
+                  :value="role.id"
+                  :checked="selectedRoleIds.includes(role.id)"
+                  class="sr-only"
+                  @change="toggleRole(role.id)"
+                />
+                <span class="text-sm font-medium text-[#0b0817] truncate">{{ role.name }}</span>
+              </label>
+              <span v-if="role.is_system" class="badge badge--secondary text-xs shrink-0">Sistema</span>
+              <button
+                type="button"
+                :class="[
+                  'inline-flex items-center justify-center h-7 w-7 rounded-md transition-all duration-150 shrink-0',
+                  roleExpanded[role.id] ? 'bg-[#ede9fe] text-[#7c3aed]' : 'text-[#9690a8] hover:text-[#7c3aed] hover:bg-[#f5f3ff]',
+                ]"
+                :title="roleExpanded[role.id] ? 'Ocultar permisos' : 'Ver permisos'"
+                @click.stop="toggleRoleExpanded(role.id)"
+              >
+                <svg
+                  :class="['h-3.5 w-3.5 transition-transform duration-200', roleExpanded[role.id] ? 'rotate-180' : '']"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+            </div>
+            <transition name="collapse">
+              <div v-if="roleExpanded[role.id]" class="px-3 pb-2.5">
+                <div v-if="(rolePermissionsTree[role.id] || []).length === 0" class="text-xs text-[#9690a8] italic">
+                  Sin permisos
+                </div>
+                <div
+                  v-for="cat in (rolePermissionsTree[role.id] || [])"
+                  :key="cat.name"
+                  class="mb-2 last:mb-0"
+                >
+                  <button
+                    type="button"
+                    class="flex items-center gap-1.5 w-full text-left text-[11px] font-semibold text-[#7c3aed] uppercase tracking-wider mb-1 hover:text-[#6d28d9] transition-colors"
+                    @click="toggleCategoryExpanded(role.id, cat.name)"
+                  >
+                    <svg
+                      :class="['h-3 w-3 transition-transform duration-200', categoryExpanded[`${role.id}-${cat.name}`] ? 'rotate-90' : '']"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                    {{ cat.name }}
+                    <span class="text-[10px] text-[#9690a8] font-normal normal-case ml-1">({{ cat.permissions.length }})</span>
+                  </button>
+                  <transition name="collapse">
+                    <div v-if="categoryExpanded[`${role.id}-${cat.name}`]" class="space-y-0.5">
+                      <div
+                        v-for="perm in cat.permissions"
+                        :key="perm.slug"
+                        class="text-xs text-[#6b6b7b] flex items-center gap-1.5"
+                      >
+                        <svg class="h-3 w-3 text-[#7c3aed] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        {{ perm.name || perm.slug }}
+                      </div>
+                    </div>
+                  </transition>
+                </div>
+              </div>
+            </transition>
+          </div>
+        </div>
+      </div>
+
+      <hr class="border-[rgba(124,58,237,0.08)]" />
+
+      <!-- Permisos (colapsable) -->
+      <div class="border border-[rgba(124,58,237,0.10)] rounded-lg overflow-hidden">
+        <button
+          type="button"
+          class="flex items-center justify-between w-full px-3 py-2.5 bg-[#faf9ff] hover:bg-[#f5f3ff] transition-colors text-left"
+          @click="showPermissions = !showPermissions"
+        >
+          <span class="text-xs font-semibold uppercase tracking-wider text-[#7c3aed]">
+            Permisos avanzados
+          </span>
+          <svg
+            :class="['h-4 w-4 text-[#7c3aed] transition-transform duration-200', showPermissions ? 'rotate-180' : '']"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+
+        <transition name="collapse">
+          <div v-if="showPermissions" class="divide-y divide-[rgba(124,58,237,0.06)]">
+            <!-- Permisos Individuales -->
+            <div class="p-4">
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="text-xs font-semibold text-[#0b0817]">
+                  Permisos individuales
+                </h4>
+                <button type="button" class="btn btn-ghost btn-sm" @click="resetPermissions">
+                  Restaurar
+                </button>
+              </div>
+
+              <div v-if="loadingPermissions" class="text-sm text-[#9690a8] py-4 text-center">
+                Cargando permisos...
+              </div>
+
+              <div v-else class="space-y-3 max-h-60 overflow-y-auto pr-1 permissions-scroll">
+                <div
+                  v-for="category in permissionsByCategory"
+                  :key="category.id"
+                  class="border border-[rgba(124,58,237,0.10)] rounded-lg overflow-hidden"
+                >
+                  <div class="text-sm font-semibold text-[#0b0817] px-3 py-2 bg-[#faf9ff] border-b border-[rgba(124,58,237,0.06)]">
+                    {{ category.name }}
+                  </div>
+                  <div class="divide-y divide-[rgba(124,58,237,0.04)]">
+                    <div
+                      v-for="perm in category.permissions"
+                      :key="perm.id"
+                      class="flex items-center gap-3 px-3 py-2 text-sm"
+                    >
+                      <span class="flex-1 min-w-0 truncate text-[#0b0817]" :title="perm.slug">
+                        {{ perm.name || perm.slug }}
+                      </span>
+
+                      <!-- Desde rol -->
+                      <template v-if="isPermissionFromRole(perm.id)">
+                        <span class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-[#ede9fe] text-[#6b6b7b] whitespace-nowrap">
+                          <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                          </svg>
+                          de rol
+                        </span>
+                        <span
+                          :class="getEffectiveGrant(perm.id) === 1 ? 'text-green-600' : 'text-red-500'"
+                          class="text-xs font-mono whitespace-nowrap"
+                        >
+                          {{ getEffectiveGrant(perm.id) === 1 ? "(+)" : "(-)" }}
+                        </span>
+                      </template>
+
+                      <!-- Override individual -->
+                      <template v-else>
+                        <div class="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            :class="[
+                              'inline-flex items-center justify-center h-7 w-7 rounded-md text-xs font-semibold border transition-all duration-150',
+                              selectedPermissions[perm.id] === 1
+                                ? 'bg-green-50 border-green-300 text-green-700'
+                                : 'border-[rgba(124,58,237,0.10)] text-[#9690a8] hover:border-green-300 hover:text-green-600',
+                            ]"
+                            @click="setPermission(perm.id, selectedPermissions[perm.id] === 1 ? 0 : 1)"
+                          >
+                            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            :class="[
+                              'inline-flex items-center justify-center h-7 w-7 rounded-md text-xs font-semibold border transition-all duration-150',
+                              selectedPermissions[perm.id] === -1
+                                ? 'bg-red-50 border-red-300 text-red-600'
+                                : 'border-[rgba(124,58,237,0.10)] text-[#9690a8] hover:border-red-300 hover:text-red-500',
+                            ]"
+                            @click="setPermission(perm.id, selectedPermissions[perm.id] === -1 ? 0 : -1)"
+                          >
+                            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                              <line x1="18" y1="6" x2="6" y2="18" />
+                              <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                          </button>
+                        </div>
+                      </template>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Permisos Efectivos -->
+            <div class="px-4 pb-4">
+              <div class="card p-3">
+                <div class="flex items-center gap-2 mb-2">
+                  <svg class="h-4 w-4 text-[#7c3aed]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 11l3 3L22 4" />
+                    <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+                  </svg>
+                  <h4 class="text-xs font-semibold text-[#0b0817]">
+                    Permisos efectivos
+                  </h4>
+                </div>
+                <div class="flex flex-wrap gap-1.5">
+                  <span
+                    v-for="perm in effectivePermissionsDisplay"
+                    :key="perm.slug"
+                    class="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md font-medium"
+                    :class="perm.grant === 1 ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'"
+                  >
+                    <svg v-if="perm.grant === 1" class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    <svg v-else class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                    {{ perm.name }}
+                  </span>
+                  <span v-if="effectivePermissionsDisplay.length === 0" class="text-sm text-[#9690a8]">
+                    Sin permisos
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </transition>
       </div>
 
       <!-- Warning al cambiar roles -->
       <div
         v-if="overridesToRemove.length > 0"
-        class="p-3 bg-amber-50 border border-amber-200 rounded"
+        class="flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg"
       >
-        <p class="text-sm text-amber-700">
-          Se eliminarán {{ overridesToRemove.length }} permisos individuales al asignar los roles
-          seleccionados.
-        </p>
-        <div class="mt-2 flex flex-wrap gap-2">
-          <span
-            v-for="item in overridesToRemove"
-            :key="'override-' + String(item)"
-            class="badge badge--danger text-xs"
-          >
-            {{ formatOverrideItem(item) }}
-          </span>
+        <svg class="h-5 w-5 text-amber-500 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+          <line x1="12" y1="9" x2="12" y2="13" />
+          <line x1="12" y1="17" x2="12.01" y2="17" />
+        </svg>
+        <div>
+          <p class="text-sm font-medium text-amber-800">
+            Se eliminarán {{ overridesToRemove.length }} permisos individuales
+          </p>
+          <p class="text-xs text-amber-600 mt-0.5">
+            Al asignar los roles seleccionados, estos permisos dejarán de aplicarse:
+          </p>
+          <div class="mt-2 flex flex-wrap gap-1.5">
+            <span
+              v-for="item in overridesToRemove"
+              :key="'override-' + String(item)"
+              class="badge badge--danger text-xs"
+            >
+              {{ formatOverrideItem(item) }}
+            </span>
+          </div>
         </div>
       </div>
 
-      <div class="flex justify-end gap-3">
-        <button type="button" class="btn btn-ghost" @click="close">Cancelar</button>
-        <button type="submit" :disabled="!canSave" class="btn btn-primary disabled:opacity-50">
-          Guardar
-        </button>
-      </div>
     </form>
+
+    <template #footer>
+      <button type="button" class="btn btn-ghost" @click="close">Cancelar</button>
+      <button type="submit" form="edit-user-form" :disabled="!canSave" class="btn btn-primary disabled:opacity-50">
+        Guardar cambios
+      </button>
+    </template>
   </Modal>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from "vue";
+import { ref, watch, computed, onMounted } from "vue";
 import Modal from "@/shared/components/Modal.vue";
+import { fetchClient } from "@/core/api/httpClient";
 
 interface UserRole {
   id: number;
@@ -236,8 +400,7 @@ interface PermissionItem {
   id: number;
   slug: string;
   name: string;
-  category_id?: number;
-  category?: { id: number; name: string };
+  category?: string;
 }
 
 interface UserData {
@@ -281,16 +444,75 @@ const emit = defineEmits<{
   (e: "save", payload: Payload): void;
 }>();
 
-const allRoles = computed<UserRole[]>(() => props.roles);
-const allPermissionsList = computed<PermissionItem[]>(() => props.permissions);
+const apiRoles = ref<UserRole[]>([]);
+const apiPermissions = ref<PermissionItem[]>([]);
+const apiLoadingPermissions = ref(false);
+
+const allRoles = computed<UserRole[]>(() => {
+  return apiRoles.value.length > 0 ? apiRoles.value : props.roles;
+});
+const allPermissionsList = computed<PermissionItem[]>(() => {
+  return apiPermissions.value.length > 0 ? apiPermissions.value : props.permissions;
+});
+
+const rolesPermissionsCache = ref<Record<number, Array<{ id?: number; slug?: string; name?: string } | string>>>({});
+
+async function fetchRoles(): Promise<void> {
+  try {
+    const data = await fetchClient("/admin/roles", { method: "GET" });
+    apiRoles.value = Array.isArray(data) ? data : [];
+    if (Array.isArray(data)) {
+      for (const role of data) {
+        if (role.id && (!role.permissions || role.permissions.length === 0)) {
+          fetchRolePermissions(role.id);
+        } else if (role.id && role.permissions) {
+          rolesPermissionsCache.value[role.id] = role.permissions;
+        }
+      }
+    }
+  } catch {
+    apiRoles.value = [];
+  }
+}
+
+async function fetchRolePermissions(roleId: number): Promise<void> {
+  try {
+    const detail = await fetchClient(`/admin/roles/${roleId}`, { method: "GET" });
+    if (detail && detail.permissions) {
+      rolesPermissionsCache.value[roleId] = detail.permissions;
+      const idx = apiRoles.value.findIndex((r) => r.id === roleId);
+      if (idx !== -1) {
+        apiRoles.value[idx] = { ...apiRoles.value[idx], permissions: detail.permissions };
+      }
+    }
+  } catch {
+    // silencio
+  }
+}
+
+async function fetchPermissions(): Promise<void> {
+  apiLoadingPermissions.value = true;
+  try {
+    const data = await fetchClient("/admin/permissions", { method: "GET" });
+    apiPermissions.value = Array.isArray(data) ? data : [];
+  } catch {
+    apiPermissions.value = [];
+  } finally {
+    apiLoadingPermissions.value = false;
+  }
+}
+
+const loadingPermissions = computed<boolean>(() => {
+  return apiLoadingPermissions.value || props.loadingPermissions;
+});
 
 const name = ref<string>(props.user?.name || "");
 const email = ref<string>(props.user?.email || "");
 const selectedRoleIds = ref<number[]>([]);
 const originalRoleIds = ref<number[]>([]);
-const selectedPermissions = ref<Record<number, number>>({}); // { permission_id: grant }
+const selectedPermissions = ref<Record<number, number>>({});
 const originalPermissions = ref<Record<number, number>>({});
-const originalPermissionsSlug = ref<Record<string, number>>({}); // Overrides expresados por slug
+const originalPermissionsSlug = ref<Record<string, number>>({});
 
 const availableRoles = computed<UserRole[]>(() => {
   if (props.user?.all_roles) return props.user.all_roles;
@@ -298,6 +520,85 @@ const availableRoles = computed<UserRole[]>(() => {
 });
 
 const isNewUser = computed<boolean>(() => props.isNew);
+const showPermissions = ref(false);
+
+onMounted(() => {
+  fetchRoles();
+  fetchPermissions();
+});
+
+watch(() => props.show, (val) => {
+  if (val) {
+    fetchRoles();
+    fetchPermissions();
+  }
+});
+const roleExpanded = ref<Record<number, boolean>>({});
+const categoryExpanded = ref<Record<string, boolean>>({});
+
+function toggleCategoryExpanded(roleId: number, catName: string): void {
+  const key = `${roleId}-${catName}`;
+  categoryExpanded.value[key] = !categoryExpanded.value[key];
+}
+
+function toggleRoleExpanded(roleId: number): void {
+  const willExpand = !roleExpanded.value[roleId];
+  roleExpanded.value[roleId] = willExpand;
+  if (willExpand) {
+    const role = apiRoles.value.find((r) => r.id === roleId);
+    if (role && (!role.permissions || role.permissions.length === 0)) {
+      fetchRolePermissions(roleId);
+    }
+  }
+}
+
+const rolePermissionsMap = computed<Record<number, Array<{ id?: number; slug?: string; name?: string } | string>>>(() => {
+  const map: Record<number, Array<{ id?: number; slug?: string; name?: string } | string>> = {};
+  for (const role of apiRoles.value) {
+    const rid = typeof role.id === "number" ? role.id : Number(role.id);
+    if (role.permissions && role.permissions.length > 0) {
+      map[rid] = role.permissions as Array<{ id?: number; slug?: string; name?: string } | string>;
+    } else if (rolesPermissionsCache.value[rid]) {
+      map[rid] = rolesPermissionsCache.value[rid];
+    } else {
+      map[rid] = [];
+    }
+  }
+  return map;
+});
+
+function resolvePermDisplay(perm: string | Record<string, any>): { slug: string; name: string; category?: string } {
+  const p = typeof perm === "string" ? { slug: perm, name: perm } : perm;
+  const slug = p.slug || p.name || String(p.id || "");
+  const matched = allPermissionsList.value.find(
+    (item) =>
+      item.slug === slug ||
+      item.name === slug ||
+      (p.id !== undefined && item.id === Number(p.id)) ||
+      (p.permission_id !== undefined && item.id === Number(p.permission_id)) ||
+      item.slug?.toLowerCase() === slug?.toLowerCase() ||
+      item.name?.toLowerCase() === slug?.toLowerCase()
+  );
+  if (matched) return matched;
+  const catName = typeof p.category === "string" ? p.category : "General";
+  return { slug: p.name || slug, name: p.name || slug, category: catName };
+}
+
+const rolePermissionsTree = computed<Record<number, Array<{ name: string; permissions: Array<{ slug: string; name: string }> }>>>(() => {
+  const result: Record<number, Array<{ name: string; permissions: Array<{ slug: string; name: string }> }>> = {};
+  for (const [ridStr, perms] of Object.entries(rolePermissionsMap.value)) {
+    const rid = Number(ridStr);
+    const categories: Record<string, Array<{ slug: string; name: string }>> = {};
+    for (const perm of perms) {
+      const resolved = resolvePermDisplay(perm);
+      const catName = resolved.category || "General";
+      if (!categories[catName]) categories[catName] = [];
+      categories[catName].push({ slug: resolved.slug, name: resolved.name });
+    }
+    result[rid] = Object.entries(categories).map(([name, permissions]) => ({ name, permissions }));
+  }
+  return result;
+});
 
 interface CategoryGroup {
   id: number | undefined;
@@ -310,10 +611,10 @@ const permissionsByCategory = computed<CategoryGroup[]>(() => {
   const perms = allPermissionsList.value || [];
 
   perms.forEach((perm) => {
-    const catName = perm.category?.name || "Sin categoría";
+    const catName = perm.category || "Sin categoría";
     if (!categories[catName]) {
       categories[catName] = {
-        id: perm.category_id,
+        id: undefined,
         name: catName,
         permissions: [],
       };
@@ -401,6 +702,13 @@ const effectivePermissionsMap = computed<Record<string, number>>(() => {
   });
 
   return result;
+});
+
+const effectivePermissionsDisplay = computed<Array<{ slug: string; name: string; grant: number }>>(() => {
+  return Object.entries(effectivePermissionsMap.value).map(([slug, grant]) => {
+    const perm = allPermissionsList.value.find((p) => p.slug === slug || p.name === slug);
+    return { slug, name: perm?.name || slug, grant };
+  });
 });
 
 const overridesToRemove = computed<(number | string)[]>(() => {
@@ -598,3 +906,35 @@ function onSave(): void {
   emit("save", payload);
 }
 </script>
+
+<style scoped>
+.permissions-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.permissions-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.permissions-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+.permissions-scroll::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.collapse-enter-active,
+.collapse-leave-active {
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+.collapse-enter-from,
+.collapse-leave-to {
+  opacity: 0;
+  max-height: 0;
+}
+.collapse-enter-to,
+.collapse-leave-from {
+  opacity: 1;
+  max-height: 1000px;
+}
+</style>

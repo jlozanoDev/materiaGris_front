@@ -14,7 +14,7 @@ import { usePermissions } from "@/modules/admin/permissions/presentation/composa
 import UiVuetifyDataTable from "@/shared/components/UiVuetifyDataTable.vue";
 import RolePermissionsEditor from "@/modules/admin/roles/presentation/components/RolePermissionsEditor.vue";
 import { useToast } from "@/shared/composables/useToast";
-import type { Role, PermissionShape } from "@/shared/types";
+import type { Role } from "@/shared/types";
 
 // --- Local interfaces ---
 
@@ -114,7 +114,7 @@ function loadAddresses(): Address[] {
       const parsed = JSON.parse(stored);
       if (Array.isArray(parsed)) return parsed as Address[];
     }
-  } catch (e) { /* noop */ }
+  } catch { /* noop */ }
   return [
     { id: 1, alias: "Casa", street: "C. Falsa", number: "123", postal_code: "28001", mobile_phone: "600123456", is_primary: true },
     { id: 2, alias: "Oficina", street: "Av. Siempre Viva", number: "742", postal_code: "28002", mobile_phone: "600654321", is_primary: false },
@@ -153,7 +153,7 @@ async function startEditRole(r: any): Promise<void> {
     }
     const fullRole = await fetchRole(role.id);
     form.value = { ...(fullRole as RoleFormData) };
-  } catch (err: unknown) {
+  } catch {
     showToast("Error al cargar el rol", "error");
     editing.value = false;
   } finally {
@@ -211,20 +211,20 @@ const onSaveEdited = (_edited: unknown): void => {
   }
   try {
     localStorage.setItem("user", JSON.stringify(authStore.user));
-  } catch (e) { /* noop */ }
+  } catch { /* noop */ }
 };
 
 const onSavePassword = (): void => {
   try {
     localStorage.setItem("passwordChangedAt", new Date().toISOString());
-  } catch (e) { /* noop */ }
+  } catch { /* noop */ }
 };
 
 const onSaveAddresses = (newAddresses: Address[]): void => {
   addresses.value = newAddresses;
   try {
     localStorage.setItem("addresses", JSON.stringify(addresses.value));
-  } catch (e) { /* noop */ }
+  } catch { /* noop */ }
 };
 
 // --- Breadcrumb ---

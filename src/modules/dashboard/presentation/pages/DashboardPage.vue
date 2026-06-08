@@ -41,7 +41,7 @@ function loadAddresses(): Address[] {
       const parsed = JSON.parse(stored);
       if (Array.isArray(parsed)) return parsed as Address[];
     }
-  } catch (e) { /* noop */ }
+  } catch { /* noop */ }
   return [
     {
       id: 1, alias: "Casa", street: "C. Falsa", number: "123",
@@ -63,21 +63,21 @@ const onSaveEdited = (_edited: unknown): void => {
   }
   try {
     storage.set("user", JSON.stringify(authStore.user));
-  } catch (e) { /* noop */ }
+  } catch { /* noop */ }
 };
 
 const onSavePassword = (): void => {
   console.log("[DashboardPage] password change requested (frontend-only)");
   try {
     storage.set("passwordChangedAt", new Date().toISOString());
-  } catch (e) { /* noop */ }
+  } catch { /* noop */ }
 };
 
 const onSaveAddresses = (newAddresses: Address[]): void => {
   addresses.value = newAddresses;
   try {
     storage.set("addresses", JSON.stringify(addresses.value));
-  } catch (e) { /* noop */ }
+  } catch { /* noop */ }
 };
 
 const breadcrumb = [{ text: "Dashboard", icon: "pi pi-objects-column", to: "/" }];

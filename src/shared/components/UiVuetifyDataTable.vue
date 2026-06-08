@@ -240,7 +240,7 @@ const showPaginator = computed(() => {
   try {
     const totalItems = totalFilteredItems.value;
     return props.paginator || totalItems > internalRowsPerPage.value;
-  } catch (e) {
+  } catch {
     return !!props.paginator;
   }
 });

@@ -15,7 +15,7 @@ const router = useRouter()
 const goLogin = () => router.push('/login')
 const goDemo = () => {} // placeholder — integrar después
 const goSales = () => {} // placeholder
-const selectPlan = (plan: string) => {} // placeholder
+const selectPlan = (_plan: string) => {} // placeholder
 </script>
 
 <template>
