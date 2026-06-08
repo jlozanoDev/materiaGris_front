@@ -595,7 +595,9 @@ const rolePermissionsTree = computed<Record<number, Array<{ name: string; permis
       if (!categories[catName]) categories[catName] = [];
       categories[catName].push({ slug: resolved.slug, name: resolved.name });
     }
-    result[rid] = Object.entries(categories).map(([name, permissions]) => ({ name, permissions }));
+    result[rid] = Object.entries(categories)
+      .map(([name, permissions]) => ({ name, permissions }))
+      .sort((a, b) => a.name.localeCompare(b.name));
   }
   return result;
 });
