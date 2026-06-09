@@ -226,28 +226,53 @@ watch(
               </button>
             </li>
             <li
-              v-if="authStore.hasPermission('admin.tipoinforme.view')"
+              v-if="authStore.hasPermission('admin.report-template.view')"
               aria-hidden="true"
             >
               <div class="mx-4 my-1" style="border-top: 1px solid rgba(124, 58, 237, 0.06);"></div>
             </li>
 
-            <!-- Gestión de Tipos de Informes -->
+            <!-- Gestión de Plantillas de Informes -->
             <li
-              v-if="authStore.hasPermission('admin.tipoinforme.view')"
+              v-if="authStore.hasPermission('admin.report-template.view')"
             >
               <button
-                title="Tipos de informes"
-                aria-label="Tipos de informes"
+                title="Plantillas de informes"
+                aria-label="Plantillas de informes"
                 class="sidebar-dropdown-item w-full text-left px-4 py-2 text-sm flex items-center gap-3 justify-start whitespace-nowrap transition"
                 style="color: #0b0817;"
-                @click.prevent="openAdminRoute({ name: 'AdminTipoInforme' })"
+                @click.prevent="openAdminRoute({ name: 'AdminReportTemplate' })"
               >
                 <i
                   class="pi pi-file text-base transition-transform duration-150 group-hover:scale-110"
                   style="color: #9690a8; width: 20px; text-align: center;"
                 ></i>
-                <span>Tipos de informes</span>
+                <span>Plantillas de informes</span>
+              </button>
+            </li>
+            <li
+              v-if="authStore.hasPermission('reports.view')"
+              aria-hidden="true"
+            >
+              <div class="mx-4 my-1" style="border-top: 1px solid rgba(124, 58, 237, 0.06);"></div>
+            </li>
+
+            <!-- Informes -->
+            <li
+              v-if="authStore.hasPermission('reports.view')"
+            >
+              <button
+                title="Informes"
+                aria-label="Informes"
+                class="sidebar-dropdown-item w-full text-left px-4 py-2 text-sm flex items-center gap-3 justify-start whitespace-nowrap transition"
+                style="color: #0b0817;"
+                @click.prevent="openAdminRoute({ name: 'ReportList' })"
+              >
+                <i
+                  class="pi pi-file-check text-base transition-transform duration-150 group-hover:scale-110"
+                  style="color: #9690a8; width: 20px; text-align: center;"
+                ></i>
+                <span>Informes</span>
               </button>
             </li>
 

@@ -93,3 +93,84 @@ export type PermissionFormat =
   | Record<string, number>   // { 'admin.user.view': 1 }
   | string[]                 // ['admin.user.view']
   | PermissionShape[];       // [{ slug: 'admin.user.view' }]
+
+// =============================================================================
+// Report Template Types — Módulo de Informes Dinámicos
+// =============================================================================
+
+export type FieldType =
+  | 'text'
+  | 'textarea'
+  | 'number'
+  | 'date'
+  | 'select'
+  | 'radio'
+  | 'checkbox'
+  | 'dynamic_table'
+  | 'signature'
+
+export interface FieldOption {
+  label: string
+  value: string
+}
+
+export interface ConditionalRule {
+  field: string
+  op: '==' | '!=' | 'contains' | '>' | '<' | '>=' | '<='
+  value: string
+}
+
+export interface FieldConfig {
+  id: string
+  type: FieldType
+  label: string
+  key: string
+  placeholder?: string
+  required?: boolean
+  systemVariable?: string
+  options?: FieldOption[]
+  columns?: Array<{ name: string; type: FieldType }>
+  conditionalRule?: ConditionalRule
+}
+
+export interface Column {
+  id: string
+  label: string
+  width?: number
+  fields: FieldConfig[]
+}
+
+export interface Row {
+  id: string
+  columns: Column[]
+}
+
+export interface Section {
+  id: string
+  label: string
+  display: 'tabs' | 'accordion' | 'default'
+  rows: Row[]
+}
+
+export interface ReportTemplate {
+  id: string
+  name: string
+  description: string
+  isActive: boolean
+  structure: { sections: Section[] }
+  createdAt?: string
+  updatedAt?: string
+}
+
+export type ReportStatus = 'draft' | 'signed' | 'closed'
+
+export interface PatientReport {
+  id: string
+  patientId: string
+  userId: string
+  status: ReportStatus
+  templateStructureSnapshot: { sections: Section[] }
+  values: Record<string, any>
+  createdAt?: string
+  updatedAt?: string
+}
