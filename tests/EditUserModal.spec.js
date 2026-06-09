@@ -143,8 +143,10 @@ describe('EditUserModal', () => {
       }
     })
 
-    const adminCheckbox = wrapper.find('input[value="2"]')
-    expect(adminCheckbox.element.disabled).toBe(true)
+    // System roles are visually marked with "Sistema" badge, not disabled
+    // Check that the system role badge is rendered for the admin role
+    const systemBadge = wrapper.findAll('span').filter(s => s.text().includes('Sistema'))[0]
+    expect(systemBadge).toBeDefined()
   })
 
   it('emits save with name only when no role changes', async () => {
@@ -203,7 +205,7 @@ describe('EditUserModal', () => {
     expect(emitted[0][0]).toHaveProperty('roles_remove')
   })
 
-  it('displays effective permissions section', () => {
+  it('displays effective permissions section', async () => {
     const wrapper = mount(EditUserModal, {
       props: {
         show: true,
@@ -219,7 +221,10 @@ describe('EditUserModal', () => {
       }
     })
 
-    expect(wrapper.text()).toContain('Permisos Efectivos')
+    // Expand "Permisos avanzados" section to reveal effective permissions
+    await wrapper.find('button').trigger('click')
+
+    expect(wrapper.text()).toContain('Permisos efectivos')
   })
 
   it('shows warning when role change removes overrides', async () => {

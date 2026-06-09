@@ -32,30 +32,28 @@ describe('RolePermissionsEditor', () => {
     expect(emitted[0][0]).toEqual([{ id: 1, grant: 1 }])
   })
 
-  it('emite el grant correcto al hacer clic en denegar', async () => {
+  it('toggle entre permitir y neutral', async () => {
+    // Component only has Permitir/Permitido toggle (no Denegar/Neutral buttons)
     const wrapper = mount(RolePermissionsEditor, {
       props: { availablePermissions, modelValue: [] }
     })
 
-    const denyBtn = wrapper.findAll('button').filter(b => b.text().includes('Denegar'))[0]
-    await denyBtn.trigger('click')
+    // Click "Permitir" for first permission → should emit grant 1
+    const permitBtn = wrapper.findAll('button').filter(b => b.text().includes('Permitir'))[0]
+    await permitBtn.trigger('click')
 
-    const emitted = wrapper.emitted('update:modelValue')
-    expect(emitted[0][0]).toEqual([{ id: 1, grant: -1 }])
-  })
+    let emitted = wrapper.emitted('update:modelValue')
+    expect(emitted).toBeDefined()
+    expect(emitted[0][0]).toEqual([{ id: 1, grant: 1 }])
 
-  it('elimina el permiso del array al ponerlo en neutral', async () => {
-    const wrapper = mount(RolePermissionsEditor, {
-      props: { 
-        availablePermissions, 
-        modelValue: [{ id: 1, grant: 1 }] 
-      }
-    })
+    // Update modelValue prop to reflect emitted change so button shows "Permitido"
+    await wrapper.setProps({ modelValue: [{ id: 1, grant: 1 }] })
 
-    const neutralBtn = wrapper.findAll('button').filter(b => b.text().includes('Neutral'))[0]
-    await neutralBtn.trigger('click')
+    // Click "Permitido" → toggles back to neutral (removes from array)
+    const permittedBtn = wrapper.findAll('button').filter(b => b.text().includes('Permitido'))[0]
+    await permittedBtn.trigger('click')
 
-    const emitted = wrapper.emitted('update:modelValue')
-    expect(emitted[0][0]).toEqual([])
+    emitted = wrapper.emitted('update:modelValue')
+    expect(emitted[1][0]).toEqual([])
   })
 })

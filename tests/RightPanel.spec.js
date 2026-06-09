@@ -215,29 +215,32 @@ describe('RightPanel', () => {
 
   // ── Template: today highlighting ───────────────────
 
-  it('today cell has indigo background class (bg-indigo-600)', () => {
+  it('today cell has indigo background style', () => {
     const wrapper = mount(RightPanel)
-    const todayCell = wrapper.find('.bg-indigo-600')
-    expect(todayCell.exists()).toBe(true)
-    expect(todayCell.text()).toBe('30')
+    // Component uses :style="isToday(day) ? { background: '#7c3aed', ... }"
+    const todaySpan = wrapper.findAll('span').filter(s => s.text() === '30')[0]
+    expect(todaySpan).toBeDefined()
+    expect(todaySpan.attributes('style')).toContain('rgb(124, 58, 237)')
   })
 
   it('today cell does not show appointment dot', () => {
     const wrapper = mount(RightPanel)
-    // Today (30) is not in dotDays [1,8,14,21], so no red dot
-    const todayCell = wrapper.find('.bg-indigo-600')
-    const dot = todayCell.find('.bg-red-500')
+    // Today (30) is not in dotDays [1,8,14,21], so no dot
+    const todaySpan = wrapper.findAll('span').filter(s => s.text() === '30')[0]
+    expect(todaySpan).toBeDefined()
+    // The dot is a child span with style background #06b6d4 (cyan)
+    const dot = todaySpan.find('[style*="rgb(6, 182, 212)"]')
     expect(dot.exists()).toBe(false)
   })
 
   // ── Template: appointment dots ─────────────────────
 
-  it('shows red dot on appointment days (1, 8, 14, 21)', () => {
+  it('shows dot on appointment days (1, 8, 14, 21)', () => {
     const wrapper = mount(RightPanel)
     // dotDays = [1, 8, 14, 21]
-    // Navigate to a month where these aren't today
     // May 2026: today is 30, not in dotDays
-    const dots = wrapper.findAll('.bg-red-500')
+    // Dots have style="background: #06b6d4;" (cyan, not red)
+    const dots = wrapper.findAll('[style*="rgb(6, 182, 212)"]')
     expect(dots.length).toBe(4) // exactly 4 dots
   })
 
@@ -249,10 +252,10 @@ describe('RightPanel', () => {
     // Now today = May 1, viewDate = May 2026
     // day 1 → isToday(1) = true → dotDays.has(1) && !isToday(1) = false
     // So the dot should NOT appear on day 1
-    const todayCell = wrapper.find('.bg-indigo-600')
-    expect(todayCell.exists()).toBe(true)
-    expect(todayCell.text()).toBe('1')
-    const dot = todayCell.find('.bg-red-500')
+    const todaySpan = wrapper.findAll('span').filter(s => s.text() === '1')[0]
+    expect(todaySpan).toBeDefined()
+    expect(todaySpan.attributes('style')).toContain('rgb(124, 58, 237)')
+    const dot = todaySpan.find('[style*="rgb(6, 182, 212)"]')
     expect(dot.exists()).toBe(false)
   })
 
@@ -283,11 +286,13 @@ describe('RightPanel', () => {
   it('displays month name and year in template after navigation', async () => {
     const wrapper = mount(RightPanel)
     // Initial: May 2026
-    expect(wrapper.find('p.text-xs.text-slate-500').text()).toBe('May 2026')
+    const monthText = wrapper.findAll('p').filter(p => p.text() === 'May 2026')[0]
+    expect(monthText).toBeDefined()
 
     // Navigate to previous
     wrapper.vm.prevMonth()
     await wrapper.vm.$nextTick()
-    expect(wrapper.find('p.text-xs.text-slate-500').text()).toBe('April 2026')
+    const monthText2 = wrapper.findAll('p').filter(p => p.text() === 'April 2026')[0]
+    expect(monthText2).toBeDefined()
   })
 })

@@ -16,7 +16,8 @@ describe('PatientList', () => {
   it('el primer paciente está seleccionado por defecto', () => {
     const wrapper = mount(PatientList)
     const firstItem = wrapper.find('li')
-    expect(firstItem.classes()).toContain('bg-indigo-50')
+    // Component uses inline style and bg-[#7c3aed]/10 class (arbitrary value from Tailwind JIT)
+    expect(firstItem.element.style.borderLeft).toContain('#7c3aed')
   })
 
   it('emite el evento select al hacer click', async () => {
@@ -30,10 +31,11 @@ describe('PatientList', () => {
   it('cambia la selección visual al hacer click', async () => {
     const wrapper = mount(PatientList)
     const items = wrapper.findAll('li')
-    expect(items[0].classes()).toContain('bg-indigo-50')
+    // First item selected by default (inline style with border-left)
+    expect(items[0].element.style.borderLeft).toContain('#7c3aed')
 
     await items[2].trigger('click')
-    expect(items[2].classes()).toContain('bg-indigo-50')
+    expect(items[2].element.style.borderLeft).toContain('#7c3aed')
   })
 
   it('tiene dots de paginación', () => {

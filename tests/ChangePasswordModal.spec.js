@@ -48,10 +48,12 @@ describe('ChangePasswordModal', () => {
 
     it('renders cancel and save buttons', () => {
       const wrapper = mountModal()
+      // There are also 3 eye-toggle buttons, so total > 2
       const buttons = wrapper.findAll('button')
-      expect(buttons.length).toBe(2)
-      expect(buttons[0].text()).toBe('Cancelar')
-      expect(buttons[1].text()).toBe('Guardar')
+      const cancelBtn = buttons.filter(b => b.text().trim() === 'Cancelar')[0]
+      const saveBtn = buttons.filter(b => b.text().trim() === 'Guardar')[0]
+      expect(cancelBtn).toBeDefined()
+      expect(saveBtn).toBeDefined()
     })
 
     it('does not render when show prop is false', () => {
@@ -63,9 +65,13 @@ describe('ChangePasswordModal', () => {
   })
 
   describe('canSave computed', () => {
+    function getSaveBtn(wrapper) {
+      return wrapper.findAll('button').filter((b) => b.text().trim() === 'Guardar')[0]
+    }
+
     it('disables save button when fields are empty', () => {
       const wrapper = mountModal()
-      const saveBtn = wrapper.findAll('button')[1]
+      const saveBtn = getSaveBtn(wrapper)
       expect(saveBtn.element.disabled).toBe(true)
     })
 
@@ -77,7 +83,7 @@ describe('ChangePasswordModal', () => {
       await inputs[1].setValue('short')
       await inputs[2].setValue('short')
 
-      const saveBtn = wrapper.findAll('button')[1]
+      const saveBtn = getSaveBtn(wrapper)
       expect(saveBtn.element.disabled).toBe(true)
     })
 
@@ -89,7 +95,7 @@ describe('ChangePasswordModal', () => {
       await inputs[1].setValue('password123')
       await inputs[2].setValue('password456')
 
-      const saveBtn = wrapper.findAll('button')[1]
+      const saveBtn = getSaveBtn(wrapper)
       expect(saveBtn.element.disabled).toBe(true)
     })
 
@@ -101,7 +107,7 @@ describe('ChangePasswordModal', () => {
       await inputs[1].setValue('password123')
       await inputs[2].setValue('password123')
 
-      const saveBtn = wrapper.findAll('button')[1]
+      const saveBtn = getSaveBtn(wrapper)
       expect(saveBtn.element.disabled).toBe(false)
     })
 
@@ -113,7 +119,7 @@ describe('ChangePasswordModal', () => {
       await inputs[1].setValue('password123')
       await inputs[2].setValue('password123')
 
-      const saveBtn = wrapper.findAll('button')[1]
+      const saveBtn = getSaveBtn(wrapper)
       expect(saveBtn.element.disabled).toBe(true)
     })
   })
@@ -121,7 +127,7 @@ describe('ChangePasswordModal', () => {
   describe('emit close', () => {
     it('emits close when cancel button is clicked', async () => {
       const wrapper = mountModal()
-      const cancelBtn = wrapper.findAll('button')[0]
+      const cancelBtn = wrapper.findAll('button').filter((b) => b.text().trim() === 'Cancelar')[0]
       await cancelBtn.trigger('click')
 
       expect(wrapper.emitted('close')).toBeTruthy()
@@ -129,10 +135,8 @@ describe('ChangePasswordModal', () => {
     })
 
     it('emits close when Modal triggers close event', async () => {
-      // We need to access the Modal via findComponent
-      // Since Modal is a stub, it won't emit. Instead test via the cancel button.
       const wrapper = mountModal()
-      const cancelBtn = wrapper.findAll('button')[0]
+      const cancelBtn = wrapper.findAll('button').filter((b) => b.text().trim() === 'Cancelar')[0]
       await cancelBtn.trigger('click')
       expect(wrapper.emitted('close')).toBeTruthy()
     })
@@ -178,7 +182,7 @@ describe('ChangePasswordModal', () => {
       const wrapper = mountModal()
       // All fields empty → canSave is false → button is disabled
       // Clicking the disabled button should not trigger form submission
-      const saveBtn = wrapper.findAll('button')[1]
+      const saveBtn = wrapper.findAll('button').filter((b) => b.text().trim() === 'Guardar')[0]
       expect(saveBtn.element.disabled).toBe(true)
 
       // Even if we try to submit, jsdom won't fire submit from disabled button
@@ -198,7 +202,7 @@ describe('ChangePasswordModal', () => {
       await inputs[1].setValue('password123')
       await inputs[2].setValue('password123')
 
-      const saveBtn = wrapper.findAll('button')[1]
+      const saveBtn = wrapper.findAll('button').filter((b) => b.text().trim() === 'Guardar')[0]
       expect(saveBtn.element.disabled).toBe(true)
     })
   })

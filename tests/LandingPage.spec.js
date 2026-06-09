@@ -1,18 +1,26 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { routerKey } from 'vue-router'
+import { routerKey, routeLocationKey } from 'vue-router'
 import LandingPage from '@/modules/landing/presentation/pages/LandingPage.vue'
 
 function makeRouter({ push = vi.fn() } = {}) {
   const route = { matched: [], redirectedFrom: undefined, href: '/' }
-  return { push, replace: vi.fn(), resolve: vi.fn(), currentRoute: { value: route } }
+  const routeLike = { matched: [], href: '/', redirectedFrom: undefined }
+  return {
+    push,
+    replace: vi.fn(),
+    resolve: vi.fn().mockReturnValue(routeLike),
+    currentRoute: { value: route },
+    options: { linkActiveClass: 'router-link-active', linkExactActiveClass: 'router-link-exact-active' },
+  }
 }
 
 function mountPage(options = {}) {
   const router = makeRouter(options.router)
+  const route = { matched: [], redirectedFrom: undefined, href: '/' }
   const wrapper = mount(LandingPage, {
     global: {
-      provide: { [routerKey]: router },
+      provide: { [routerKey]: router, [routeLocationKey]: route },
       ...options.global,
     },
     ...options,
@@ -73,7 +81,7 @@ describe('LandingPage (maqueta)', () => {
     it('renders the hero title', () => {
       const { wrapper } = mountPage()
       expect(wrapper.text()).toContain('Tu socio de IA')
-      expect(wrapper.text()).toContain('práctica clínica optimizada y humana')
+      expect(wrapper.text()).toContain('clínica inteligente y humana')
     })
 
     it('renders the platform tagline', () => {

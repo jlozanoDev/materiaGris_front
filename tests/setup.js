@@ -42,9 +42,10 @@ afterEach(() => {
   config.global.plugins = []
 })
 
-// Global stub for router-link to avoid component resolution warnings
+// Global stub for router-link/RouterLink to avoid component resolution warnings
 config.global.components = {
-  'router-link': { template: '<a><slot /></a>' }
+  'router-link': { template: '<a><slot /></a>' },
+  RouterLink: { template: '<a><slot /></a>' },
 }
 
 // Provide a minimal router injection to silence "injection 'Symbol(router)' not found" warnings
@@ -61,6 +62,35 @@ config.global.provide = {
 config.global.directives = {
   'has-permission': vHasPermission
 }
+
+// Mock window.scrollTo for jsdom (used by vue-router)
+window.scrollTo = () => {}
+
+// Mock HTMLCanvasElement.getContext for jsdom (used by useParticleNetwork)
+HTMLCanvasElement.prototype.getContext = () => null
+
+// Mock ResizeObserver for jsdom (used by useParticleNetwork)
+class ResizeObserverMock {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+window.ResizeObserver = ResizeObserverMock
+
+// Mock window.matchMedia for jsdom (used by useParticleNetwork and others)
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: vi.fn().mockImplementation((query) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+})
 
 // Silence Vue warnings about missing transitions in tests (optional)
 config.global.stubs = {

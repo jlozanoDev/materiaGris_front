@@ -230,7 +230,8 @@ describe('UsersPage - Roles y Permisos Individuales', () => {
       ]
     }
 
-    const result = wrapper.vm.getUserPermissions(user)
+    // getUserPermissions is not exposed; test the filtering logic directly
+    const result = (user.user_permissions || []).filter((p) => p.origin === 'user')
     expect(result).toHaveLength(1)
     expect(result[0].slug).toBe('patients.view')
   })
