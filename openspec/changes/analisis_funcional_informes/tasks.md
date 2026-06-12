@@ -14,7 +14,7 @@
 | Number of batches | 8 |
 | Chained PRs recommended | **YES** — total far exceeds 400-line budget |
 | 400-line budget risk | **High** |
-| Decision needed before apply | **Yes** — confirm batching strategy and backend API contracts are available |
+| Decision needed before apply | **Partial** — API contracts ✅ resolved. Batching strategy + chain strategy pending SDD preflight. |
 
 ---
 
@@ -303,10 +303,10 @@
 
 ## Open Decisions (must resolve before apply)
 
-1. **Backend API contracts**: Exact JSON shapes for `GET /api/reports`, `GET /api/reports/{id}` — needed for infra implementation in batches 6-8
-2. **PDF download**: Blob response or URL redirect? Affects `ApiReportRepository.downloadPdf()` in batch 6
-3. **Reports sidebar placement**: Top-level main nav icon vs settings dropdown entry — affects batch 2
-4. **`signature_pad` npm**: Design decision says vanilla Canvas API (no `signature_pad`). Confirm removing from dependencies.
+1. ~~**Backend API contracts**: Exact JSON shapes for `GET /api/reports`, `GET /api/reports/{id}`~~ → **RESOLVED**. Full contracts documented in `design.md` §API Integration. Source: `MateriaGris_api` (`routes/api.php` lines 118-161).
+2. ~~**PDF download**: Blob response or URL redirect?~~ → **RESOLVED**. Binary blob (`application/pdf`). Use `responseType: 'blob'` in `ApiReportRepository.downloadPdf()`.
+3. ~~**Reports sidebar placement**: Top-level main nav icon vs settings dropdown entry~~ → **RESOLVED**. Settings dropdown, following existing `v-if="authStore.hasPermission('report.view')"` pattern inside settings submenu.
+4. ~~**`signature_pad` npm**: Design decision says vanilla Canvas API (no `signature_pad`). Confirm removing from dependencies.~~ → **RESOLVED**. Vanilla Canvas API confirmed. `signature_pad` removed from dependencies. `vuedraggable@next` remains (batch 2.1).
 5. **Template builder delete+routing**: When deleting a template that has reports, backend returns 409 — UI must display error not crash. Handled in batch 4.
 
 ---

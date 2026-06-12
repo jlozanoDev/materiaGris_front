@@ -272,6 +272,96 @@ Follows `useUsers` pattern: `ref([])` + `fetch()` with `loading`/`error`. Fetche
 
 Repository interfaces in domain layer, implementations in infrastructure. Follows `fetchClient` pattern from `@/core/api/httpClient.ts`. Error handling: `fetchClient` rejects with `{ status, body }`. Composables catch and set `error.value`. Components display via toast or inline error.
 
+**Backend source**: `MateriaGris_api` — Action → Command → Repository pattern. No API Resource classes; models serialized directly (snake_case). All endpoints require `auth.jwt` middleware.
+
+### Report Templates — `/api/admin/report-templates`
+
+| Method | URL | Permission | Request | Response |
+|--------|-----|------------|---------|----------|
+| `GET` | `/admin/report-templates` | `admin.reporttemplate.view` | Query: `?is_active=`, `?q=`, `?per_page=` | `{ data: ReportTemplate[], meta: { current_page, last_page, per_page, total } }` |
+| `POST` | `/admin/report-templates` | `admin.reporttemplate.create` | `{ name: string (required, max:255), description: string\|null, is_active: bool, structure: array (required) }` | `ReportTemplate` (201) |
+| `GET` | `/admin/report-templates/{id}` | `admin.reporttemplate.view` | — | `ReportTemplate` \| `{ message }` (404) |
+| `PUT` | `/admin/report-templates/{id}` | `admin.reporttemplate.update` | `{ name?, description?, is_active?, structure? }` (all optional) | `ReportTemplate` \| 404/422 |
+| `DELETE` | `/admin/report-templates/{id}` | `admin.reporttemplate.delete` | — | 204 No Content \| 409 (reports exist) \| 404 |
+
+**`ReportTemplate` response shape** (model `report_templates`, soft-deletes):
+```json
+{
+  "id": 1,
+  "name": "Informe Quirúrgico",
+  "description": "Plantilla para reportes de cirugía",
+  "is_active": true,
+  "structure": {
+    "sections": [
+      {
+        "title": "Sección principal",
+        "rows": [
+          {
+            "columns": [
+              { "type": "text", "label": "Observaciones", "field": "observaciones", "required": false }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "created_at": "2026-06-12T00:00:00.000000Z",
+  "updated_at": "2026-06-12T00:00:00.000000Z",
+  "deleted_at": null
+}
+```
+**Note**: Backend `structure.field` (e.g. `observaciones`) maps to frontend `FieldConfig.key`. Backend uses flat columns array inside rows; frontend wraps columns in a `Column` object with `id` and `width`.
+
+### Reports — `/api/reports`
+
+| Method | URL | Permission | Request | Response |
+|--------|-----|------------|---------|----------|
+| `GET` | `/reports` | `report.view` | Query: `?status=`, `?patient_name=`, `?date_from=`, `?date_to=`, `?template_id=`, `?per_page=` (1–100, default 15) | `{ data: PatientReport[], meta: { current_page, last_page, per_page, total } }` |
+| `POST` | `/reports` | `report.create` | `{ patient_id: int (required), template_id: int (required) }` | `PatientReport` (201) |
+| `GET` | `/reports/{id}` | `report.view` | — | `PatientReport` (with `patient`, `user`, `template` relations) |
+| `PUT` | `/reports/{id}` | `report.edit` | `{ values: array (required) }` | `PatientReport` (with relations) |
+| `POST` | `/reports/{id}/sign` | `report.sign` | `{ signature: string (required — base64 PNG) }` | `PatientReport` (with `signed_at`, `signature_path`) |
+| `POST` | `/reports/{id}/close` | `report.close` | — (empty body) | `PatientReport` (with `closed_at`, `pdf_path`) |
+| `GET` | `/reports/{id}/pdf` | `report.download-pdf` | — | Binary file (`application/pdf`), filename: `informe_{id}.pdf` |
+
+**`PatientReport` response shape** (model `patient_reports`):
+```json
+{
+  "id": 1,
+  "patient_id": 42,
+  "user_id": 7,
+  "template_id": 3,
+  "status": "draft",
+  "template_structure_snapshot": { "sections": [...] },
+  "values": { "observaciones": "Paciente estable", "diagnostico": "..." },
+  "signature_path": null,
+  "pdf_path": null,
+  "signed_at": null,
+  "closed_at": null,
+  "created_at": "2026-06-12T00:00:00.000000Z",
+  "updated_at": "2026-06-12T00:00:00.000000Z",
+  "patient": { "id": 42, "full_name": "Juan Pérez", "age": 34 },
+  "user": { "id": 7, "name": "Dr. García", "email": "garcia@hospital.com" },
+  "template": { "id": 3, "name": "Informe Quirúrgico", "description": "...", "structure": {...}, "is_active": true }
+}
+```
+**Note**: `template` relation uses `withTrashed()` — deleted templates still appear. PDF download returns binary blob → frontend must use `responseType: 'blob'` and trigger browser download. Backend enforces `status === draft` for save/sign, `status === signed` for close, `status IN [signed, closed]` for PDF download. All write operations check `user_id === auth user`.
+
+### Permission Slugs (backend)
+
+| Slug | Scope |
+|------|-------|
+| `admin.reporttemplate.view` | Template listing, get single |
+| `admin.reporttemplate.create` | Create template |
+| `admin.reporttemplate.update` | Update template |
+| `admin.reporttemplate.delete` | Delete template |
+| `report.view` | Report listing, get single, viewer |
+| `report.create` | Init report |
+| `report.edit` | Save draft |
+| `report.sign` | Sign report |
+| `report.close` | Close report |
+| `report.download-pdf` | Download PDF |
+
 ## Conditional Logic Engine
 
 Purely functional module in `src/shared/plugins/ConditionalLogicEngine.ts`. No Vue dependency. No permission checks — permissions are enforced by the parent `DynamicFormRenderer`.
@@ -334,6 +424,6 @@ Field type `dynamic_table` renders as grid with add/remove row buttons. Sub-fiel
 
 ## Open Questions
 
-- [ ] Backend API contract: exact response shapes for `GET /api/reports` and `GET /api/reports/{id}` (need to confirm before infra implementation)
-- [ ] PDF download: is it a blob response or a URL redirect? Affects `downloadPdf()` implementation
-- [ ] Reports sidebar placement: co-located with admin settings or separate main nav entry?
+- [x] ~~Backend API contract: exact response shapes for `GET /api/reports` and `GET /api/reports/{id}`~~ → Resolved. Full contracts documented in §API Integration. Source: `MateriaGris_api` (`routes/api.php`, Actions, Models).
+- [x] ~~PDF download: is it a blob response or a URL redirect?~~ → Blob response (`application/pdf`, binary stream). `ApiReportRepository.downloadPdf()` must use `responseType: 'blob'`.
+- [x] ~~Reports sidebar placement: co-located with admin settings or separate main nav entry?~~ → Settings dropdown. Follows existing pattern: `v-if="authStore.hasPermission('report.view')"` inside the settings submenu.

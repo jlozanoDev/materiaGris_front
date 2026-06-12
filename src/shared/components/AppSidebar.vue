@@ -226,7 +226,7 @@ watch(
               </button>
             </li>
             <li
-              v-if="authStore.hasPermission('admin.report-template.view')"
+              v-if="authStore.hasPermission('admin.reporttemplate.view')"
               aria-hidden="true"
             >
               <div class="mx-4 my-1" style="border-top: 1px solid rgba(124, 58, 237, 0.06);"></div>
@@ -234,7 +234,7 @@ watch(
 
             <!-- Gestión de Plantillas de Informes -->
             <li
-              v-if="authStore.hasPermission('admin.report-template.view')"
+              v-if="authStore.hasPermission('admin.reporttemplate.view')"
             >
               <button
                 title="Plantillas de informes"
@@ -251,7 +251,7 @@ watch(
               </button>
             </li>
             <li
-              v-if="authStore.hasPermission('reports.view')"
+              v-if="authStore.hasPermission('report.view')"
               aria-hidden="true"
             >
               <div class="mx-4 my-1" style="border-top: 1px solid rgba(124, 58, 237, 0.06);"></div>
@@ -259,7 +259,7 @@ watch(
 
             <!-- Informes -->
             <li
-              v-if="authStore.hasPermission('reports.view')"
+              v-if="authStore.hasPermission('report.view')"
             >
               <button
                 title="Informes"
