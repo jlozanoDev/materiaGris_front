@@ -2,7 +2,7 @@
 
 ## Purpose
 
-HTML5 canvas component for capturing handwritten signatures via stylus, touch, or mouse. Stores signature as base64-encoded PNG image. Compatible with touch devices and desktops. Accessible per WCAG 2.1 AA. Canvas editability is gated by granular permission slugs (`reports.edit` for draft, `reports.sign` for signing).
+HTML5 canvas component for capturing handwritten signatures via stylus, touch, or mouse. Stores signature as base64-encoded PNG image. Compatible with touch devices and desktops. Accessible per WCAG 2.1 AA. Canvas editability is gated by granular permission slugs (`report.edit` for draft, `report.sign` for signing).
 
 ## MODIFIED Requirements
 
@@ -10,19 +10,19 @@ HTML5 canvas component for capturing handwritten signatures via stylus, touch, o
 
 The system MUST provide an HTML5 `<canvas>` that captures continuous drawing strokes from pointer input, but only when the current user holds the appropriate permission.
 
-#### Scenario: User with `reports.edit` draws signature during draft
+#### Scenario: User with `report.edit` draws signature during draft
 
 - GIVEN the signature canvas is rendered in an editable report form
-- AND the current user has `reports.edit` permission
+- AND the current user has `report.edit` permission
 - WHEN user presses mouse button, moves cursor, and releases
 - THEN a visible stroke follows the cursor path
 - AND the stroke renders with configurable color (default: dark blue #1a1a2e) and width (default: 2px)
 - AND the base64 data updates after each stroke
 
-#### Scenario: User WITHOUT `reports.edit` or `reports.sign` — canvas read-only
+#### Scenario: User WITHOUT `report.edit` or `report.sign` — canvas read-only
 
 - GIVEN the signature canvas is rendered
-- AND the current user has `reports.view` but NEITHER `reports.edit` nor `reports.sign`
+- AND the current user has `report.view` but NEITHER `report.edit` nor `report.sign`
 - WHEN user attempts to draw on the canvas
 - THEN pointer events are blocked (canvas is read-only)
 - AND if a stored signature exists, it is displayed as a static image
@@ -31,7 +31,7 @@ The system MUST provide an HTML5 `<canvas>` that captures continuous drawing str
 #### Scenario: User draws signature with touch/stylus
 
 - GIVEN the signature canvas on a touch-enabled device
-- AND the current user has `reports.edit` or `reports.sign`
+- AND the current user has `report.edit` or `report.sign`
 - WHEN user presses finger/stylus on canvas, drags, and lifts
 - THEN the signature captures as smooth continuous strokes
 - AND multi-touch is prevented (only one stroke at a time)
@@ -51,7 +51,7 @@ The system MUST provide controls for the canvas: clear, and a visual indicator w
 #### Scenario: User clears signature
 
 - GIVEN a canvas with a drawn signature
-- AND the current user has `reports.edit` or `reports.sign`
+- AND the current user has `report.edit` or `report.sign`
 - WHEN user clicks "Limpiar firma"
 - THEN the canvas is cleared (blank)
 - AND the stored base64 value is set to `null`
@@ -68,7 +68,7 @@ The system MUST provide controls for the canvas: clear, and a visual indicator w
 - GIVEN a canvas with at least one stroke
 - THEN the watermark text disappears
 - AND the stored base64 is a non-empty string
-- AND the clear button becomes visible (only if user has `reports.edit` or `reports.sign`)
+- AND the clear button becomes visible (only if user has `report.edit` or `report.sign`)
 
 ### Requirement: Base64 Storage
 
@@ -85,7 +85,7 @@ The system MUST encode the signature as a base64 PNG string for storage and tran
 #### Scenario: Load existing signature into canvas
 
 - GIVEN a saved report with a base64 signature string
-- AND the current user has `reports.view` (no edit/sign permission)
+- AND the current user has `report.view` (no edit/sign permission)
 - WHEN the form renders
 - THEN the canvas displays the stored signature image as a static `<img>`
 - AND drawing is disabled (read-only canvas)
@@ -136,29 +136,29 @@ The system MUST work on modern browsers and devices.
 
 The signature canvas MUST render in editable mode only when the current user holds the appropriate permission for the current lifecycle action. It MUST render read-only otherwise.
 
-#### Scenario: Canvas editable for user with `reports.edit` on draft
+#### Scenario: Canvas editable for user with `report.edit` on draft
 
 - GIVEN a report in DRAFT status
-- AND the current user has `reports.edit`
+- AND the current user has `report.edit`
 - WHEN the signature canvas mounts
-- THEN `authStore.hasPermission('reports.edit')` returns true
+- THEN `authStore.hasPermission('report.edit')` returns true
 - AND the canvas accepts pointer input (drawing enabled)
 - AND the "Limpiar firma" button is visible
 
-#### Scenario: Canvas editable for user with `reports.sign` during signing step
+#### Scenario: Canvas editable for user with `report.sign` during signing step
 
-- GIVEN a user with `reports.sign` who has passed validation and is in the signing flow
-- AND the current user has `reports.sign`
+- GIVEN a user with `report.sign` who has passed validation and is in the signing flow
+- AND the current user has `report.sign`
 - WHEN the signature canvas is rendered
-- THEN `authStore.hasPermission('reports.sign')` returns true
+- THEN `authStore.hasPermission('report.sign')` returns true
 - AND the canvas accepts pointer input
 
-#### Scenario: Canvas read-only for user with only `reports.view`
+#### Scenario: Canvas read-only for user with only `report.view`
 
 - GIVEN a report in any status
-- AND the current user has `reports.view` but NEITHER `reports.edit` nor `reports.sign`
+- AND the current user has `report.view` but NEITHER `report.edit` nor `report.sign`
 - WHEN the signature canvas mounts
-- THEN `authStore.hasPermission('reports.edit')` returns false AND `authStore.hasPermission('reports.sign')` returns false
+- THEN `authStore.hasPermission('report.edit')` returns false AND `authStore.hasPermission('report.sign')` returns false
 - AND the canvas is read-only (pointer events disabled)
 - AND a stored signature image is displayed if present
 - AND "Limpiar firma" is hidden
@@ -166,16 +166,16 @@ The signature canvas MUST render in editable mode only when the current user hol
 #### Scenario: Typed signature alternative follows same permission rules
 
 - GIVEN the typed signature input field
-- WHEN the current user has only `reports.view`
+- WHEN the current user has only `report.view`
 - THEN the input is disabled (read-only)
-- WHEN the current user has `reports.edit` or `reports.sign`
+- WHEN the current user has `report.edit` or `report.sign`
 - THEN the input is enabled and accepts text
 
 #### Scenario: Permission checked on mount and reactively
 
 - GIVEN the signature component
 - WHEN it is mounted
-- THEN it evaluates `authStore.hasPermission('reports.edit')` and `authStore.hasPermission('reports.sign')`
+- THEN it evaluates `authStore.hasPermission('report.edit')` and `authStore.hasPermission('report.sign')`
 - AND derives a reactive `isEditable` flag
 - AND the canvas responds to changes in this flag
 
@@ -189,6 +189,6 @@ The signature canvas MUST render in editable mode only when the current user hol
 - Typed signature alternative available for keyboard-only users
 - Canvas announces correctly for screen readers
 - Compatible with latest 2 versions of Chrome, Firefox, Safari, Edge
-- Canvas editable only when `authStore.hasPermission('reports.edit')` OR `authStore.hasPermission('reports.sign')`
-- Canvas read-only when both `reports.edit` and `reports.sign` permissions are absent
+- Canvas editable only when `authStore.hasPermission('report.edit')` OR `authStore.hasPermission('report.sign')`
+- Canvas read-only when both `report.edit` and `report.sign` permissions are absent
 - Typed signature follows the same permission rules as the canvas

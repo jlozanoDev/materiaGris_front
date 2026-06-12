@@ -78,19 +78,19 @@
 ### Task 2.2: Report routes with permission guards ✅
 - **File**: `src/core/router/index.ts` — modify (~55 lines)
 - **What**: Add 7 routes:
-  - `/admin/report-templates/nuevo` → `ReportTemplateBuilderPage`, `meta.permissions: 'admin.report-template.create'`
-  - `/admin/report-templates/:id/editar` → `ReportTemplateBuilderPage`, `meta.permissions: 'admin.report-template.edit'`
-  - `/informes` → `ReportListPage`, `meta.permissions: 'reports.view'`
-  - `/informes/:id` → `ReportViewPage`, `meta.permissions: 'reports.view'`
-  - `/informes/:id/editar` → `ReportFillPage`, `meta.permissions: ['reports.edit']`
-  - `/pacientes/:id/informe/nuevo` → `ReportFillPage`, `meta.permissions: 'reports.create'`
+  - `/admin/report-templates/nuevo` → `ReportTemplateBuilderPage`, `meta.permissions: 'admin.reporttemplate.create'`
+  - `/admin/report-templates/:id/editar` → `ReportTemplateBuilderPage`, `meta.permissions: 'admin.reporttemplate.update'`
+  - `/informes` → `ReportListPage`, `meta.permissions: 'report.view'`
+  - `/informes/:id` → `ReportViewPage`, `meta.permissions: 'report.view'`
+  - `/informes/:id/editar` → `ReportFillPage`, `meta.permissions: ['report.edit']`
+  - `/pacientes/:id/informe/nuevo` → `ReportFillPage`, `meta.permissions: 'report.create'`
   - Update existing `/admin/tipo-informe` → rename to `ReportTemplateListPage`
 - **Specs**: template-builder, report-lifecycle, report-admin — all route guard scenarios
 - **Tests** (~120 lines): Route guard integration — mock `authStore.hasPermission` return values, verify redirect per route with/without required permission
 
 ### Task 2.3: Reports sidebar link ✅
 - **File**: `src/shared/components/AppSidebar.vue` — modify (~15 lines)
-- **What**: Add "Informes" link gated by `authStore.hasPermission('reports.view')`. Follow existing pattern (PrimeIcons `pi-file-check`, top-level icon or settings dropdown entry).
+- **What**: Add "Informes" link gated by `authStore.hasPermission('report.view')`. Follow existing pattern (PrimeIcons `pi-file-check`, top-level icon or settings dropdown entry).
 - **Specs**: report-admin — sidebar visibility scenario
 - **Decision needed**: Top-level vs settings dropdown placement
 
@@ -144,7 +144,7 @@
 
 ### Task 4.2: ReportTemplateListPage
 - **File**: `src/modules/admin/report-template/presentation/pages/ReportTemplateListPage.vue` — create (~180 lines)
-- **What**: Replaces skeleton `ReportTemplatePage.vue`. Table: Name, Description, Active badge, Last Modified. Actions: Edit (`admin.report-template.edit`), Delete (`admin.report-template.delete`). "Nuevo" button (`admin.report-template.create`). Empty state. Loading/error states.
+- **What**: Replaces skeleton `ReportTemplatePage.vue`. Table: Name, Description, Active badge, Last Modified. Actions: Edit (`admin.reporttemplate.update`), Delete (`admin.reporttemplate.delete`). "Nuevo" button (`admin.reporttemplate.create`). Empty state. Loading/error states.
 - **Permission**: Buttons gated via `v-if="authStore.hasPermission('slug')"`
 - **Tests** (~120 lines): Mount with mocked `useAuthStore` — verify button visibility matrix, delete flow, error handling
 
@@ -162,7 +162,7 @@
 
 ### Task 5.1: Builder Pinia Store
 - **File**: `src/modules/admin/report-template/presentation/composables/useTemplateBuilder.ts` — create (~130 lines)
-- **What**: Setup store: `sections`, `selectedFieldId`, `undoStack`/`redoStack` (cap 50), `isDirty`, `templateId/Name/Description`. Methods: `loadTemplate(id)`, `addSection()`, `removeSection(id)`, `addRow(sectionId)`, `removeRow(rowId)`, `addColumn(rowId)`, `addField(columnId, type)`, `removeField(fieldId)`, `updateField(fieldId, config)`, `reorderSections(order)`, `moveField(from, to)`, `undo()`, `redo()`, `saveTemplate()`. All mutate methods push inverse command to undo stack. Duplicate key validation in `updateField`. Save checks `authStore.hasPermission('admin.report-template.edit')`. IDs via `crypto.randomUUID()`.
+- **What**: Setup store: `sections`, `selectedFieldId`, `undoStack`/`redoStack` (cap 50), `isDirty`, `templateId/Name/Description`. Methods: `loadTemplate(id)`, `addSection()`, `removeSection(id)`, `addRow(sectionId)`, `removeRow(rowId)`, `addColumn(rowId)`, `addField(columnId, type)`, `removeField(fieldId)`, `updateField(fieldId, config)`, `reorderSections(order)`, `moveField(from, to)`, `undo()`, `redo()`, `saveTemplate()`. All mutate methods push inverse command to undo stack. Duplicate key validation in `updateField`. Save checks `authStore.hasPermission('admin.reporttemplate.update')`. IDs via `crypto.randomUUID()`.
 - **Specs**: template-builder — all drag-drop, field config, duplicate keys, undo/redo
 
 ### Task 5.2: Builder Sub-Components (6 files)
@@ -240,12 +240,12 @@
 ### Task 7.3: SignaturePad
 - **File**: `src/modules/reports/presentation/components/SignaturePad.vue` — create (~130 lines)
 - **What**: Canvas-based signature. Props: `modelValue` (base64|null), `disabled`. Drawing via `pointerdown/move/up`. `preventDefault()` on touch for no-scroll. Clear button (gated by `!disabled`). Watermark "Firme dentro del recuadro". Export via `canvas.toDataURL("image/png")`. Load existing: render as `<img>` when read-only. Typed signature alternative `<input>` with `aria-label`. WCAG 2.1 AA: `role="img"`, `aria-label`, keyboard alternative.
-- **Permission**: `disabled` computed from `!authStore.hasPermission('reports.edit') && !authStore.hasPermission('reports.sign')`
+- **Permission**: `disabled` computed from `!authStore.hasPermission('report.edit') && !authStore.hasPermission('report.sign')`
 - **Specs**: signature-capture/spec.md — all scenarios
 
 ### Task 7.4: DynamicFormRenderer
 - **File**: `src/modules/reports/presentation/components/DynamicFormRenderer.vue` — create (~150 lines)
-- **What**: Receives `sections: Section[]`, `modelValue: values`, `isEditable: boolean`. Iterates: sections → rows → columns → `DynamicField`. Section display mode: tabs (active tab shown) or accordion (one open at a time). Conditional visibility: calls `computeFieldVisibility(fields, allValues)` per section. Auto-save: `watch` on values with 2s debounce emits `@auto-save`. On mount: `isEditable` determined by `authStore.hasPermission('reports.edit')`. Defense-in-depth: if neither edit nor view permission → redirect.
+- **What**: Receives `sections: Section[]`, `modelValue: values`, `isEditable: boolean`. Iterates: sections → rows → columns → `DynamicField`. Section display mode: tabs (active tab shown) or accordion (one open at a time). Conditional visibility: calls `computeFieldVisibility(fields, allValues)` per section. Auto-save: `watch` on values with 2s debounce emits `@auto-save`. On mount: `isEditable` determined by `authStore.hasPermission('report.edit')`. Defense-in-depth: if neither edit nor view permission → redirect.
 - **Specs**: dynamic-form-renderer/spec.md — all rendering, layout, permission enforcement scenarios
 
 ---
@@ -258,7 +258,7 @@
 
 ### Task 8.1: useReportForm Store
 - **File**: `src/modules/reports/presentation/composables/useReportForm.ts` — create (~140 lines)
-- **What**: Setup store: `report`, `values`, `dirtyFields`, `errors`, `isSaving`, `autoSaveEnabled`. Methods: `init(patientId, templateId)`, `loadReport(id)`, `setValue(key, value)`, `validateForSignature()` (checks required + signature), `saveDraft()` (calls `saveDraft` use case, no required validation), `sign()` (checks `authStore.hasPermission('reports.sign')` AND `report.user_id === authStore.user.id`, validates, calls sign use case), `close()` (checks `authStore.hasPermission('reports.close')` AND author match, validates status=signed). Auto-save: watch `values` with 2s debounce → `saveDraft()`.
+- **What**: Setup store: `report`, `values`, `dirtyFields`, `errors`, `isSaving`, `autoSaveEnabled`. Methods: `init(patientId, templateId)`, `loadReport(id)`, `setValue(key, value)`, `validateForSignature()` (checks required + signature), `saveDraft()` (calls `saveDraft` use case, no required validation), `sign()` (checks `authStore.hasPermission('report.sign')` AND `report.user_id === authStore.user.id`, validates, calls sign use case), `close()` (checks `authStore.hasPermission('report.close')` AND author match, validates status=signed). Auto-save: watch `values` with 2s debounce → `saveDraft()`.
 - **Specs**: report-lifecycle/spec.md — all state transition + permission scenarios
 
 ### Task 8.2: useReportList Composable
@@ -268,12 +268,12 @@
 
 ### Task 8.3: ReportFillPage
 - **File**: `src/modules/reports/presentation/pages/ReportFillPage.vue` — create (~100 lines)
-- **What**: Wraps `DynamicFormRenderer`. Detects create vs edit via route. Create: calls `useReportForm.init(patientId, templateId)`. Edit: calls `useReportForm.loadReport(id)`. Action buttons: "Guardar borrador" (`reports.edit`), "Firmar" (`reports.sign`), "Cerrar" (`reports.close`), "Descargar PDF" (`reports.download-pdf` + status signed/closed). Each button gated by `authStore.hasPermission()` AND author match. Validation error display for failed sign attempt (highlight missing required fields + missing signature). Confirmation dialog before sign/close.
+- **What**: Wraps `DynamicFormRenderer`. Detects create vs edit via route. Create: calls `useReportForm.init(patientId, templateId)`. Edit: calls `useReportForm.loadReport(id)`. Action buttons: "Guardar borrador" (`report.edit`), "Firmar" (`report.sign`), "Cerrar" (`report.close`), "Descargar PDF" (`report.download-pdf` + status signed/closed). Each button gated by `authStore.hasPermission()` AND author match. Validation error display for failed sign attempt (highlight missing required fields + missing signature). Confirmation dialog before sign/close.
 - **Specs**: report-lifecycle/spec.md — all lifecycle scenarios
 
 ### Task 8.4: ReportViewPage
 - **File**: `src/modules/reports/presentation/pages/ReportViewPage.vue` — create (~60 lines)
-- **What**: Read-only wrapper. Loads report, renders `DynamicFormRenderer` with `isEditable=false`. "Descargar PDF" button (gated by `reports.download-pdf` AND signed/closed). "Volver" button.
+- **What**: Read-only wrapper. Loads report, renders `DynamicFormRenderer` with `isEditable=false`. "Descargar PDF" button (gated by `report.download-pdf` AND signed/closed). "Volver" button.
 - **Specs**: report-admin/spec.md — read-only viewer scenarios
 
 ### Task 8.5: ReportListPage

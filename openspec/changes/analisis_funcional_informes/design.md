@@ -12,16 +12,16 @@ Two new hexagonal modules extend the codebase, following the existing `domain/in
 
 | Permission Slug | Gates |
 |---|---|
-| `admin.report-template.view` | Template listing route + sidebar link |
-| `admin.report-template.create` | "Nueva plantilla de informe" button |
-| `admin.report-template.edit` | Edit button, builder write ops |
-| `admin.report-template.delete` | Delete button, delete action |
-| `reports.create` | "Nuevo informe" initiation |
-| `reports.view` | Report listing route, viewer route, sidebar link |
-| `reports.edit` | Draft fill/edit mode in DynamicFormRenderer |
-| `reports.sign` | "Firmar" button + signing transition |
-| `reports.close` | "Cerrar" button + closing transition |
-| `reports.download-pdf` | "Descargar PDF" button |
+| `admin.reporttemplate.view` | Template listing route + sidebar link |
+| `admin.reporttemplate.create` | "Nueva plantilla de informe" button |
+| `admin.reporttemplate.update` | Edit button, builder write ops |
+| `admin.reporttemplate.delete` | Delete button, delete action |
+| `report.create` | "Nuevo informe" initiation |
+| `report.view` | Report listing route, viewer route, sidebar link |
+| `report.edit` | Draft fill/edit mode in DynamicFormRenderer |
+| `report.sign` | "Firmar" button + signing transition |
+| `report.close` | "Cerrar" button + closing transition |
+| `report.download-pdf` | "Descargar PDF" button |
 
 ### Permission Check Patterns (from existing codebase)
 
@@ -116,13 +116,13 @@ src/shared/components/
 
 | Route | Component | `meta.permissions` | Notes |
 |---|---|---|---|
-| `/admin/report-templates` | `ReportTemplateListPage` | `'admin.report-template.view'` | Template listing |
-| `/admin/report-templates/nuevo` | `ReportTemplateBuilderPage` | `'admin.report-template.create'` | New template builder |
-| `/admin/report-templates/:id/editar` | `ReportTemplateBuilderPage` | `'admin.report-template.edit'` | Edit existing template |
-| `/informes` | `ReportListPage` | `'reports.view'` | Report admin listing |
-| `/informes/:id` | `ReportViewPage` | `'reports.view'` | Read-only viewer |
-| `/informes/:id/editar` | `ReportFillPage` | `['reports.edit']` | Draft fill/edit |
-| `/pacientes/:id/informe/nuevo` | `ReportFillPage` | `'reports.create'` | Initiate new report |
+| `/admin/report-templates` | `ReportTemplateListPage` | `'admin.reporttemplate.view'` | Template listing |
+| `/admin/report-templates/nuevo` | `ReportTemplateBuilderPage` | `'admin.reporttemplate.create'` | New template builder |
+| `/admin/report-templates/:id/editar` | `ReportTemplateBuilderPage` | `'admin.reporttemplate.update'` | Edit existing template |
+| `/informes` | `ReportListPage` | `'report.view'` | Report admin listing |
+| `/informes/:id` | `ReportViewPage` | `'report.view'` | Read-only viewer |
+| `/informes/:id/editar` | `ReportFillPage` | `['report.edit']` | Draft fill/edit |
+| `/pacientes/:id/informe/nuevo` | `ReportFillPage` | `'report.create'` | Initiate new report |
 
 All routes set `meta: { requiresAuth: true }`. The `beforeEach` guard (in `src/core/router/index.ts`) already evaluates `meta.permissions` per the existing pattern — no changes to the guard logic needed.
 
@@ -136,19 +136,19 @@ Every route uses the existing `meta.permissions` pattern (string or array). The 
 
 | Element | Permission Check | Pattern |
 |---|---|---|
-| "Nueva plantilla de informe" button | `admin.report-template.create` | `v-if="authStore.hasPermission('admin.report-template.create')"` |
-| Edit button (per row) | `admin.report-template.edit` | `v-if="authStore.hasPermission('admin.report-template.edit')"` |
-| Delete button (per row) | `admin.report-template.delete` | `v-if="authStore.hasPermission('admin.report-template.delete')"` |
+| "Nueva plantilla de informe" button | `admin.reporttemplate.create` | `v-if="authStore.hasPermission('admin.reporttemplate.create')"` |
+| Edit button (per row) | `admin.reporttemplate.update` | `v-if="authStore.hasPermission('admin.reporttemplate.update')"` |
+| Delete button (per row) | `admin.reporttemplate.delete` | `v-if="authStore.hasPermission('admin.reporttemplate.delete')"` |
 
 ### 3. UI Element Visibility — Reports
 
 | Element | Permission Check | Context |
 |---|---|---|
-| "Nuevo informe" button | `reports.create` | Patient profile page |
-| "Guardar borrador" button | `reports.edit` | Draft fill page |
-| "Firmar" button | `reports.sign` | Draft fill page (after validation passes) |
-| "Cerrar" button | `reports.close` | Signed report |
-| "Descargar PDF" button | `reports.download-pdf` | Signed/closed report (and status is not draft) |
+| "Nuevo informe" button | `report.create` | Patient profile page |
+| "Guardar borrador" button | `report.edit` | Draft fill page |
+| "Firmar" button | `report.sign` | Draft fill page (after validation passes) |
+| "Cerrar" button | `report.close` | Signed report |
+| "Descargar PDF" button | `report.download-pdf` | Signed/closed report (and status is not draft) |
 
 ### 4. DynamicFormRenderer — Permission Check on Mount
 
@@ -158,9 +158,9 @@ const isEditable = ref(false);
 
 onMounted(() => {
   const authStore = useAuthStore();
-  isEditable.value = authStore.hasPermission('reports.edit');
+  isEditable.value = authStore.hasPermission('report.edit');
 
-  if (!authStore.hasPermission('reports.edit') && !authStore.hasPermission('reports.view')) {
+  if (!authStore.hasPermission('report.edit') && !authStore.hasPermission('report.view')) {
     // Should not reach here due to route guard, but defense in depth
     router.push({ name: 'Dashboard' });
   }
@@ -168,7 +168,7 @@ onMounted(() => {
 ```
 
 - `isEditable = true` → all inputs enabled, action buttons visible (further gated individually)
-- `isEditable = false` (only `reports.view`) → all inputs `:disabled`, no action buttons
+- `isEditable = false` (only `report.view`) → all inputs `:disabled`, no action buttons
 
 ### 5. Report Lifecycle State Machine — Transition Checks
 
@@ -176,11 +176,11 @@ Each transition checks **author match** (`report.user_id === authStore.user.id`)
 
 | Transition | Permission | Author Check | Additional |
 |---|---|---|---|
-| `init → draft` | `reports.create` | Yes (creator becomes author) | Snapshot captured |
-| `draft → save` (draft) | `reports.edit` | Yes | No required-field validation |
-| `draft → signed` | `reports.sign` | Yes | All required + signature validated |
-| `signed → closed` | `reports.close` | Yes | Immutable after |
-| Any status → read-only | `reports.view` | No | View-only mode |
+| `init → draft` | `report.create` | Yes (creator becomes author) | Snapshot captured |
+| `draft → save` (draft) | `report.edit` | Yes | No required-field validation |
+| `draft → signed` | `report.sign` | Yes | All required + signature validated |
+| `signed → closed` | `report.close` | Yes | Immutable after |
+| Any status → read-only | `report.view` | No | View-only mode |
 
 If author check fails but user has permission: display read-only with toast "No tiene permisos para editar este informe".
 
@@ -191,13 +191,13 @@ If author check fails but user has permission: display read-only with toast "No 
 ```typescript
 function autoSave(): Promise<void> {
   const authStore = useAuthStore();
-  if (!authStore.hasPermission('reports.edit')) return; // silently skip
+  if (!authStore.hasPermission('report.edit')) return; // silently skip
   // ... save logic
 }
 
 function sign(): Promise<void> {
   const authStore = useAuthStore();
-  if (!authStore.hasPermission('reports.sign')) {
+  if (!authStore.hasPermission('report.sign')) {
     throw new Error('No tiene permiso para firmar informes');
   }
   if (report.value?.user_id !== authStore.user?.id) {
@@ -207,20 +207,20 @@ function sign(): Promise<void> {
 }
 ```
 
-`useTemplateBuilder` store: save operation checks `admin.report-template.edit` before calling API.
+`useTemplateBuilder` store: save operation checks `admin.reporttemplate.update` before calling API.
 
 ### 7. Sidebar/Navigation Entries
 
-In `AppSidebar.vue`, inside the settings dropdown (following the existing pattern for `admin.report-template.view`):
+In `AppSidebar.vue`, inside the settings dropdown (following the existing pattern for `admin.reporttemplate.view`):
 
 ```html
 <!-- Already exists: -->
-<li v-if="authStore.hasPermission('admin.report-template.view')">
+<li v-if="authStore.hasPermission('admin.reporttemplate.view')">
   <!-- Plantillas de informes link -->
 </li>
 
 <!-- NEW — Reports listing (separate from admin settings, may go in main nav or patient context): -->
-<li v-if="authStore.hasPermission('reports.view')">
+<li v-if="authStore.hasPermission('report.view')">
   <!-- Informes link -->
 </li>
 ```
@@ -258,15 +258,15 @@ Data flow: `v-model` binds `values: Record<string, unknown>` deeply. Conditional
 
 ### useTemplateBuilder (admin/tipo-informe)
 
-Setup store with `sections`, `selectedFieldId`, `undoStack`, `redoStack`, `isDirty`. All mutation functions (`addSection`, `removeSection`, etc.) are called only when the user has `admin.report-template.edit` (UI already hides controls if not). Save action double-checks `authStore.hasPermission('admin.report-template.edit')`.
+Setup store with `sections`, `selectedFieldId`, `undoStack`, `redoStack`, `isDirty`. All mutation functions (`addSection`, `removeSection`, etc.) are called only when the user has `admin.reporttemplate.update` (UI already hides controls if not). Save action double-checks `authStore.hasPermission('admin.reporttemplate.update')`.
 
 ### useReportForm (reports)
 
-Setup store with `report`, `values`, `dirtyFields`, `errors`, `isSaving`, `autoSaveEnabled`. `init()` loads values from snapshot. `setValue()` marks field dirty. `validateForSignature()` checks required fields + signature presence. `autoSave()` debounced 2s, internally checks `reports.edit`. Sign and close actions check `reports.sign` / `reports.close` respectively.
+Setup store with `report`, `values`, `dirtyFields`, `errors`, `isSaving`, `autoSaveEnabled`. `init()` loads values from snapshot. `setValue()` marks field dirty. `validateForSignature()` checks required fields + signature presence. `autoSave()` debounced 2s, internally checks `report.edit`. Sign and close actions check `report.sign` / `report.close` respectively.
 
 ### useReportList (reports admin listing)
 
-Follows `useUsers` pattern: `ref([])` + `fetch()` with `loading`/`error`. Fetches only if the page component is allowed to mount (route guard already verified `reports.view`).
+Follows `useUsers` pattern: `ref([])` + `fetch()` with `loading`/`error`. Fetches only if the page component is allowed to mount (route guard already verified `report.view`).
 
 ## API Integration
 
@@ -282,7 +282,7 @@ vuedraggable wraps each nesting level. 4 independent `<draggable>` lists with di
 
 ## SignaturePad Component
 
-Vanilla Canvas API. Props: `modelValue` (base64), `width`, `height`, `disabled`. `disabled` prop is wired to `!authStore.hasPermission('reports.edit') && !authStore.hasPermission('reports.sign')`. Editable only when user holds `reports.edit` (draft) or `reports.sign` (signing step).
+Vanilla Canvas API. Props: `modelValue` (base64), `width`, `height`, `disabled`. `disabled` prop is wired to `!authStore.hasPermission('report.edit') && !authStore.hasPermission('report.sign')`. Editable only when user holds `report.edit` (draft) or `report.sign` (signing step).
 
 ## DynamicTable Component
 
@@ -315,7 +315,7 @@ Field type `dynamic_table` renders as grid with add/remove row buttons. Sub-fiel
 | `src/modules/reports/presentation/components/SignaturePad.vue` | Create | Canvas signature (permission-gated) |
 | `src/shared/plugins/ConditionalLogicEngine.ts` | Create | Parser + evaluator |
 | `src/core/router/index.ts` | Modify | Add routes with `meta.permissions` |
-| `src/shared/components/AppSidebar.vue` | Modify | Add reports listing link gated by `reports.view` |
+| `src/shared/components/AppSidebar.vue` | Modify | Add reports listing link gated by `report.view` |
 | `package.json` | Modify | Add `vuedraggable@next` |
 
 ## Testing Strategy

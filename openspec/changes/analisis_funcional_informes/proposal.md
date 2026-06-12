@@ -91,7 +91,7 @@ None — all existing specs remain unchanged.
   - `POST /api/reports/{id}/close` — cerrar
   - `GET /api/reports/{id}/pdf` — descargar PDF generado
 - **npm**: `vuedraggable@next`, `signature_pad`
-- **Permisos backend**: `admin.report-template.*`, `reports.*`, `reports.sign`, `reports.close`
+- **Permisos backend**: `admin.reporttemplate.*`, `report.*`
 
 ## Success Criteria
 

@@ -4,7 +4,7 @@
 
 Safe runtime expression evaluator for field visibility rules. Evaluates conditions in real-time as form values change. Uses no `eval()`, no `new Function()`. Supports comparators: `==`, `!=`, `contains`, `>`, `<`. Operates on a controlled scope of current form values only.
 
-**Permission note**: This capability has no direct permission requirements. It operates within the DynamicFormRenderer, which already enforces permissions at the form level (`reports.edit`, `reports.view`, etc.). The conditional logic evaluator is a pure function that returns booleans — it does not gate access, mutate data, or handle user authorization.
+**Permission note**: This capability has no direct permission requirements. It operates within the DynamicFormRenderer, which already enforces permissions at the form level (`report.edit`, `report.view`, etc.). The conditional logic evaluator is a pure function that returns booleans — it does not gate access, mutate data, or handle user authorization.
 
 ## Requirements
 

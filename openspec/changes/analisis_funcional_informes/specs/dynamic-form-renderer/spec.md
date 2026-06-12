@@ -98,28 +98,28 @@ The system MUST bind form inputs to a reactive `values` object that updates in r
 
 The DynamicFormRenderer MUST determine its edit mode based on the current user's permissions, checked on mount. It does NOT rely on user role.
 
-#### Scenario: User with `reports.edit` sees editable form in draft state
+#### Scenario: User with `report.edit` sees editable form in draft state
 
 - GIVEN a report in DRAFT status
-- AND the current user has permission `reports.edit`
+- AND the current user has permission `report.edit`
 - WHEN the DynamicForm mounts
-- THEN `authStore.hasPermission('reports.edit')` returns true
+- THEN `authStore.hasPermission('report.edit')` returns true
 - AND all form inputs render as editable
 - AND save/sign/close action buttons appear (further gated by lifecycle-specific permissions)
 
-#### Scenario: User with `reports.view` but WITHOUT `reports.edit` sees read-only form
+#### Scenario: User with `report.view` but WITHOUT `report.edit` sees read-only form
 
 - GIVEN a report in any status
-- AND the current user has permission `reports.view` but NOT `reports.edit`
+- AND the current user has permission `report.view` but NOT `report.edit`
 - WHEN the DynamicForm mounts
-- THEN `authStore.hasPermission('reports.edit')` returns false
+- THEN `authStore.hasPermission('report.edit')` returns false
 - AND all form inputs render read-only (disabled)
 - AND no edit/save/sign/close action buttons are visible
 
-#### Scenario: User with `reports.create` can initiate a new report
+#### Scenario: User with `report.create` can initiate a new report
 
 - GIVEN a patient profile page with "Nuevo informe" action available
-- AND the current user has permission `reports.create`
+- AND the current user has permission `report.create`
 - WHEN clicking "Nuevo informe"
 - THEN a report is initialized with snapshot
 - AND the DynamicForm renders in editable mode
@@ -128,12 +128,12 @@ The DynamicFormRenderer MUST determine its edit mode based on the current user's
 
 - GIVEN any report form page loads
 - WHEN the DynamicForm component's `onMounted` runs
-- THEN it calls `authStore.hasPermission('reports.edit')` to determine edit mode
+- THEN it calls `authStore.hasPermission('report.edit')` to determine edit mode
 - AND sets a reactive `isEditable` flag that controls input `:disabled` bindings
 
-#### Scenario: User with neither `reports.view` nor `reports.edit` is denied
+#### Scenario: User with neither `report.view` nor `report.edit` is denied
 
-- GIVEN a user WITHOUT `reports.view` and WITHOUT `reports.edit`
+- GIVEN a user WITHOUT `report.view` and WITHOUT `report.edit`
 - WHEN attempting to access the report form URL directly
 - THEN the route guard checks `meta.permissions` and redirects to Dashboard
 - AND the DynamicForm never mounts
@@ -168,7 +168,7 @@ The DynamicFormRenderer MUST determine its edit mode based on the current user's
 - System variable fields are pre-filled and read-only
 - Multi-column layouts collapse to single column on mobile
 - Empty snapshot renders a meaningful empty state, not a crash
-- `reports.edit` permission gates editable vs read-only mode
-- `reports.view` permission allows read-only access without edit rights
-- `reports.create` permission gates report initiation
+- `report.edit` permission gates editable vs read-only mode
+- `report.view` permission allows read-only access without edit rights
+- `report.create` permission gates report initiation
 - Form checks `authStore.hasPermission()` on mount, not role
