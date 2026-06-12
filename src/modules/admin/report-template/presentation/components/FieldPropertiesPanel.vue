@@ -88,198 +88,210 @@ function removeColumnDef(index: number) {
 </script>
 
 <template>
-  <div v-if="selectedField" class="p-4 space-y-4" data-property-panel>
-    <h3 class="text-sm font-semibold text-slate-700 border-b pb-2">
-      Propiedades del campo
-    </h3>
-
-    <!-- Label -->
-    <div>
-      <label class="text-xs text-slate-500 block mb-0.5">Etiqueta</label>
-      <input
-        :value="selectedField.label"
-        class="form-input text-sm w-full"
-        placeholder="Etiqueta del campo"
-        @input="onLabelChange"
-      />
+  <div v-if="selectedField" data-property-panel>
+    <!-- Panel header -->
+    <div class="flex items-center gap-2 px-4 py-3 bg-[#faf9ff] border-b border-[rgba(124,58,237,0.06)]">
+      <i class="pi pi-cog text-[#7c3aed] text-xs" />
+      <h3 class="text-xs font-semibold uppercase tracking-wider text-[#7c3aed]">
+        Propiedades del campo
+      </h3>
     </div>
 
-    <!-- Key -->
-    <div>
-      <label class="text-xs text-slate-500 block mb-0.5">Clave (key)</label>
-      <input
-        :value="selectedField.key"
-        class="form-input text-sm w-full font-mono"
-        placeholder="clave_del_campo"
-        @input="update({ key: ($event.target as HTMLInputElement).value })"
-      />
-    </div>
-
-    <!-- Type -->
-    <div>
-      <label class="text-xs text-slate-500 block mb-0.5">Tipo</label>
-      <select
-        :value="selectedField.type"
-        class="form-input text-sm w-full"
-        @change="update({ type: ($event.target as HTMLSelectElement).value as FieldType })"
-      >
-        <option value="text">Texto Corto</option>
-        <option value="textarea">Texto Largo</option>
-        <option value="number">Número</option>
-        <option value="date">Fecha</option>
-        <option value="select">Selección única</option>
-        <option value="radio">Opción única</option>
-        <option value="checkbox">Checkbox</option>
-        <option value="dynamic_table">Tabla Dinámica</option>
-      </select>
-    </div>
-
-    <!-- Placeholder -->
-    <div>
-      <label class="text-xs text-slate-500 block mb-0.5">Placeholder</label>
-      <input
-        :value="selectedField.placeholder || ''"
-        class="form-input text-sm w-full"
-        placeholder="Texto de ayuda"
-        @input="update({ placeholder: ($event.target as HTMLInputElement).value })"
-      />
-    </div>
-
-    <!-- Required -->
-    <div class="flex items-center gap-2">
-      <input
-        type="checkbox"
-        :checked="selectedField.required"
-        class="rounded"
-        @change="update({ required: ($event.target as HTMLInputElement).checked })"
-      />
-      <label class="text-sm text-slate-600">Requerido</label>
-    </div>
-
-    <!-- System Variable -->
-    <div>
-      <label class="text-xs text-slate-500 block mb-0.5">Variable del sistema</label>
-      <select
-        :value="selectedField.systemVariable || ''"
-        class="form-input text-sm w-full"
-        @change="update({ systemVariable: ($event.target as HTMLSelectElement).value || undefined })"
-      >
-        <option
-          v-for="sv in SYSTEM_VARIABLES"
-          :key="sv.value"
-          :value="sv.value"
-        >
-          {{ sv.label }}
-        </option>
-      </select>
-    </div>
-
-    <!-- Conditional Rule -->
-    <div>
-      <label class="text-xs text-slate-500 block mb-0.5">Regla condicional</label>
-      <div class="flex gap-1 items-center">
+    <div class="p-4 space-y-5">
+      <!-- Label -->
+      <div>
+        <label class="block text-sm font-medium text-[#6b6b7b] mb-1">Etiqueta</label>
         <input
-          :value="selectedField.conditionalRule?.field || ''"
-          class="form-input text-xs flex-1"
-          placeholder="Campo fuente"
-          @input="update({ conditionalRule: { ...(selectedField.conditionalRule || { op: '==' as any, value: '' }), field: ($event.target as HTMLInputElement).value } })"
+          :value="selectedField.label"
+          class="form-input"
+          placeholder="Etiqueta del campo"
+          @input="onLabelChange"
         />
+      </div>
+
+      <!-- Key -->
+      <div>
+        <label class="block text-sm font-medium text-[#6b6b7b] mb-1">Clave (key)</label>
+        <input
+          :value="selectedField.key"
+          class="form-input font-mono"
+          placeholder="clave_del_campo"
+          @input="update({ key: ($event.target as HTMLInputElement).value })"
+        />
+      </div>
+
+      <!-- Type -->
+      <div>
+        <label class="block text-sm font-medium text-[#6b6b7b] mb-1">Tipo</label>
         <select
-          :value="selectedField.conditionalRule?.op || '=='"
-          class="form-input text-xs w-16"
-          @change="update({ conditionalRule: { ...(selectedField.conditionalRule || { field: '', value: '' }), op: ($event.target as HTMLSelectElement).value as any } })"
+          :value="selectedField.type"
+          class="form-input"
+          @change="update({ type: ($event.target as HTMLSelectElement).value as FieldType })"
         >
-          <option v-for="op in CONDITIONAL_OPS" :key="op.value" :value="op.value">
-            {{ op.label.split(' ')[0] }}
+          <option value="text">Texto Corto</option>
+          <option value="textarea">Texto Largo</option>
+          <option value="number">Número</option>
+          <option value="date">Fecha</option>
+          <option value="select">Selección única</option>
+          <option value="radio">Opción única</option>
+          <option value="checkbox">Checkbox</option>
+          <option value="dynamic_table">Tabla Dinámica</option>
+        </select>
+      </div>
+
+      <!-- Placeholder -->
+      <div>
+        <label class="block text-sm font-medium text-[#6b6b7b] mb-1">Placeholder</label>
+        <input
+          :value="selectedField.placeholder || ''"
+          class="form-input"
+          placeholder="Texto de ayuda"
+          @input="update({ placeholder: ($event.target as HTMLInputElement).value })"
+        />
+      </div>
+
+      <!-- Required -->
+      <div class="flex items-center gap-2">
+        <input
+          type="checkbox"
+          :checked="selectedField.required"
+          class="rounded"
+          @change="update({ required: ($event.target as HTMLInputElement).checked })"
+        />
+        <label class="text-sm text-[#0b0817] font-medium">Requerido</label>
+      </div>
+
+      <hr class="border-[rgba(124,58,237,0.08)]" />
+
+      <!-- System Variable -->
+      <div>
+        <label class="block text-sm font-medium text-[#6b6b7b] mb-1">Variable del sistema</label>
+        <select
+          :value="selectedField.systemVariable || ''"
+          class="form-input"
+          @change="update({ systemVariable: ($event.target as HTMLSelectElement).value || undefined })"
+        >
+          <option
+            v-for="sv in SYSTEM_VARIABLES"
+            :key="sv.value"
+            :value="sv.value"
+          >
+            {{ sv.label }}
           </option>
         </select>
-        <input
-          :value="selectedField.conditionalRule?.value || ''"
-          class="form-input text-xs flex-1"
-          placeholder="Valor"
-          @input="update({ conditionalRule: { ...(selectedField.conditionalRule || { field: '', op: '==' as any }), value: ($event.target as HTMLInputElement).value } })"
-        />
       </div>
-    </div>
 
-    <!-- Options (select/radio/checkbox) -->
-    <div v-if="['select', 'radio', 'checkbox'].includes(selectedField.type)">
-      <div class="flex items-center justify-between mb-1">
-        <label class="text-xs text-slate-500">Opciones</label>
-        <button
-          class="text-xs text-indigo-500 hover:text-indigo-700"
-          @click="addOption"
-        >
-          + Añadir
-        </button>
-      </div>
-      <div class="space-y-1">
-        <div
-          v-for="(opt, idx) in selectedField.options || []"
-          :key="idx"
-          class="flex gap-1 items-center"
-        >
+      <!-- Conditional Rule -->
+      <div>
+        <label class="block text-sm font-medium text-[#6b6b7b] mb-1">Regla condicional</label>
+        <div class="flex gap-2 items-center">
           <input
-            :value="opt.label"
+            :value="selectedField.conditionalRule?.field || ''"
             class="form-input text-xs flex-1"
-            placeholder="Etiqueta"
-            @input="selectedField.options![idx] = { ...opt, label: ($event.target as HTMLInputElement).value }; update({ options: [...(selectedField.options || [])] })"
-          />
-          <input
-            :value="opt.value"
-            class="form-input text-xs flex-1"
-            placeholder="Valor"
-            @input="selectedField.options![idx] = { ...opt, value: ($event.target as HTMLInputElement).value }; update({ options: [...(selectedField.options || [])] })"
-          />
-          <button
-            class="text-red-400 hover:text-red-600"
-            @click="removeOption(idx)"
-          >
-            <i class="pi pi-times text-xs" />
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Column defs (dynamic_table) -->
-    <div v-if="selectedField.type === 'dynamic_table'">
-      <div class="flex items-center justify-between mb-1">
-        <label class="text-xs text-slate-500">Columnas de la tabla</label>
-        <button
-          class="text-xs text-indigo-500 hover:text-indigo-700"
-          @click="addColumnDef"
-        >
-          + Añadir columna
-        </button>
-      </div>
-      <div class="space-y-1">
-        <div
-          v-for="(col, idx) in selectedField.columns || []"
-          :key="idx"
-          class="flex gap-1 items-center"
-        >
-          <input
-            :value="col.name"
-            class="form-input text-xs flex-1"
-            placeholder="Nombre"
-            @input="selectedField.columns![idx] = { ...col, name: ($event.target as HTMLInputElement).value }; update({ columns: [...(selectedField.columns || [])] })"
+            placeholder="Campo fuente"
+            @input="update({ conditionalRule: { ...(selectedField.conditionalRule || { op: '==' as any, value: '' }), field: ($event.target as HTMLInputElement).value } })"
           />
           <select
-            :value="col.type"
-            class="form-input text-xs w-24"
-            @change="selectedField.columns![idx] = { ...col, type: ($event.target as HTMLSelectElement).value as FieldType }; update({ columns: [...(selectedField.columns || [])] })"
+            :value="selectedField.conditionalRule?.op || '=='"
+            class="form-input text-xs w-20"
+            @change="update({ conditionalRule: { ...(selectedField.conditionalRule || { field: '', value: '' }), op: ($event.target as HTMLSelectElement).value as any } })"
           >
-            <option value="text">Texto</option>
-            <option value="number">Número</option>
-            <option value="date">Fecha</option>
-            <option value="select">Selección</option>
+            <option v-for="op in CONDITIONAL_OPS" :key="op.value" :value="op.value">
+              {{ op.label.split(' ')[0] }}
+            </option>
           </select>
+          <input
+            :value="selectedField.conditionalRule?.value || ''"
+            class="form-input text-xs flex-1"
+            placeholder="Valor"
+            @input="update({ conditionalRule: { ...(selectedField.conditionalRule || { field: '', op: '==' as any }), value: ($event.target as HTMLInputElement).value } })"
+          />
+        </div>
+      </div>
+
+      <hr class="border-[rgba(124,58,237,0.08)]" />
+
+      <!-- Options (select/radio/checkbox) -->
+      <div v-if="['select', 'radio', 'checkbox'].includes(selectedField.type)">
+        <div class="flex items-center justify-between mb-2">
+          <label class="text-xs font-semibold uppercase tracking-wider text-[#7c3aed]">Opciones</label>
           <button
-            class="text-red-400 hover:text-red-600"
-            @click="removeColumnDef(idx)"
+            class="text-xs text-[#7c3aed] hover:text-[#6d28d9] font-medium px-2 py-1 rounded hover:bg-[#f5f3ff] transition-colors"
+            @click="addOption"
           >
-            <i class="pi pi-times text-xs" />
+            <i class="pi pi-plus mr-1" />
+            Añadir
           </button>
+        </div>
+        <div class="space-y-2">
+          <div
+            v-for="(opt, idx) in selectedField.options || []"
+            :key="idx"
+            class="flex gap-2 items-center"
+          >
+            <input
+              :value="opt.label"
+              class="form-input text-xs flex-1"
+              placeholder="Etiqueta"
+              @input="selectedField.options![idx] = { ...opt, label: ($event.target as HTMLInputElement).value }; update({ options: [...(selectedField.options || [])] })"
+            />
+            <input
+              :value="opt.value"
+              class="form-input text-xs flex-1"
+              placeholder="Valor"
+              @input="selectedField.options![idx] = { ...opt, value: ($event.target as HTMLInputElement).value }; update({ options: [...(selectedField.options || [])] })"
+            />
+            <button
+              class="inline-flex items-center justify-center h-7 w-7 rounded-md text-[#9690a8] hover:text-red-500 hover:bg-red-50 transition-all duration-150"
+              @click="removeOption(idx)"
+            >
+              <i class="pi pi-times text-xs" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Column defs (dynamic_table) -->
+      <div v-if="selectedField.type === 'dynamic_table'">
+        <div class="flex items-center justify-between mb-2">
+          <label class="text-xs font-semibold uppercase tracking-wider text-[#7c3aed]">Columnas de la tabla</label>
+          <button
+            class="text-xs text-[#7c3aed] hover:text-[#6d28d9] font-medium px-2 py-1 rounded hover:bg-[#f5f3ff] transition-colors"
+            @click="addColumnDef"
+          >
+            <i class="pi pi-plus mr-1" />
+            Añadir columna
+          </button>
+        </div>
+        <div class="space-y-2">
+          <div
+            v-for="(col, idx) in selectedField.columns || []"
+            :key="idx"
+            class="flex gap-2 items-center"
+          >
+            <input
+              :value="col.name"
+              class="form-input text-xs flex-1"
+              placeholder="Nombre"
+              @input="selectedField.columns![idx] = { ...col, name: ($event.target as HTMLInputElement).value }; update({ columns: [...(selectedField.columns || [])] })"
+            />
+            <select
+              :value="col.type"
+              class="form-input text-xs w-24"
+              @change="selectedField.columns![idx] = { ...col, type: ($event.target as HTMLSelectElement).value as FieldType }; update({ columns: [...(selectedField.columns || [])] })"
+            >
+              <option value="text">Texto</option>
+              <option value="number">Número</option>
+              <option value="date">Fecha</option>
+              <option value="select">Selección</option>
+            </select>
+            <button
+              class="inline-flex items-center justify-center h-7 w-7 rounded-md text-[#9690a8] hover:text-red-500 hover:bg-red-50 transition-all duration-150"
+              @click="removeColumnDef(idx)"
+            >
+              <i class="pi pi-times text-xs" />
+            </button>
+          </div>
         </div>
       </div>
     </div>

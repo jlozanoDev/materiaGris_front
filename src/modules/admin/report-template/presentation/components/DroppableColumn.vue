@@ -16,9 +16,9 @@ const localFields = computed({
 </script>
 
 <template>
-  <div class="border border-dashed border-indigo-200 rounded p-2 bg-white min-h-[80px]" data-column-panel>
+  <div class="border border-[rgba(124,58,237,0.15)] rounded-lg p-2 bg-white min-h-[80px]" data-column-panel>
     <div class="flex items-center justify-between mb-1">
-      <span class="text-xs text-indigo-400">Columna</span>
+      <span class="text-xs text-[#7c3aed] font-medium">Columna</span>
     </div>
 
     <draggable
