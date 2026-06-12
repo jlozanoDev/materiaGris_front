@@ -88,8 +88,8 @@ async function mountSidebarWithSettingsOpen() {
 }
 
 describe('AppSidebar — Reports Navigation Link', () => {
-  it('renders "Informes" link when user has reports.view permission', async () => {
-    setUser(['reports.view'])
+  it('renders "Informes" link when user has report.view permission', async () => {
+    setUser(['report.view'])
     const wrapper = await mountSidebarWithSettingsOpen()
 
     const links = wrapper.findAll('li > button')
@@ -98,8 +98,8 @@ describe('AppSidebar — Reports Navigation Link', () => {
     expect(informesBtn!.text()).toBe('Informes')
   })
 
-  it('does NOT render "Informes" link when user lacks reports.view', async () => {
-    setUser(['reports.edit', 'reports.create'])
+  it('does NOT render "Informes" link when user lacks report.view', async () => {
+    setUser(['report.edit', 'report.create'])
     const wrapper = await mountSidebarWithSettingsOpen()
 
     const links = wrapper.findAll('li > button')
@@ -126,7 +126,7 @@ describe('AppSidebar — Reports Navigation Link', () => {
   })
 
   it('"Informes" link uses pi-file-check icon', async () => {
-    setUser(['reports.view'])
+    setUser(['report.view'])
     const wrapper = await mountSidebarWithSettingsOpen()
 
     const links = wrapper.findAll('li > button')
@@ -138,8 +138,8 @@ describe('AppSidebar — Reports Navigation Link', () => {
     expect(icon.classes()).toContain('pi-file-check')
   })
 
-  it('separator line renders before "Informes" when user has reports.view', async () => {
-    setUser(['reports.view'])
+  it('separator line renders before "Informes" when user has report.view', async () => {
+    setUser(['report.view'])
     const wrapper = await mountSidebarWithSettingsOpen()
 
     // The separator <li aria-hidden="true"> before "Informes" should exist

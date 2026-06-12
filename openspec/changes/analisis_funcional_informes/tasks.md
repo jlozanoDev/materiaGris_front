@@ -153,19 +153,19 @@
 
 ---
 
-## Batch 5: Tipo-Informe Builder — Store + Drag-Drop UI
+## Batch 5: Tipo-Informe Builder — Store + Drag-Drop UI ✅
 
 **Deps**: Batch 4 (listing page)
 **Lines**: ~550 (430 impl + 120 tests)
 **Risk**: `high` — nested drag-drop is UX-complex. Spike/PoC before starting.
 **Verify**: Mount builder, verify vuedraggable renders, drag ops modify store
 
-### Task 5.1: Builder Pinia Store
+### Task 5.1: Builder Pinia Store ✅
 - **File**: `src/modules/admin/report-template/presentation/composables/useTemplateBuilder.ts` — create (~130 lines)
 - **What**: Setup store: `sections`, `selectedFieldId`, `undoStack`/`redoStack` (cap 50), `isDirty`, `templateId/Name/Description`. Methods: `loadTemplate(id)`, `addSection()`, `removeSection(id)`, `addRow(sectionId)`, `removeRow(rowId)`, `addColumn(rowId)`, `addField(columnId, type)`, `removeField(fieldId)`, `updateField(fieldId, config)`, `reorderSections(order)`, `moveField(from, to)`, `undo()`, `redo()`, `saveTemplate()`. All mutate methods push inverse command to undo stack. Duplicate key validation in `updateField`. Save checks `authStore.hasPermission('admin.reporttemplate.update')`. IDs via `crypto.randomUUID()`.
 - **Specs**: template-builder — all drag-drop, field config, duplicate keys, undo/redo
 
-### Task 5.2: Builder Sub-Components (6 files)
+### Task 5.2: Builder Sub-Components (6 files) ✅
 - **Files**: `src/modules/admin/report-template/presentation/components/` — create:
   - `TemplateBuilderToolbar.vue` (~50 lines) — Save/Undo/Redo + name/description inputs. Permission-gated.
   - `SectionPanel.vue` (~70 lines) — Section with title, type (tab/accordion), delete. Wraps `<draggable>` for rows.
@@ -176,7 +176,7 @@
 - **Pattern**: Each `<draggable>` uses distinct `group.name`. 4-level nesting via `:group`, `:list`, `@change` on vuedraggable.
 - **Specs**: template-builder — all drag-drop, field config, conditional rule, dynamic table column scenarios
 
-### Task 5.3: ReportTemplateBuilderPage
+### Task 5.3: ReportTemplateBuilderPage ✅
 - **File**: `src/modules/admin/report-template/presentation/pages/ReportTemplateBuilderPage.vue` — create (~140 lines)
 - **What**: 3-panel layout: left palette (8 draggable field type chips as clone sources), center canvas (sections via vuedraggable), right panel (FieldPropertiesPanel when field selected). Detects create vs edit via route `:id`. Breadcrumb: "Tipos de informes > Nuevo/Editar".
 - **Tests** (~120 lines): Mount with empty store — verify 8 palette items, drag section → store updates, field click → property panel
