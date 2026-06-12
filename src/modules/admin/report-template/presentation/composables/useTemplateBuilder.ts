@@ -29,13 +29,19 @@ export interface UseTemplateBuilderReturn {
   templateId: Ref<number>
   templateName: Ref<string>
   templateDescription: Ref<string>
+  fieldDialogOpen: Ref<boolean>
+  fieldDialogType: Ref<FieldType | null>
+  fieldDialogColumnId: Ref<string | null>
+  fieldDialogLabel: Ref<string>
+  fieldDialogDescription: Ref<string>
+  fieldDialogRequired: Ref<boolean>
   loadTemplate: (id: number | string) => Promise<void>
   addSection: (display?: 'tabs' | 'accordion' | 'default') => void
   removeSection: (id: string) => void
   addRow: (sectionId: string) => void
   removeRow: (rowId: string) => void
   addColumn: (rowId: string) => void
-  addField: (columnId: string, type: FieldType) => void
+  addField: (columnId: string, type: FieldType, config?: { label?: string; description?: string; required?: boolean }) => void
   removeField: (fieldId: string) => void
   updateField: (fieldId: string, config: Partial<FieldConfig>) => void
   reorderSections: (order: string[]) => void
@@ -43,6 +49,9 @@ export interface UseTemplateBuilderReturn {
   undo: () => void
   redo: () => void
   saveTemplate: () => Promise<any>
+  openFieldDialog: (columnId: string, type: FieldType) => void
+  confirmFieldDialog: () => void
+  cancelFieldDialog: () => void
 }
 
 const MAX_STACK = 50
@@ -141,6 +150,13 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
   const templateId: Ref<number> = ref(0)
   const templateName: Ref<string> = ref('')
   const templateDescription: Ref<string> = ref('')
+
+  const fieldDialogOpen: Ref<boolean> = ref(false)
+  const fieldDialogType: Ref<FieldType | null> = ref(null)
+  const fieldDialogColumnId: Ref<string | null> = ref(null)
+  const fieldDialogLabel: Ref<string> = ref('')
+  const fieldDialogDescription: Ref<string> = ref('')
+  const fieldDialogRequired: Ref<boolean> = ref(false)
 
   // ---- Mutations ----
 
@@ -258,7 +274,7 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
     })
   }
 
-  function addField(columnId: string, type: FieldType): void {
+  function addField(columnId: string, type: FieldType, config?: { label?: string; description?: string; required?: boolean }): void {
     const column = sections.value
       .flatMap((s) => s.rows)
       .flatMap((r) => r.columns)
@@ -266,7 +282,18 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
     if (!column) return
 
     const field = createField(type)
+    if (config?.label) {
+      field.label = config.label
+      field.key = slugify(config.label) || slugify(type)
+    }
+    if (config?.description) {
+      field.placeholder = config.description
+    }
+    if (config?.required !== undefined) {
+      field.required = config.required
+    }
     column.fields.push(field)
+    selectedFieldId.value = field.id
     isDirty.value = true
     redoStack.value = []
 
@@ -280,6 +307,33 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
         column.fields = column.fields.filter((f) => f.id !== field.id)
       },
     })
+  }
+
+  function openFieldDialog(columnId: string, type: FieldType): void {
+    fieldDialogColumnId.value = columnId
+    fieldDialogType.value = type
+    fieldDialogLabel.value = ''
+    fieldDialogDescription.value = ''
+    fieldDialogRequired.value = false
+    fieldDialogOpen.value = true
+  }
+
+  function confirmFieldDialog(): void {
+    if (!fieldDialogColumnId.value || !fieldDialogType.value) return
+    addField(fieldDialogColumnId.value, fieldDialogType.value, {
+      label: fieldDialogLabel.value,
+      description: fieldDialogDescription.value,
+      required: fieldDialogRequired.value,
+    })
+    fieldDialogOpen.value = false
+    fieldDialogColumnId.value = null
+    fieldDialogType.value = null
+  }
+
+  function cancelFieldDialog(): void {
+    fieldDialogOpen.value = false
+    fieldDialogColumnId.value = null
+    fieldDialogType.value = null
   }
 
   function removeField(fieldId: string): void {
@@ -443,6 +497,12 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
     templateId,
     templateName,
     templateDescription,
+    fieldDialogOpen,
+    fieldDialogType,
+    fieldDialogColumnId,
+    fieldDialogLabel,
+    fieldDialogDescription,
+    fieldDialogRequired,
     loadTemplate,
     addSection,
     removeSection,
@@ -457,5 +517,8 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
     undo,
     redo,
     saveTemplate,
+    openFieldDialog,
+    confirmFieldDialog,
+    cancelFieldDialog,
   }) as unknown as UseTemplateBuilderReturn
 }

@@ -66,20 +66,6 @@ onMounted(async () => {
   }
 })
 
-// ============================================================================
-// Drag handlers
-// ============================================================================
-
-function onPaletteAdd(evt: any) {
-  const type = evt.item?.dataset?.fieldType || evt.clone?.dataset?.fieldType
-  if (type && builder.sections.length > 0) {
-    // Add field to the first column of the first section
-    const section = builder.sections[0]
-    if (section.rows.length > 0 && section.rows[0].columns.length > 0) {
-      builder.addField(section.rows[0].columns[0].id, type as FieldType)
-    }
-  }
-}
 </script>
 
 <template>
@@ -148,12 +134,11 @@ function onPaletteAdd(evt: any) {
               </h4>
               <draggable
                 :list="PALETTE"
-                group="{ name: 'report-fields', pull: 'clone', put: false }"
+                :group="{ name: 'report-fields', pull: 'clone', put: false }"
                 item-key="type"
                 tag="div"
                 class="space-y-1"
                 :clone="(item: PaletteItem) => ({ ...item })"
-                @change="onPaletteAdd"
               >
                 <template #item="{ element }">
                   <div
@@ -173,16 +158,26 @@ function onPaletteAdd(evt: any) {
               <!-- Empty state -->
               <div
                 v-if="builder.sections.length === 0"
-                class="flex flex-col items-center justify-center h-full text-[#9690a8]"
+                class="flex flex-col items-center justify-center h-full px-6"
               >
-                <i class="pi pi-file-text text-5xl mb-3 opacity-40" />
-                <p class="text-sm mb-4 font-medium">Arrastre una sección para comenzar</p>
+                <div class="relative mb-6">
+                  <div class="absolute inset-0 bg-[#ede9fe] rounded-full blur-2xl opacity-60 scale-150" />
+                  <div class="relative h-24 w-24 rounded-2xl bg-gradient-to-br from-[#ede9fe] to-[#f5f3ff] border border-[rgba(124,58,237,0.15)] flex items-center justify-center shadow-sm">
+                    <i class="pi pi-th-large text-3xl text-[#7c3aed]" />
+                  </div>
+                </div>
+                <h3 class="text-lg font-bold text-[#0b0817] mb-1.5">
+                  Crea tu primera sección
+                </h3>
+                <p class="text-sm text-[#9690a8] mb-6 max-w-xs text-center leading-relaxed">
+                  Las secciones organizan los campos del informe. Arrastra campos desde la paleta para construir el formulario.
+                </p>
                 <button
-                  class="btn btn-primary btn-sm"
+                  class="btn btn-primary px-5 py-2.5 text-sm rounded-xl font-semibold shadow-md shadow-[#7c3aed]/20 hover:shadow-lg hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 transition-all duration-200"
                   data-add-section
                   @click="builder.addSection()"
                 >
-                  <i class="pi pi-plus mr-1" />
+                  <i class="pi pi-plus mr-1.5 text-xs" />
                   Añadir sección
                 </button>
               </div>
@@ -202,13 +197,18 @@ function onPaletteAdd(evt: any) {
                   </template>
                 </draggable>
 
-                <button
-                  class="text-sm text-[#7c3aed] hover:text-[#6d28d9] border border-dashed border-[#7c3aed] rounded-lg w-full py-3 text-center font-medium transition-colors hover:bg-[#f5f3ff]"
-                  @click="builder.addSection()"
-                >
-                  <i class="pi pi-plus mr-1" />
-                  Añadir sección
-                </button>
+                <div class="relative pt-2">
+                  <div class="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-[rgba(124,58,237,0.15)] to-transparent" />
+                  <button
+                    class="relative w-full text-sm text-[#7c3aed] font-semibold py-3.5 rounded-xl border-2 border-dashed border-[rgba(124,58,237,0.20)] hover:border-[#7c3aed] hover:bg-[#f5f3ff] hover:shadow-sm hover:-translate-y-0.5 transition-all duration-200 group"
+                    @click="builder.addSection()"
+                  >
+                    <span class="inline-flex items-center gap-1.5">
+                      <i class="pi pi-plus text-xs transition-transform duration-200 group-hover:scale-110" />
+                      Añadir sección
+                    </span>
+                  </button>
+                </div>
               </div>
             </main>
 
@@ -221,6 +221,73 @@ function onPaletteAdd(evt: any) {
             </aside>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Field Configuration Dialog -->
+  <div
+    v-if="builder.fieldDialogOpen"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+    @click="builder.cancelFieldDialog()"
+  >
+    <div class="bg-white rounded-xl shadow-xl border border-[rgba(124,58,237,0.15)] w-full max-w-md mx-4 p-6" @click.stop>
+      <div class="flex items-center gap-2 mb-5">
+        <div class="h-8 w-8 rounded-full bg-[#ede9fe] flex items-center justify-center">
+          <i class="pi pi-plus text-[#7c3aed] text-sm" />
+        </div>
+        <h3 class="text-lg font-bold text-[#0b0817]">Nuevo campo</h3>
+      </div>
+
+      <div class="space-y-4">
+        <!-- Label -->
+        <div>
+          <label class="block text-sm font-medium text-[#6b6b7b] mb-1">Nombre</label>
+          <input
+            v-model="builder.fieldDialogLabel"
+            class="form-input w-full"
+            placeholder="Ej: Nombre del paciente"
+            @keydown.enter="builder.confirmFieldDialog()"
+          />
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label class="block text-sm font-medium text-[#6b6b7b] mb-1">Descripción</label>
+          <textarea
+            v-model="builder.fieldDialogDescription"
+            class="form-input w-full resize-none"
+            rows="3"
+            placeholder="Ej: Ingrese el nombre completo del paciente"
+          />
+        </div>
+
+        <!-- Required -->
+        <div class="flex items-center gap-2">
+          <input
+            id="field-required"
+            v-model="builder.fieldDialogRequired"
+            type="checkbox"
+            class="rounded"
+          />
+          <label for="field-required" class="text-sm text-[#0b0817] font-medium">Requerido</label>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 mt-6">
+        <button
+          class="btn btn-secondary"
+          @click="builder.cancelFieldDialog()"
+        >
+          Cancelar
+        </button>
+        <button
+          class="btn btn-primary"
+          :disabled="!builder.fieldDialogLabel.trim()"
+          @click="builder.confirmFieldDialog()"
+        >
+          Añadir campo
+        </button>
       </div>
     </div>
   </div>
