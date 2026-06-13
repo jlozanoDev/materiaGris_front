@@ -79,14 +79,12 @@
     >
       <div class="flex items-center gap-3">
         <label for="rowsPerPageSelect" class="sr-only">Filas por página</label>
-        <select
+        <CustomSelect
           v-if="rowsPerPageOptions && rowsPerPageOptions.length"
-          id="rowsPerPageSelect"
-          v-model.number="pageSize"
-          class="form-input w-auto text-sm"
-        >
-          <option v-for="opt in rowsPerPageOptions" :key="opt" :value="opt">{{ opt }}</option>
-        </select>
+          v-model="pageSize"
+          :options="rowsPerPageOptions"
+          class="w-auto"
+        />
         <span aria-live="polite">
           Mostrando {{ startIndex }} – {{ endIndex }} de {{ filteredTotal }}
         </span>
@@ -150,6 +148,7 @@
 
 <script setup lang="ts">
 import { computed, watch } from "vue";
+import CustomSelect from "@/shared/components/CustomSelect.vue";
 import {
   useVueTable,
   getCoreRowModel,

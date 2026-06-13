@@ -38,15 +38,14 @@
               class="dynamic-table__cell-input"
               @input="updateCell(rowIdx, col.name, ($event.target as HTMLInputElement).value)"
             />
-            <select
+            <CustomSelect
               v-else-if="col.type === 'select'"
-              :value="row[col.name] ?? ''"
+              :model-value="row[col.name] ?? ''"
+              :options="[]"
+              placeholder="Seleccione..."
               :disabled="disabled"
-              class="dynamic-table__cell-input"
-              @change="updateCell(rowIdx, col.name, ($event.target as HTMLSelectElement).value)"
-            >
-              <option value="">Seleccione...</option>
-            </select>
+              @update:model-value="updateCell(rowIdx, col.name, $event)"
+            />
             <textarea
               v-else-if="col.type === 'textarea'"
               :value="row[col.name] ?? ''"
@@ -93,6 +92,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { FieldType } from '@/shared/types'
+import CustomSelect from '@/shared/components/CustomSelect.vue'
 
 export interface DynamicTableColumn {
   name: string

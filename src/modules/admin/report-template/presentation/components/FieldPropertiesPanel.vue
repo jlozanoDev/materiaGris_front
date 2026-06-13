@@ -3,6 +3,7 @@ import { inject, computed } from 'vue'
 import { BUILDER_KEY } from '../composables/useTemplateBuilder'
 import type { FieldConfig, FieldType } from '@/shared/types'
 import type { UseTemplateBuilderReturn } from '../composables/useTemplateBuilder'
+import CustomSelect from '@/shared/components/CustomSelect.vue'
 
 const builder = inject(BUILDER_KEY) as UseTemplateBuilderReturn
 
@@ -123,20 +124,21 @@ function removeColumnDef(index: number) {
       <!-- Type -->
       <div>
         <label class="block text-sm font-medium text-[#6b6b7b] mb-1">Tipo</label>
-        <select
-          :value="selectedField.type"
-          class="form-input"
-          @change="update({ type: ($event.target as HTMLSelectElement).value as FieldType })"
-        >
-          <option value="text">Texto Corto</option>
-          <option value="textarea">Texto Largo</option>
-          <option value="number">Número</option>
-          <option value="date">Fecha</option>
-          <option value="select">Selección única</option>
-          <option value="radio">Opción única</option>
-          <option value="checkbox">Checkbox</option>
-          <option value="dynamic_table">Tabla Dinámica</option>
-        </select>
+        <CustomSelect
+          :model-value="selectedField.type"
+          :options="[
+            { value: 'text', label: 'Texto Corto' },
+            { value: 'textarea', label: 'Texto Largo' },
+            { value: 'number', label: 'Número' },
+            { value: 'date', label: 'Fecha' },
+            { value: 'select', label: 'Selección única' },
+            { value: 'multi_select', label: 'Selección múltiple' },
+            { value: 'radio', label: 'Opción única' },
+            { value: 'checkbox', label: 'Checkbox' },
+            { value: 'dynamic_table', label: 'Tabla Dinámica' },
+          ]"
+          @update:model-value="update({ type: $event as FieldType })"
+        />
       </div>
 
       <!-- Placeholder -->
@@ -155,10 +157,10 @@ function removeColumnDef(index: number) {
         <input
           type="checkbox"
           :checked="selectedField.required"
-          class="rounded"
+          class="h-4 w-4 rounded border-[rgba(124,58,237,0.25)] accent-[#7c3aed] focus:ring-[#7c3aed] focus:ring-offset-0 focus:ring-2 cursor-pointer"
           @change="update({ required: ($event.target as HTMLInputElement).checked })"
         />
-        <label class="text-sm text-[#0b0817] font-medium">Requerido</label>
+        <label class="text-sm text-[#0b0817] font-medium cursor-pointer select-none">Requerido</label>
       </div>
 
       <hr class="border-[rgba(124,58,237,0.08)]" />
@@ -166,19 +168,11 @@ function removeColumnDef(index: number) {
       <!-- System Variable -->
       <div>
         <label class="block text-sm font-medium text-[#6b6b7b] mb-1">Variable del sistema</label>
-        <select
-          :value="selectedField.systemVariable || ''"
-          class="form-input"
-          @change="update({ systemVariable: ($event.target as HTMLSelectElement).value || undefined })"
-        >
-          <option
-            v-for="sv in SYSTEM_VARIABLES"
-            :key="sv.value"
-            :value="sv.value"
-          >
-            {{ sv.label }}
-          </option>
-        </select>
+        <CustomSelect
+          :model-value="selectedField.systemVariable || ''"
+          :options="SYSTEM_VARIABLES"
+          @update:model-value="update({ systemVariable: ($event as string) || undefined })"
+        />
       </div>
 
       <!-- Conditional Rule -->
@@ -191,15 +185,13 @@ function removeColumnDef(index: number) {
             placeholder="Campo fuente"
             @input="update({ conditionalRule: { ...(selectedField.conditionalRule || { op: '==' as any, value: '' }), field: ($event.target as HTMLInputElement).value } })"
           />
-          <select
-            :value="selectedField.conditionalRule?.op || '=='"
-            class="form-input text-xs w-20"
-            @change="update({ conditionalRule: { ...(selectedField.conditionalRule || { field: '', value: '' }), op: ($event.target as HTMLSelectElement).value as any } })"
-          >
-            <option v-for="op in CONDITIONAL_OPS" :key="op.value" :value="op.value">
-              {{ op.label.split(' ')[0] }}
-            </option>
-          </select>
+          <CustomSelect
+            :model-value="selectedField.conditionalRule?.op || '=='"
+            :options="CONDITIONAL_OPS.map(op => ({ ...op, label: op.label.split(' ')[0] }))"
+            size="sm"
+            class="w-20"
+            @update:model-value="update({ conditionalRule: { ...(selectedField.conditionalRule || { field: '', value: '' }), op: $event as '==' | '!=' | 'contains' | '>' | '<' | '>=' | '<=' } })"
+          />
           <input
             :value="selectedField.conditionalRule?.value || ''"
             class="form-input text-xs flex-1"
@@ -212,7 +204,7 @@ function removeColumnDef(index: number) {
       <hr class="border-[rgba(124,58,237,0.08)]" />
 
       <!-- Options (select/radio/checkbox) -->
-      <div v-if="['select', 'radio', 'checkbox'].includes(selectedField.type)">
+      <div v-if="['select', 'multi_select', 'radio', 'checkbox'].includes(selectedField.type)">
         <div class="flex items-center justify-between mb-2">
           <label class="text-xs font-semibold uppercase tracking-wider text-[#7c3aed]">Opciones</label>
           <button
@@ -275,16 +267,18 @@ function removeColumnDef(index: number) {
               placeholder="Nombre"
               @input="selectedField.columns![idx] = { ...col, name: ($event.target as HTMLInputElement).value }; update({ columns: [...(selectedField.columns || [])] })"
             />
-            <select
-              :value="col.type"
-              class="form-input text-xs w-24"
-              @change="selectedField.columns![idx] = { ...col, type: ($event.target as HTMLSelectElement).value as FieldType }; update({ columns: [...(selectedField.columns || [])] })"
-            >
-              <option value="text">Texto</option>
-              <option value="number">Número</option>
-              <option value="date">Fecha</option>
-              <option value="select">Selección</option>
-            </select>
+            <CustomSelect
+              :model-value="col.type"
+              :options="[
+                { value: 'text', label: 'Texto' },
+                { value: 'number', label: 'Número' },
+                { value: 'date', label: 'Fecha' },
+                { value: 'select', label: 'Selección' },
+              ]"
+              size="sm"
+              class="w-24"
+              @update:model-value="selectedField.columns![idx] = { ...col, type: $event as FieldType }; update({ columns: [...(selectedField.columns || [])] })"
+            />
             <button
               class="inline-flex items-center justify-center h-7 w-7 rounded-md text-[#9690a8] hover:text-red-500 hover:bg-red-50 transition-all duration-150"
               @click="removeColumnDef(idx)"

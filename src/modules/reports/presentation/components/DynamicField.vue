@@ -12,7 +12,7 @@
       :value="modelValue"
       :placeholder="field.placeholder"
       :disabled="isDisabled"
-      class="dynamic-field__input"
+      class="form-input"
       @input="emitValue(($event.target as HTMLInputElement).value)"
     />
 
@@ -23,7 +23,7 @@
       :value="modelValue"
       :placeholder="field.placeholder"
       :disabled="isDisabled"
-      class="dynamic-field__input"
+      class="form-input"
       @input="emitValue(($event.target as HTMLInputElement).value)"
     />
 
@@ -33,7 +33,7 @@
       :value="modelValue as string"
       :placeholder="field.placeholder"
       :disabled="isDisabled"
-      class="dynamic-field__input"
+      class="form-input"
       rows="3"
       @input="emitValue(($event.target as HTMLTextAreaElement).value)"
     ></textarea>
@@ -44,27 +44,19 @@
       type="date"
       :value="modelValue"
       :disabled="isDisabled"
-      class="dynamic-field__input"
+      class="form-input"
       @input="emitValue(($event.target as HTMLInputElement).value)"
     />
 
     <!-- select -->
-    <select
+    <CustomSelect
       v-else-if="field.type === 'select'"
-      :value="modelValue"
+      :model-value="modelValue"
+      :options="field.options || []"
+      :placeholder="field.placeholder || 'Seleccione...'"
       :disabled="isDisabled"
-      class="dynamic-field__input"
-      @change="emitValue(($event.target as HTMLSelectElement).value)"
-    >
-      <option value="" disabled>{{ field.placeholder || 'Seleccione...' }}</option>
-      <option
-        v-for="opt in field.options || []"
-        :key="opt.value"
-        :value="opt.value"
-      >
-        {{ opt.label }}
-      </option>
-    </select>
+      @update:model-value="emitValue"
+    />
 
     <!-- radio -->
     <div v-else-if="field.type === 'radio'" class="dynamic-field__options">
@@ -83,6 +75,24 @@
         <span>{{ opt.label }}</span>
       </label>
     </div>
+
+    <!-- multi_select -->
+    <select
+      v-else-if="field.type === 'multi_select'"
+      multiple
+      :disabled="isDisabled"
+      class="form-input"
+      @change="emitMultiSelect(($event.target as HTMLSelectElement))"
+    >
+      <option
+        v-for="opt in field.options || []"
+        :key="opt.value"
+        :value="opt.value"
+        :selected="isChecked(opt.value)"
+      >
+        {{ opt.label }}
+      </option>
+    </select>
 
     <!-- checkbox -->
     <div v-else-if="field.type === 'checkbox'" class="dynamic-field__options">
@@ -130,6 +140,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { FieldConfig } from '@/shared/types'
+import CustomSelect from '@/shared/components/CustomSelect.vue'
 import DynamicTable from './DynamicTable.vue'
 import SignaturePad from './SignaturePad.vue'
 
@@ -162,6 +173,11 @@ function emitTypedSignature(val: string): void {
   emit('update:typedSignature', val)
 }
 
+function emitMultiSelect(el: HTMLSelectElement): void {
+  const values = Array.from(el.selectedOptions).map((opt) => opt.value)
+  emitValue(values)
+}
+
 function isChecked(val: string): boolean {
   const arr = Array.isArray(props.modelValue) ? props.modelValue : []
   return arr.includes(val)
@@ -191,11 +207,7 @@ function getArrayValue(): Record<string, any>[] {
 .dynamic-field__label {
   @apply block text-sm font-medium text-gray-700 mb-1;
 }
-.dynamic-field__input {
-  @apply block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm
-    focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500
-    disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500;
-}
+
 .dynamic-field__options {
   @apply space-y-1;
 }

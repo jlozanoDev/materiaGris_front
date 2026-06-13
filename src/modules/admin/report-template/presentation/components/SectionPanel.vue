@@ -2,6 +2,7 @@
 /* eslint-disable vue/no-mutating-props */
 import { inject, computed } from 'vue'
 import draggable from 'vuedraggable'
+import CustomSelect from '@/shared/components/CustomSelect.vue'
 import { BUILDER_KEY } from '../composables/useTemplateBuilder'
 import type { UseTemplateBuilderReturn } from '../composables/useTemplateBuilder'
 import type { Section } from '@/shared/types'
@@ -23,8 +24,8 @@ function updateLabel(e: Event) {
   builder.isDirty = true
 }
 
-function updateDisplay(e: Event) {
-  props.section.display = (e.target as HTMLSelectElement).value as 'tabs' | 'accordion' | 'default'
+function updateDisplay(val: unknown) {
+  props.section.display = val as 'tabs' | 'accordion' | 'default'
   builder.isDirty = true
 }
 </script>
@@ -47,19 +48,18 @@ function updateDisplay(e: Event) {
           />
           <i class="pi pi-pencil absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-[#b4afc8] pointer-events-none" />
         </div>
-        <span class="text-[10px] font-medium text-[#9690a8] uppercase tracking-wider bg-[#ede9fe]/60 rounded-md px-2 py-1 shrink-0 select-none">
-          {{ section.display === 'tabs' ? 'Tabs' : section.display === 'accordion' ? 'Acordeón' : 'Default' }}
-        </span>
-        <select
-          :value="section.display"
-          class="text-xs border border-[rgba(124,58,237,0.15)] rounded-lg px-2.5 py-1.5 text-[#6b6b7b] bg-white hover:border-[#7c3aed] focus:border-[#7c3aed] focus:ring-2 focus:ring-[#7c3aed]/10 focus:outline-none cursor-pointer transition-colors shrink-0"
+        <CustomSelect
+          :model-value="section.display"
+          :options="[
+            { value: 'default', label: 'Default' },
+            { value: 'tabs', label: 'Tabs' },
+            { value: 'accordion', label: 'Acordeón' },
+          ]"
+          size="sm"
+          class="shrink-0"
           aria-label="Tipo de visualización"
-          @change="updateDisplay"
-        >
-          <option value="default">Default</option>
-          <option value="tabs">Tabs</option>
-          <option value="accordion">Acordeón</option>
-        </select>
+          @update:model-value="updateDisplay"
+        />
       </div>
       <button
         class="inline-flex items-center justify-center h-8 w-8 rounded-lg text-[#b4afc8] hover:text-red-500 hover:bg-red-50 transition-all duration-150 ml-2 shrink-0"

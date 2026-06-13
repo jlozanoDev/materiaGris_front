@@ -104,6 +104,7 @@ export type FieldType =
   | 'number'
   | 'date'
   | 'select'
+  | 'multi_select'
   | 'radio'
   | 'checkbox'
   | 'dynamic_table'

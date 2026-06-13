@@ -35,16 +35,17 @@
         <div v-else class="bg-white rounded-lg shadow overflow-hidden">
           <!-- Filters -->
           <div class="p-4 border-b border-gray-200 flex flex-wrap gap-4 items-center">
-            <select
+            <CustomSelect
               v-model="filterStatus"
-              class="rounded-md border border-gray-300 px-3 py-2 text-sm"
+              :options="[
+                { value: '', label: 'Todos' },
+                { value: 'draft', label: 'Borrador' },
+                { value: 'signed', label: 'Firmado' },
+                { value: 'closed', label: 'Cerrado' },
+              ]"
+              class="w-44"
               @change="applyFilters"
-            >
-              <option value="">Todos</option>
-              <option value="draft">Borrador</option>
-              <option value="signed">Firmado</option>
-              <option value="closed">Cerrado</option>
-            </select>
+            />
 
             <input
               v-model="filterPatient"
@@ -134,6 +135,7 @@ import { useRouter } from "vue-router";
 import AppSidebar from "@/shared/components/AppSidebar.vue";
 import TopBar from "@/shared/components/TopBar.vue";
 import Breadcrumb from "@/shared/components/Breadcrumb.vue";
+import CustomSelect from "@/shared/components/CustomSelect.vue";
 import { useReportList } from "@/modules/reports/presentation/composables/useReportList";
 
 const router = useRouter();

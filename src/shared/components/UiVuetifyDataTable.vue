@@ -72,13 +72,11 @@
         ></v-pagination>
         <div class="flex items-center gap-3">
           <label for="rowsPerPageSelect" class="sr-only">Filas por página</label>
-          <select
-            id="rowsPerPageSelect"
-            v-model.number="internalRowsPerPage"
-            class="form-input w-auto text-sm"
-          >
-            <option v-for="opt in rowsPerPageOptions" :key="opt" :value="opt">{{ opt }}</option>
-          </select>
+          <CustomSelect
+            v-model="internalRowsPerPage"
+            :options="rowsPerPageOptions"
+            class="w-auto"
+          />
         </div>
       </div>
     </template>
@@ -87,6 +85,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+import CustomSelect from "@/shared/components/CustomSelect.vue";
 
 interface ColumnDef {
   key?: string;

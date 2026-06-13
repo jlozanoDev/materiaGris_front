@@ -5,6 +5,7 @@ import TopBar from "@/shared/components/TopBar.vue";
 import Breadcrumb from "@/shared/components/Breadcrumb.vue";
 import UiVuetifyDataTable from "@/shared/components/UiVuetifyDataTable.vue";
 import Modal from "@/shared/components/Modal.vue";
+import CustomSelect from "@/shared/components/CustomSelect.vue";
 import { useAuthStore } from "@/core/store/auth";
 import { useLogout } from "@/shared/composables/useLogout";
 import { useToast } from "@/shared/composables/useToast";
@@ -414,16 +415,12 @@ onMounted(async () => {
               </div>
               <div class="ml-4 flex items-center gap-2">
                 <label class="hidden sm:inline text-sm text-slate-600">Filas</label>
-                <select
-                  v-model.number="rows"
+                <CustomSelect
+                  v-model="rows"
+                  :options="[10, 25, 50, 100]"
+                  class="w-auto"
                   aria-label="Filas por página"
-                  class="rounded-xl bg-white pl-3 pr-3 py-2 text-sm border border-slate-100"
-                >
-                  <option :value="10">10</option>
-                  <option :value="25">25</option>
-                  <option :value="50">50</option>
-                  <option :value="100">100</option>
-                </select>
+                />
               </div>
             </div>
 
@@ -450,15 +447,15 @@ onMounted(async () => {
               <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
                 <div>
                   <label class="block text-sm text-slate-600 mb-1">Género</label>
-                  <select
+                  <CustomSelect
                     v-model="searchFilters.gender"
-                    class="w-full rounded-xl bg-white pl-3 pr-3 py-2 text-sm border border-slate-100"
-                  >
-                    <option value="">Todos</option>
-                    <option value="M">M</option>
-                    <option value="F">F</option>
-                    <option value="other">Otro</option>
-                  </select>
+                    :options="[
+                      { value: '', label: 'Todos' },
+                      { value: 'M', label: 'M' },
+                      { value: 'F', label: 'F' },
+                      { value: 'other', label: 'Otro' },
+                    ]"
+                  />
                 </div>
                 <div>
                   <label class="block text-sm text-slate-600 mb-1">Ciudad</label>
@@ -470,14 +467,14 @@ onMounted(async () => {
                 </div>
                 <div>
                   <label class="block text-sm text-slate-600 mb-1">Activo</label>
-                  <select
+                  <CustomSelect
                     v-model="searchFilters.is_active"
-                    class="w-full rounded-xl bg-white pl-3 pr-3 py-2 text-sm border border-slate-100"
-                  >
-                    <option value="all">Todos</option>
-                    <option value="true">Activos</option>
-                    <option value="false">Inactivos</option>
-                  </select>
+                    :options="[
+                      { value: 'all', label: 'Todos' },
+                      { value: 'true', label: 'Activos' },
+                      { value: 'false', label: 'Inactivos' },
+                    ]"
+                  />
                 </div>
                 <div>
                   <label class="block text-sm text-slate-600 mb-1">Registrado desde</label>
@@ -707,15 +704,15 @@ onMounted(async () => {
 
                   <div>
                     <label class="block text-sm font-medium text-slate-600 mb-1">Género</label>
-                    <select
+                    <CustomSelect
                       v-model="form.gender"
-                      class="w-full rounded-xl bg-white pl-3 pr-3 py-2 text-sm border border-slate-100"
-                    >
-                      <option value="">Todos</option>
-                      <option value="M">M</option>
-                      <option value="F">F</option>
-                      <option value="other">Otro</option>
-                    </select>
+                      :options="[
+                        { value: '', label: 'Todos' },
+                        { value: 'M', label: 'M' },
+                        { value: 'F', label: 'F' },
+                        { value: 'other', label: 'Otro' },
+                      ]"
+                    />
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-slate-600 mb-1"

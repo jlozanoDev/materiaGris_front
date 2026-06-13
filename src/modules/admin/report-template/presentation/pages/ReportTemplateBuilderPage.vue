@@ -28,8 +28,9 @@ const PALETTE: PaletteItem[] = [
   { type: 'textarea', label: 'Texto Largo', icon: 'pi pi-align-left' },
   { type: 'number', label: 'Número', icon: 'pi pi-hashtag' },
   { type: 'date', label: 'Fecha', icon: 'pi pi-calendar' },
-  { type: 'select', label: 'Selección', icon: 'pi pi-chevron-circle-down' },
-  { type: 'radio', label: 'Opción Única', icon: 'pi pi-circle-off' },
+  { type: 'select', label: 'Selección', icon: 'pi pi-check' },
+  { type: 'multi_select', label: 'Selección Múltiple', icon: 'pi pi-list' },
+  { type: 'radio', label: 'Opción Única', icon: 'pi pi-chevron-circle-down' },
   { type: 'checkbox', label: 'Checkbox', icon: 'pi pi-check-square' },
   { type: 'dynamic_table', label: 'Tabla Dinámica', icon: 'pi pi-table' },
 ]
@@ -128,7 +129,7 @@ onMounted(async () => {
           <!-- 3-panel layout -->
           <div class="flex flex-1 min-h-0 overflow-hidden gap-4">
             <!-- Left: Palette -->
-            <aside class="w-56 border border-[rgba(124,58,237,0.10)] rounded-lg bg-white p-3 overflow-y-auto shrink-0">
+            <aside class="w-56 border border-[rgba(124,58,237,0.10)] rounded-lg bg-white p-3 overflow-y-auto shrink-0 app-scrollbar">
               <h4 class="text-xs font-semibold uppercase tracking-wider text-[#7c3aed] mb-3">
                 Campos
               </h4>
@@ -154,7 +155,7 @@ onMounted(async () => {
             </aside>
 
             <!-- Center: Canvas -->
-            <main class="flex-1 overflow-y-auto border border-[rgba(124,58,237,0.10)] rounded-lg bg-white p-4">
+            <main class="flex-1 overflow-y-auto border border-[rgba(124,58,237,0.10)] rounded-lg bg-white p-4 app-scrollbar">
               <!-- Empty state -->
               <div
                 v-if="builder.sections.length === 0"
@@ -215,7 +216,7 @@ onMounted(async () => {
             <!-- Right: Properties -->
             <aside
               v-if="builder.selectedFieldId"
-              class="w-72 border border-[rgba(124,58,237,0.10)] rounded-lg bg-white overflow-y-auto shrink-0"
+              class="w-72 border border-[rgba(124,58,237,0.10)] rounded-lg bg-white overflow-y-auto shrink-0 app-scrollbar"
             >
               <FieldPropertiesPanel />
             </aside>
