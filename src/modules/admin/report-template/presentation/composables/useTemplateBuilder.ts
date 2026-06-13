@@ -21,20 +21,14 @@ interface UndoCommand {
 }
 
 export interface UseTemplateBuilderReturn {
-  sections: Ref<Section[]>
-  selectedFieldId: Ref<string | null>
-  undoStack: Ref<UndoCommand[]>
-  redoStack: Ref<UndoCommand[]>
-  isDirty: Ref<boolean>
-  templateId: Ref<number>
-  templateName: Ref<string>
-  templateDescription: Ref<string>
-  fieldDialogOpen: Ref<boolean>
-  fieldDialogType: Ref<FieldType | null>
-  fieldDialogColumnId: Ref<string | null>
-  fieldDialogLabel: Ref<string>
-  fieldDialogDescription: Ref<string>
-  fieldDialogRequired: Ref<boolean>
+  sections: Section[]
+  selectedFieldId: string | null
+  undoStack: UndoCommand[]
+  redoStack: UndoCommand[]
+  isDirty: boolean
+  templateId: number
+  templateName: string
+  templateDescription: string
   loadTemplate: (id: number | string) => Promise<void>
   addSection: (display?: 'tabs' | 'accordion' | 'default') => void
   removeSection: (id: string) => void
@@ -49,9 +43,6 @@ export interface UseTemplateBuilderReturn {
   undo: () => void
   redo: () => void
   saveTemplate: () => Promise<any>
-  openFieldDialog: (columnId: string, type: FieldType) => void
-  confirmFieldDialog: () => void
-  cancelFieldDialog: () => void
 }
 
 const MAX_STACK = 50
@@ -151,13 +142,6 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
   const templateName: Ref<string> = ref('')
   const templateDescription: Ref<string> = ref('')
 
-  const fieldDialogOpen: Ref<boolean> = ref(false)
-  const fieldDialogType: Ref<FieldType | null> = ref(null)
-  const fieldDialogColumnId: Ref<string | null> = ref(null)
-  const fieldDialogLabel: Ref<string> = ref('')
-  const fieldDialogDescription: Ref<string> = ref('')
-  const fieldDialogRequired: Ref<boolean> = ref(false)
-
   // ---- Mutations ----
 
   function addSection(display: 'tabs' | 'accordion' | 'default' = 'default'): void {
@@ -192,10 +176,10 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
       type: 'removeSection',
       payload: { index, section: JSON.parse(JSON.stringify(removed)) },
       forward: () => {
-        sections.value.splice(index, 0, removed)
+        sections.value = sections.value.filter((s) => s.id !== id)
       },
       inverse: () => {
-        sections.value = sections.value.filter((s) => s.id !== id)
+        sections.value.splice(index, 0, removed)
       },
     })
   }
@@ -208,7 +192,7 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
     const colId = generateId()
     const row: Row = {
       id: rowId,
-      columns: [{ id: colId, fields: [] }],
+      columns: [{ id: colId, label: '', fields: [] }],
     }
     section.rows.push(row)
     isDirty.value = true
@@ -257,7 +241,7 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
     if (!row) return
 
     const colId = generateId()
-    const column: Column = { id: colId, fields: [] }
+    const column: Column = { id: colId, label: '', fields: [] }
     row.columns.push(column)
     isDirty.value = true
     redoStack.value = []
@@ -309,33 +293,6 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
     })
   }
 
-  function openFieldDialog(columnId: string, type: FieldType): void {
-    fieldDialogColumnId.value = columnId
-    fieldDialogType.value = type
-    fieldDialogLabel.value = ''
-    fieldDialogDescription.value = ''
-    fieldDialogRequired.value = false
-    fieldDialogOpen.value = true
-  }
-
-  function confirmFieldDialog(): void {
-    if (!fieldDialogColumnId.value || !fieldDialogType.value) return
-    addField(fieldDialogColumnId.value, fieldDialogType.value, {
-      label: fieldDialogLabel.value,
-      description: fieldDialogDescription.value,
-      required: fieldDialogRequired.value,
-    })
-    fieldDialogOpen.value = false
-    fieldDialogColumnId.value = null
-    fieldDialogType.value = null
-  }
-
-  function cancelFieldDialog(): void {
-    fieldDialogOpen.value = false
-    fieldDialogColumnId.value = null
-    fieldDialogType.value = null
-  }
-
   function removeField(fieldId: string): void {
     const found = findFieldById(sections.value, fieldId)
     if (!found) return
@@ -350,10 +307,10 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
       type: 'removeField',
       payload: { columnId: column.id, index, field: JSON.parse(JSON.stringify(removed)) },
       forward: () => {
-        column.fields.splice(index, 0, removed)
+        column.fields = column.fields.filter((f) => f.id !== fieldId)
       },
       inverse: () => {
-        column.fields = column.fields.filter((f) => f.id !== fieldId)
+        column.fields.splice(index, 0, removed)
       },
     })
   }
@@ -497,12 +454,6 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
     templateId,
     templateName,
     templateDescription,
-    fieldDialogOpen,
-    fieldDialogType,
-    fieldDialogColumnId,
-    fieldDialogLabel,
-    fieldDialogDescription,
-    fieldDialogRequired,
     loadTemplate,
     addSection,
     removeSection,
@@ -517,8 +468,5 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
     undo,
     redo,
     saveTemplate,
-    openFieldDialog,
-    confirmFieldDialog,
-    cancelFieldDialog,
-  }) as unknown as UseTemplateBuilderReturn
+  }) as UseTemplateBuilderReturn
 }

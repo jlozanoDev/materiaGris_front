@@ -30,7 +30,7 @@
     <!-- textarea -->
     <textarea
       v-else-if="field.type === 'textarea'"
-      :value="modelValue"
+      :value="modelValue as string"
       :placeholder="field.placeholder"
       :disabled="isDisabled"
       class="dynamic-field__input"
@@ -178,12 +178,13 @@ function toggleCheckbox(val: string, checked: boolean): void {
   emitValue(arr)
 }
 
-function getArrayValue(): unknown[] {
-  return Array.isArray(props.modelValue) ? props.modelValue : []
+function getArrayValue(): Record<string, any>[] {
+  return Array.isArray(props.modelValue) ? (props.modelValue as Record<string, any>[]) : []
 }
 </script>
 
 <style scoped>
+@reference "tailwindcss";
 .dynamic-field {
   @apply mb-3;
 }

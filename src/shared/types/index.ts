@@ -173,4 +173,7 @@ export interface PatientReport {
   values: Record<string, any>
   createdAt?: string
   updatedAt?: string
+  patient_name?: string
+  author_name?: string
+  template_name?: string
 }

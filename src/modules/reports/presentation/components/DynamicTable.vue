@@ -144,6 +144,7 @@ function updateCell(rowIdx: number, colName: string, value: any): void {
 </script>
 
 <style scoped>
+@reference "tailwindcss";
 .dynamic-table {
   @apply overflow-x-auto;
 }

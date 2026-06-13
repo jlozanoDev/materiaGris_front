@@ -167,6 +167,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
+@reference "tailwindcss";
 .signature-pad {
   @apply space-y-2;
 }

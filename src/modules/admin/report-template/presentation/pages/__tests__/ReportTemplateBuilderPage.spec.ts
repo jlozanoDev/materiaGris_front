@@ -70,7 +70,7 @@ function makeMockStore(overrides: Record<string, any> = {}) {
 let mockStore = makeMockStore()
 
 vi.mock('@/modules/admin/report-template/presentation/composables/useTemplateBuilder', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../composables/useTemplateBuilder')>()
+  const actual = await importOriginal<typeof import('../../composables/useTemplateBuilder')>()
   return {
     ...actual,
     useTemplateBuilder: () => mockStore,

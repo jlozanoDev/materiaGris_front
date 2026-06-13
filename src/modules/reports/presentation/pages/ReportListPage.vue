@@ -19,7 +19,7 @@
           <button
             type="button"
             class="inline-flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-            @click="fetchReports(filters)"
+            @click="applyFilters()"
           >
             Reintentar
           </button>
@@ -82,8 +82,8 @@
                     {{ statusLabel(report.status) }}
                   </span>
                 </td>
-                <td class="px-4 py-3 text-gray-500">{{ formatDate(report.created_at) }}</td>
-                <td class="px-4 py-3 text-gray-500">{{ formatDate(report.updated_at) }}</td>
+                <td class="px-4 py-3 text-gray-500">{{ formatDate(report.createdAt) }}</td>
+                <td class="px-4 py-3 text-gray-500">{{ formatDate(report.updatedAt) }}</td>
                 <td class="px-4 py-3">
                   <button
                     type="button"

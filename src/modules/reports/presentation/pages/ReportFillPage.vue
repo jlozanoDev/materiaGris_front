@@ -74,8 +74,8 @@
 
           <!-- Dynamic form -->
           <DynamicFormRenderer
-            v-if="report.template_structure_snapshot"
-            :sections="report.template_structure_snapshot.sections"
+            v-if="report.templateStructureSnapshot"
+            :sections="report.templateStructureSnapshot.sections"
             :model-value="values"
             :is-editable="canEdit"
             @update:model-value="handleUpdate"

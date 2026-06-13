@@ -77,7 +77,7 @@ export function useReportForm(): UseReportFormReturn {
   // ── validateForSignature ───────────────────────────────────────────────────
   function validateForSignature(): Record<string, string> {
     const errs: Record<string, string> = {};
-    const snapshot = report.value?.template_structure_snapshot;
+    const snapshot = report.value?.templateStructureSnapshot;
     if (snapshot?.sections) {
       const allFields = snapshot.sections.flatMap((s: Section) =>
         s.rows.flatMap((r: any) =>
@@ -117,7 +117,7 @@ export function useReportForm(): UseReportFormReturn {
   async function sign(): Promise<void> {
     if (!report.value) throw new Error("No hay informe cargado");
     // Author check
-    if (report.value.user_id !== authStore.user?.id) {
+    if (report.value.userId !== authStore.user?.id) {
       throw new Error("No tiene permiso para firmar este informe");
     }
     // Validate

@@ -239,7 +239,7 @@ function attachHover(): void {
   document.querySelectorAll("[data-action-btn]:not([data-hover-ready])").forEach((btn) => {
     btn.setAttribute("data-hover-ready", "");
     btn.addEventListener("mouseenter", () => {
-      animate({ targets: btn, scale: [1, 1.2, 1], duration: 500, easing: "outElastic" });
+      animate(btn, { scale: [1, 1.2, 1], duration: 500, easing: "outElastic" });
     });
   });
 }

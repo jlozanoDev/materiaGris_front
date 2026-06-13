@@ -194,7 +194,7 @@ describe("useReportForm", () => {
 
       await store.sign();
       expect(execute).toHaveBeenCalledWith("r1", "data:image/png;base64,abc");
-      expect(store.report.value.status).toBe("signed");
+      expect(store.report.value!.status).toBe("signed");
     });
   });
 
@@ -232,7 +232,7 @@ describe("useReportForm", () => {
 
       await store.close();
       expect(execute).toHaveBeenCalledWith("r1");
-      expect(store.report.value.status).toBe("closed");
+      expect(store.report.value!.status).toBe("closed");
     });
   });
 

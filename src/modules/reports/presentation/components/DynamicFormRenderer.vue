@@ -214,6 +214,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
+@reference "tailwindcss";
 .dynamic-form-renderer__empty {
   @apply rounded-md border border-dashed border-gray-300 p-8 text-center text-gray-500;
 }
