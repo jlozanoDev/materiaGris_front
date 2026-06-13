@@ -17,7 +17,7 @@ const FIELD_ICONS: Record<string, string> = {
   radio: 'pi pi-chevron-circle-down',
   checkbox: 'pi pi-check-square',
   dynamic_table: 'pi pi-table',
-  signature: 'pi pi-pencil',
+  fixed_text: 'pi pi-file',
 }
 
 function isSelected(): boolean {
@@ -44,6 +44,16 @@ function handleRemove() {
   >
     <i :class="FIELD_ICONS[field.type] || 'pi pi-question'" class="text-xs" />
     <span class="flex-1 truncate">{{ field.label || field.key }}</span>
+
+    <!-- ai_help_description tooltip -->
+    <span
+      v-if="field.ai_help_description"
+      class="inline-flex items-center justify-center h-4 w-4 rounded-full bg-[#ede9fe] text-[#7c3aed] text-[10px] cursor-help shrink-0"
+      :title="field.ai_help_description"
+    >
+      ?
+    </span>
+
     <button
       class="text-red-400 hover:text-red-600 ml-1"
       title="Eliminar campo"

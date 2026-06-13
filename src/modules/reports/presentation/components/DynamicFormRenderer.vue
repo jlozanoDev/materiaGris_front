@@ -31,7 +31,7 @@
 
       <!-- Section content -->
       <div
-        v-for="(section, secIdx) in visibleSections"
+        v-for="(section, secIdx) in sections"
         :key="section.id"
         :class="[
           'dynamic-form-renderer__section',
@@ -83,7 +83,6 @@
                 :model-value="getFieldValue(field.key)"
                 :disabled="!isEditable"
                 @update:model-value="onFieldUpdate(field.key, $event)"
-                @update:typed-signature="onTypedSignature(field.key, $event)"
               />
             </div>
           </div>
@@ -101,7 +100,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import type { Section } from '@/shared/types'
-import { computeFieldVisibility } from '@/shared/plugins/ConditionalLogicEngine'
 import DynamicField from './DynamicField.vue'
 
 interface Props {
@@ -131,47 +129,12 @@ const displayMode = computed<'tabs' | 'accordion' | 'default'>(() => {
   return 'default'
 })
 
-// Compute visibility for each field across all sections
-const visibilityMap = computed(() => {
-  const allFields = props.sections.flatMap(s =>
-    s.rows.flatMap(r =>
-      r.columns.flatMap(c => c.fields),
-    ),
-  )
-  return computeFieldVisibility(allFields, props.modelValue)
-})
-
-// Filter sections to only show visible fields
-const visibleSections = computed(() => {
-  return props.sections.map(section => ({
-    ...section,
-    rows: section.rows
-      .map(row => ({
-        ...row,
-        columns: row.columns
-          .map(col => ({
-            ...col,
-            fields: col.fields.filter(f => visibilityMap.value[f.id] !== false),
-          }))
-          .filter(col => col.fields.length > 0),
-      }))
-      .filter(row => row.columns.length > 0),
-  }))
-})
-
 function getFieldValue(key: string): unknown {
   return props.modelValue[key]
 }
 
 function onFieldUpdate(key: string, value: unknown): void {
   const updated = { ...props.modelValue, [key]: value }
-  emit('update:modelValue', updated)
-  triggerAutoSave()
-}
-
-function onTypedSignature(key: string, value: string): void {
-  const typedKey = key + '_typed'
-  const updated = { ...props.modelValue, [typedKey]: value }
   emit('update:modelValue', updated)
   triggerAutoSave()
 }
@@ -232,7 +195,8 @@ onMounted(() => {
   @apply mb-6;
 }
 .dynamic-form-renderer__section-title {
-  @apply mb-3 text-base font-semibold text-gray-800;
+  @apply mb-3 text-base font-semibold;
+  color: #1f2937;
 }
 .dynamic-form-renderer__section-body {
   @apply space-y-4;

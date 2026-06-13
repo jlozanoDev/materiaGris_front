@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, provide, computed } from 'vue'
 import { useRoute } from 'vue-router'
+import draggable from 'vuedraggable'
 import { BUILDER_KEY, useTemplateBuilder } from '../composables/useTemplateBuilder'
 import TemplateBuilderToolbar from '../components/TemplateBuilderToolbar.vue'
 import SectionPanel from '../components/SectionPanel.vue'
@@ -10,30 +11,10 @@ import TopBar from '@/shared/components/TopBar.vue'
 import Breadcrumb from '@/shared/components/Breadcrumb.vue'
 import { useAuthStore } from '@/core/store/auth'
 import { useLogout } from '@/shared/composables/useLogout'
-import draggable from 'vuedraggable'
-import type { FieldType } from '@/shared/types'
+import FieldPalette from '../components/FieldPalette.vue'
+import { createDefaultFieldTypeRegistry } from '@/shared/types/defaultFieldTypeRegistry'
 
-// ============================================================================
-// Palette definition
-// ============================================================================
-
-interface PaletteItem {
-  type: FieldType
-  label: string
-  icon: string
-}
-
-const PALETTE: PaletteItem[] = [
-  { type: 'text', label: 'Texto Corto', icon: 'pi pi-pencil' },
-  { type: 'textarea', label: 'Texto Largo', icon: 'pi pi-align-left' },
-  { type: 'number', label: 'Número', icon: 'pi pi-hashtag' },
-  { type: 'date', label: 'Fecha', icon: 'pi pi-calendar' },
-  { type: 'select', label: 'Selección', icon: 'pi pi-check' },
-  { type: 'multi_select', label: 'Selección Múltiple', icon: 'pi pi-list' },
-  { type: 'radio', label: 'Opción Única', icon: 'pi pi-chevron-circle-down' },
-  { type: 'checkbox', label: 'Checkbox', icon: 'pi pi-check-square' },
-  { type: 'dynamic_table', label: 'Tabla Dinámica', icon: 'pi pi-table' },
-]
+const fieldRegistry = createDefaultFieldTypeRegistry()
 
 // ============================================================================
 // State
@@ -130,28 +111,7 @@ onMounted(async () => {
           <div class="flex flex-1 min-h-0 overflow-hidden gap-4">
             <!-- Left: Palette -->
             <aside class="w-56 border border-[rgba(124,58,237,0.10)] rounded-lg bg-white p-3 overflow-y-auto shrink-0 app-scrollbar">
-              <h4 class="text-xs font-semibold uppercase tracking-wider text-[#7c3aed] mb-3">
-                Campos
-              </h4>
-              <draggable
-                :list="PALETTE"
-                :group="{ name: 'report-fields', pull: 'clone', put: false }"
-                item-key="type"
-                tag="div"
-                class="space-y-1"
-                :clone="(item: PaletteItem) => ({ ...item })"
-              >
-                <template #item="{ element }">
-                  <div
-                    :data-palette-item="element.type"
-                    :data-field-type="element.type"
-                    class="flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm cursor-grab border border-[rgba(124,58,237,0.10)] bg-white text-[#0b0817] hover:border-[#7c3aed] hover:bg-[#f5f3ff] transition-all duration-150"
-                  >
-                    <i :class="element.icon" class="text-xs text-[#7c3aed]" />
-                    <span class="font-medium">{{ element.label }}</span>
-                  </div>
-                </template>
-              </draggable>
+              <FieldPalette :registry="fieldRegistry.getAll()" />
             </aside>
 
             <!-- Center: Canvas -->
@@ -170,7 +130,7 @@ onMounted(async () => {
                 <h3 class="text-lg font-bold text-[#0b0817] mb-1.5">
                   Crea tu primera sección
                 </h3>
-                <p class="text-sm text-[#9690a8] mb-6 max-w-xs text-center leading-relaxed">
+                <p class="text-sm text-[#9690a8] mb-6 max-w-xs text-center leading-[1.625]">
                   Las secciones organizan los campos del informe. Arrastra campos desde la paleta para construir el formulario.
                 </p>
                 <button

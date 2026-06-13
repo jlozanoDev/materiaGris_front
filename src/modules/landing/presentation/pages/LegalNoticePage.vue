@@ -17,7 +17,7 @@ const goDemo = () => {} // placeholder
       <h1 class="text-3xl font-bold text-gray-900 mb-2">Aviso Legal</h1>
       <p class="text-sm mb-10" style="color: #9690a8;">Última actualización: junio 2026</p>
 
-      <section class="space-y-8 text-sm leading-relaxed text-gray-700">
+      <section class="space-y-8 text-sm leading-[1.625] text-gray-700">
         <div>
           <h2 class="text-lg font-semibold text-gray-900 mb-3">1. Identificación del Titular</h2>
           <p>

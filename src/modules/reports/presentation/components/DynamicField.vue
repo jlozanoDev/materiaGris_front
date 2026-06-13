@@ -21,7 +21,6 @@
       v-else-if="field.type === 'number'"
       type="number"
       :value="modelValue"
-      :placeholder="field.placeholder"
       :disabled="isDisabled"
       class="form-input"
       @input="emitValue(($event.target as HTMLInputElement).value)"
@@ -112,6 +111,12 @@
       </label>
     </div>
 
+    <!-- fixed_text -->
+    <FixedTextRenderer
+      v-else-if="field.type === 'fixed_text'"
+      :field="field"
+    />
+
     <!-- dynamic_table -->
     <DynamicTable
       v-else-if="field.type === 'dynamic_table'"
@@ -119,15 +124,6 @@
       :model-value="getArrayValue()"
       :disabled="isDisabled"
       @update:model-value="emitValue($event)"
-    />
-
-    <!-- signature -->
-    <SignaturePad
-      v-else-if="field.type === 'signature'"
-      :model-value="signatureModelValue"
-      :disabled="isDisabled"
-      @update:model-value="emitValue($event)"
-      @update:typed-signature="emitTypedSignature($event)"
     />
 
     <!-- unknown type fallback -->
@@ -142,7 +138,7 @@ import { computed } from 'vue'
 import type { FieldConfig } from '@/shared/types'
 import CustomSelect from '@/shared/components/CustomSelect.vue'
 import DynamicTable from './DynamicTable.vue'
-import SignaturePad from './SignaturePad.vue'
+import FixedTextRenderer from './FixedTextRenderer.vue'
 
 interface Props {
   field: FieldConfig
@@ -154,23 +150,14 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: unknown]
-  'update:typedSignature': [value: string]
 }>()
 
 const isDisabled = computed(() => {
-  return props.disabled || !!props.field.systemVariable
-})
-
-const signatureModelValue = computed((): string | null => {
-  return (props.modelValue as string) ?? null
+  return props.disabled
 })
 
 function emitValue(val: unknown): void {
   emit('update:modelValue', val)
-}
-
-function emitTypedSignature(val: string): void {
-  emit('update:typedSignature', val)
 }
 
 function emitMultiSelect(el: HTMLSelectElement): void {

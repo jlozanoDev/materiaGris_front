@@ -58,7 +58,7 @@ function mountSidebar() {
     history: createWebHistory(),
     routes: [
       { path: '/', name: 'Dashboard' },
-      { path: '/informes', name: 'ReportList' },
+      { path: '/admin/report-templates', name: 'AdminReportTemplate' },
     ],
   })
 
@@ -78,7 +78,6 @@ async function mountSidebarWithSettingsOpen() {
   const wrapper = mountSidebar()
 
   // Find and click the settings button to open the dropdown
-  // Settings button is the one with aria-label="Ajustes"
   const settingsBtn = wrapper.find('button[aria-label="Ajustes"]')
   if (settingsBtn.exists()) {
     await settingsBtn.trigger('click')
@@ -88,63 +87,62 @@ async function mountSidebarWithSettingsOpen() {
 }
 
 describe('AppSidebar — Reports Navigation Link', () => {
-  it('renders "Informes" link when user has report.view permission', async () => {
-    setUser(['report.view'])
+  it('renders "Plantillas de informes" link when user has admin.reporttemplate.view permission', async () => {
+    setUser(['admin.reporttemplate.view'])
     const wrapper = await mountSidebarWithSettingsOpen()
 
     const links = wrapper.findAll('li > button')
-    const informesBtn = links.find(btn => btn.text().includes('Informes'))
+    const informesBtn = links.find(btn => btn.text().includes('Plantillas'))
     expect(informesBtn).toBeTruthy()
-    expect(informesBtn!.text()).toBe('Informes')
+    expect(informesBtn!.text()).toBe('Plantillas de informes')
   })
 
-  it('does NOT render "Informes" link when user lacks report.view', async () => {
-    setUser(['report.edit', 'report.create'])
+  it('does NOT render "Plantillas de informes" link when user lacks admin.reporttemplate.view', async () => {
+    setUser(['admin.reporttemplate.create', 'admin.reporttemplate.update'])
     const wrapper = await mountSidebarWithSettingsOpen()
 
     const links = wrapper.findAll('li > button')
-    const informesBtn = links.find(btn => btn.text().includes('Informes'))
+    const informesBtn = links.find(btn => btn.text().includes('Plantillas'))
     expect(informesBtn).toBeFalsy()
   })
 
-  it('does NOT render "Informes" link when user has no permissions', async () => {
+  it('does NOT render "Plantillas de informes" link when user has no permissions', async () => {
     setUser([])
     const wrapper = await mountSidebarWithSettingsOpen()
 
     const links = wrapper.findAll('li > button')
-    const informesBtn = links.find(btn => btn.text().includes('Informes'))
+    const informesBtn = links.find(btn => btn.text().includes('Plantillas'))
     expect(informesBtn).toBeFalsy()
   })
 
-  it('does NOT render "Informes" link when user is null (not logged in)', async () => {
+  it('does NOT render "Plantillas de informes" link when user is null (not logged in)', async () => {
     mockUser.value = null
     const wrapper = await mountSidebarWithSettingsOpen()
 
     const links = wrapper.findAll('li > button')
-    const informesBtn = links.find(btn => btn.text().includes('Informes'))
+    const informesBtn = links.find(btn => btn.text().includes('Plantillas'))
     expect(informesBtn).toBeFalsy()
   })
 
-  it('"Informes" link uses pi-file-check icon', async () => {
-    setUser(['report.view'])
+  it('"Plantillas de informes" link uses pi-file icon', async () => {
+    setUser(['admin.reporttemplate.view'])
     const wrapper = await mountSidebarWithSettingsOpen()
 
     const links = wrapper.findAll('li > button')
-    const informesBtn = links.find(btn => btn.text().includes('Informes'))
+    const informesBtn = links.find(btn => btn.text().includes('Plantillas'))
     expect(informesBtn).toBeTruthy()
 
     const icon = informesBtn!.find('i')
     expect(icon.exists()).toBe(true)
-    expect(icon.classes()).toContain('pi-file-check')
+    expect(icon.classes()).toContain('pi-file')
   })
 
-  it('separator line renders before "Informes" when user has report.view', async () => {
-    setUser(['report.view'])
+  it('separator line renders before "Plantillas de informes" when user has admin.reporttemplate.view', async () => {
+    setUser(['admin.reporttemplate.view'])
     const wrapper = await mountSidebarWithSettingsOpen()
 
-    // The separator <li aria-hidden="true"> before "Informes" should exist
+    // The separator <li aria-hidden="true"> before "Plantillas" should exist
     const separators = wrapper.findAll('li[aria-hidden="true"]')
-    // At least 1 separator (the one before Informes — other admin separators may not render without admin perms)
     expect(separators.length).toBeGreaterThanOrEqual(1)
   })
 })

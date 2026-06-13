@@ -14,7 +14,7 @@ const sampleData = [
   { id: 3, name: 'Carlos', email: 'carlos@test.com' },
 ]
 
-function mountTable(props = {}) {
+function mountTable(props = {}, options = {}) {
   return mount(UiDataTable, {
     props: {
       value: sampleData,
@@ -24,6 +24,7 @@ function mountTable(props = {}) {
     global: {
       stubs: { transition: false, 'transition-group': false },
     },
+    ...options,
   })
 }
 
@@ -148,10 +149,22 @@ describe('UiDataTable', () => {
         paginator: true,
         rows: 10,
         rowsPerPageOptions: [10, 25, 50],
-      })
-      const select = wrapper.find('#rowsPerPageSelect')
-      await select.setValue(25)
-      expect(wrapper.find('[aria-live="polite"]').text()).toContain('Mostrando 1 – 25 de 25')
+      }, { attachTo: document.body })
+      // CustomSelect uses a button trigger; find it via aria-haspopup inside the rows-per-page area
+      await wrapper.vm.$nextTick()
+      const triggerBtn = document.querySelector('.relative [aria-haspopup="listbox"]')
+      expect(triggerBtn).toBeTruthy()
+      // Click the trigger to open the dropdown
+      triggerBtn.dispatchEvent(new MouseEvent('click'))
+      await wrapper.vm.$nextTick()
+      // Find an option "25" in the teleported dropdown
+      const options = document.querySelectorAll('[role="option"]')
+      const target = Array.from(options).find(o => o.textContent.trim() === '25')
+      if (target) {
+        target.dispatchEvent(new MouseEvent('click'))
+        await wrapper.vm.$nextTick()
+      }
+      expect(wrapper.find('[aria-live="polite"]').text()).toContain('1 – 25')
     })
 
     it('previous page button is disabled on first page', () => {

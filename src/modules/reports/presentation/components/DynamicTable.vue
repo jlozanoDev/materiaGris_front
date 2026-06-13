@@ -9,10 +9,11 @@
         <tr>
           <th
             v-for="col in columns"
-            :key="col.name"
+            :key="col.key"
             class="dynamic-table__th"
           >
-            {{ col.name }}
+            {{ col.label }}
+            <span v-if="isCalculated(col)" class="text-[10px] text-indigo-500 ml-1">(calc)</span>
           </th>
           <th v-if="!disabled" class="dynamic-table__th dynamic-table__th--action">
             &nbsp;
@@ -21,46 +22,55 @@
       </thead>
       <tbody>
         <tr v-for="(row, rowIdx) in rows" :key="rowIdx">
-          <td v-for="col in columns" :key="col.name" class="dynamic-table__td">
+          <td v-for="col in columns" :key="col.key" class="dynamic-table__td">
+            <!-- Calculated column — read-only display -->
+            <div
+              v-if="isCalculated(col)"
+              class="dynamic-table__cell-calculated"
+            >
+              {{ getCellDisplay(col, rowIdx) }}
+            </div>
+
+            <!-- Editable columns -->
             <input
-              v-if="col.type === 'text' || col.type === 'number'"
+              v-else-if="col.type === 'text' || col.type === 'number'"
               :type="col.type"
-              :value="row[col.name] ?? ''"
-              :disabled="disabled"
+              :value="row[col.key] ?? ''"
+              :disabled="isCellReadOnly(col)"
               class="dynamic-table__cell-input"
-              @input="updateCell(rowIdx, col.name, ($event.target as HTMLInputElement).value)"
+              @input="updateCell(rowIdx, col.key, ($event.target as HTMLInputElement).value)"
             />
             <input
               v-else-if="col.type === 'date'"
               type="date"
-              :value="row[col.name] ?? ''"
-              :disabled="disabled"
+              :value="row[col.key] ?? ''"
+              :disabled="isCellReadOnly(col)"
               class="dynamic-table__cell-input"
-              @input="updateCell(rowIdx, col.name, ($event.target as HTMLInputElement).value)"
+              @input="updateCell(rowIdx, col.key, ($event.target as HTMLInputElement).value)"
             />
             <CustomSelect
               v-else-if="col.type === 'select'"
-              :model-value="row[col.name] ?? ''"
+              :model-value="row[col.key] ?? ''"
               :options="[]"
               placeholder="Seleccione..."
-              :disabled="disabled"
-              @update:model-value="updateCell(rowIdx, col.name, $event)"
+              :disabled="isCellReadOnly(col)"
+              @update:model-value="updateCell(rowIdx, col.key, $event)"
             />
             <textarea
               v-else-if="col.type === 'textarea'"
-              :value="row[col.name] ?? ''"
-              :disabled="disabled"
+              :value="row[col.key] ?? ''"
+              :disabled="isCellReadOnly(col)"
               class="dynamic-table__cell-input"
               rows="1"
-              @input="updateCell(rowIdx, col.name, ($event.target as HTMLTextAreaElement).value)"
+              @input="updateCell(rowIdx, col.key, ($event.target as HTMLTextAreaElement).value)"
             ></textarea>
             <input
               v-else
               type="text"
-              :value="row[col.name] ?? ''"
-              :disabled="disabled"
+              :value="row[col.key] ?? ''"
+              :disabled="isCellReadOnly(col)"
               class="dynamic-table__cell-input"
-              @input="updateCell(rowIdx, col.name, ($event.target as HTMLInputElement).value)"
+              @input="updateCell(rowIdx, col.key, ($event.target as HTMLInputElement).value)"
             />
           </td>
           <td v-if="!disabled" class="dynamic-table__td dynamic-table__td--action">
@@ -76,6 +86,22 @@
           </td>
         </tr>
       </tbody>
+      <!-- Footer totals -->
+      <tfoot v-if="footerTotals.length > 0">
+        <tr v-for="(footer, ftIdx) in footerTotals" :key="ftIdx" class="dynamic-table__footer-row">
+          <td
+            v-for="(col, colIdx) in columns"
+            :key="col.key"
+            class="dynamic-table__footer-cell"
+          >
+            <span v-if="colIdx === 0" class="dynamic-table__footer-label">{{ footer.label }}</span>
+            <span v-else-if="col.key === ('sourceKey' in footer.formula ? footer.formula.sourceKey : undefined) || ('expression' in footer.formula)" class="dynamic-table__footer-value">
+              {{ getFooterValue(footer) }}
+            </span>
+          </td>
+          <td v-if="!disabled" class="dynamic-table__td" />
+        </tr>
+      </tfoot>
     </table>
 
     <button
@@ -91,31 +117,41 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { FieldType } from '@/shared/types'
+import type { TableColumnDef, FooterTotal, CalculatedColumnDef } from '@/shared/types'
+import { evaluateFormula } from '@/shared/utils/evaluateExpression'
 import CustomSelect from '@/shared/components/CustomSelect.vue'
 
-export interface DynamicTableColumn {
-  name: string
-  type: FieldType
-}
-
 interface Props {
-  columns: DynamicTableColumn[]
+  columns: TableColumnDef[]
+  footerTotals?: FooterTotal[]
   modelValue: Record<string, any>[]
   disabled: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  footerTotals: () => [],
+})
+
 const emit = defineEmits<{
   'update:modelValue': [value: Record<string, any>[]]
 }>()
 
 const rows = computed(() => props.modelValue)
 
+/** Check if a column is a calculated column */
+function isCalculated(col: TableColumnDef): col is CalculatedColumnDef {
+  return 'calculated' in col && col.calculated === true
+}
+
+/** Check if a cell should be read-only (calculated columns) */
+function isCellReadOnly(col: TableColumnDef): boolean {
+  return isCalculated(col) || props.disabled
+}
+
 function createEmptyRow(): Record<string, any> {
   const row: Record<string, any> = {}
   for (const col of props.columns) {
-    row[col.name] = ''
+    row[col.key] = isCalculated(col) ? 0 : ''
   }
   return row
 }
@@ -132,14 +168,27 @@ function removeRow(idx: number): void {
   emit('update:modelValue', newRows)
 }
 
-function updateCell(rowIdx: number, colName: string, value: any): void {
+function updateCell(rowIdx: number, colKey: string, value: any): void {
   const newRows = props.modelValue.map((row, i) => {
     if (i === rowIdx) {
-      return { ...row, [colName]: value }
+      return { ...row, [colKey]: value }
     }
     return row
   })
   emit('update:modelValue', newRows)
+}
+
+/** Get calculated value for a cell */
+function getCellDisplay(col: TableColumnDef, rowIdx: number): string | number {
+  if (!isCalculated(col)) {
+    return rows.value[rowIdx]?.[col.key] ?? ''
+  }
+  return evaluateFormula(col.formula, rows.value.slice(0, rowIdx + 1))
+}
+
+/** Compute footer total for a footer definition */
+function getFooterValue(footer: FooterTotal): number {
+  return evaluateFormula(footer.formula, rows.value)
 }
 </script>
 

@@ -26,6 +26,7 @@
 | **Admin — Usuarios** | [`modules/admin/usuarios-crud.md`](./modules/admin/usuarios-crud.md) |
 | **Admin — Roles** | [`modules/admin/roles-editor.md`](./modules/admin/roles-editor.md) |
 | **Admin — Permisos** | [`modules/admin/permisos-sistema.md`](./modules/admin/permisos-sistema.md) |
+| **Admin — Informes: Campos** | [`modules/admin/report-template-campos.md`](./modules/admin/report-template-campos.md) |
 
 ## Referencia cruzada con funcional
 
@@ -37,3 +38,4 @@
 | admin — users | `tecnica/modules/admin/usuarios-crud.md` | [`funcional/modulos/administracion/usuarios.md`](../funcional/modulos/administracion/usuarios.md) |
 | admin — roles | `tecnica/modules/admin/roles-editor.md` | [`funcional/modulos/administracion/roles.md`](../funcional/modulos/administracion/roles.md) |
 | admin — permissions | `tecnica/modules/admin/permisos-sistema.md` | [`funcional/modulos/administracion/permisos.md`](../funcional/modulos/administracion/permisos.md) |
+| admin — report template fields | `tecnica/modules/admin/report-template-campos.md` | [`funcional/modulos/administracion/informes.md`](../funcional/modulos/administracion/informes.md) |

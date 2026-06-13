@@ -187,7 +187,7 @@ function statusBadgeClass(status: string): string {
     case "signed":
       return `${base} bg-green-100 text-green-800`;
     case "closed":
-      return `${base} bg-gray-100 text-gray-800`;
+      return `${base} bg-gray-100 text-[#1f2937]`;
     default:
       return `${base} bg-gray-100 text-gray-600`;
   }

@@ -5,7 +5,9 @@ import {
   provideCreateReportTemplateUseCase,
   provideUpdateReportTemplateUseCase,
 } from '@/modules/admin/report-template/application/containers/reportTemplateContainer'
-import type { Section, Row, Column, FieldConfig, FieldType } from '@/shared/types'
+import type { Section, Row, Column, FieldConfig, FieldType, FieldBase } from '@/shared/types'
+import type { TextField, NumberField, DateField, SelectionField, FixedTextField, DynamicTableField } from '@/shared/types'
+import { generateId } from '@/shared/utils/id'
 
 // ============================================================================
 // Types
@@ -37,7 +39,7 @@ export interface UseTemplateBuilderReturn {
   addColumn: (rowId: string) => void
   addField: (columnId: string, type: FieldType, config?: { label?: string; description?: string; required?: boolean }) => void
   removeField: (fieldId: string) => void
-  updateField: (fieldId: string, config: Partial<FieldConfig>) => void
+  updateField: (fieldId: string, config: Record<string, any>) => void
   reorderSections: (order: string[]) => void
   moveField: (fieldId: string, targetColumnId: string) => void
   undo: () => void
@@ -53,10 +55,6 @@ export const BUILDER_KEY = Symbol('templateBuilder')
 // ============================================================================
 // Helpers
 // ============================================================================
-
-function generateId(): string {
-  return crypto.randomUUID()
-}
 
 function findFieldById(
   sections: Section[],
@@ -112,20 +110,35 @@ function pushCommand(stack: Ref<UndoCommand[]>, cmd: UndoCommand): void {
 }
 
 function createField(type: FieldType): FieldConfig {
-  const field: FieldConfig = {
+  const base: FieldBase = {
     id: generateId(),
-    type,
-    label: type,
     key: slugify(type),
+    label: type,
     required: false,
   }
-  if (type === 'select' || type === 'radio' || type === 'checkbox') {
-    field.options = []
+
+  switch (type) {
+    case 'text':
+    case 'textarea':
+      return { ...base, type, max_chars: undefined, placeholder: undefined, default_value: undefined }
+    case 'number':
+      return { ...base, type, decimals: undefined, min: undefined, max: undefined, default_value: undefined }
+    case 'date':
+      return { ...base, type, min_date: undefined, max_date: undefined, placeholder: undefined, default_value: undefined }
+    case 'select':
+    case 'multi_select':
+    case 'radio':
+    case 'checkbox':
+      return { ...base, type, options: [], placeholder: undefined, default_value: undefined }
+    case 'fixed_text':
+      return { ...base, type, text_content: '', styling_options: undefined }
+    case 'dynamic_table':
+      return { ...base, type, columns: [], footer_totals: undefined }
+    default:
+      // Exhaustive check — unreachable
+      const _exhaustive: never = type
+      throw new Error(`Unknown field type: ${_exhaustive}`)
   }
-  if (type === 'dynamic_table') {
-    field.columns = []
-  }
-  return field
 }
 
 // ============================================================================
@@ -271,7 +284,7 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
       field.key = slugify(config.label) || slugify(type)
     }
     if (config?.description) {
-      field.placeholder = config.description
+      ;(field as any).placeholder = config.description
     }
     if (config?.required !== undefined) {
       field.required = config.required
@@ -315,7 +328,7 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
     })
   }
 
-  function updateField(fieldId: string, config: Partial<FieldConfig>): void {
+  function updateField(fieldId: string, config: Record<string, any>): void {
     const found = findFieldById(sections.value, fieldId)
     if (!found) return
     const { field } = found

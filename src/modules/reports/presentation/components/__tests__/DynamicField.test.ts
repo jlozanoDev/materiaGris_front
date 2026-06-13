@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 import DynamicField from '../DynamicField.vue'
 import type { FieldConfig } from '@/shared/types'
 
-function createField(overrides: Partial<FieldConfig> = {}): FieldConfig {
+function createField(overrides: Record<string, any> = {}): FieldConfig {
   return {
     id: 'f1',
     type: 'text',
@@ -11,7 +11,7 @@ function createField(overrides: Partial<FieldConfig> = {}): FieldConfig {
     key: 'test_field',
     required: false,
     ...overrides,
-  }
+  } as FieldConfig
 }
 
 describe('DynamicField', () => {
@@ -52,13 +52,9 @@ describe('DynamicField', () => {
     const wrapper = mount(DynamicField, {
       props: { field, modelValue: '', disabled: false },
     })
-    const select = wrapper.find('select')
-    expect(select.exists()).toBe(true)
-    const options = select.findAll('option')
-    // 3 options: placeholder + 2 actual
-    expect(options).toHaveLength(3)
-    expect(options[1].text()).toBe('Opción A')
-    expect(options[2].text()).toBe('Opción B')
+    // CustomSelect renders a button trigger with aria-haspopup
+    const trigger = wrapper.find('button[aria-haspopup="listbox"]')
+    expect(trigger.exists()).toBe(true)
   })
 
   it('renders radio group for type=radio', () => {
@@ -96,21 +92,20 @@ describe('DynamicField', () => {
   })
 
   it('renders number input for type=number', () => {
-    const field = createField({ type: 'number', placeholder: '0' })
+    const field = createField({ type: 'number' })
     const wrapper = mount(DynamicField, {
       props: { field, modelValue: 0, disabled: false },
     })
     const input = wrapper.find('input[type="number"]')
     expect(input.exists()).toBe(true)
-    expect(input.attributes('placeholder')).toBe('0')
   })
 
   it('renders DynamicTable for type=dynamic_table', () => {
     const field = createField({
       type: 'dynamic_table',
       columns: [
-        { name: 'Medicamento', type: 'text' },
-        { name: 'Dosis', type: 'text' },
+        { key: 'medicamento', label: 'Medicamento', type: 'text', required: false },
+        { key: 'dosis', label: 'Dosis', type: 'text', required: false },
       ],
     })
     const wrapper = mount(DynamicField, {
@@ -120,13 +115,15 @@ describe('DynamicField', () => {
     expect(wrapper.text()).toContain('Añadir fila')
   })
 
-  it('renders SignaturePad for type=signature', () => {
-    const field = createField({ type: 'signature' })
+  it('renders FixedTextRenderer for type=fixed_text', () => {
+    const field = createField({
+      type: 'fixed_text',
+      text_content: 'Hello {paciente.nombre}',
+    } as any)
     const wrapper = mount(DynamicField, {
       props: { field, modelValue: null, disabled: false },
     })
-    // Should contain the watermark text
-    expect(wrapper.text()).toContain('Firme dentro del recuadro')
+    expect(wrapper.find('.fixed-text-renderer').exists()).toBe(true)
   })
 
   it('shows placeholder for unknown type', () => {

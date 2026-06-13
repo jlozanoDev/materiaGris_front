@@ -14,7 +14,7 @@ vi.mock("@/modules/reports/application/containers/reportsContainer", () => ({
 
 vi.mock("@/core/store/auth", () => ({
   useAuthStore: vi.fn(() => ({
-    user: { id: 1, name: "Dr. Test" },
+    user: { id: "1", name: "Dr. Test" },
     hasPermission: vi.fn((slug: string) => {
       const perms: Record<string, boolean> = {
         "report.edit": true,
@@ -77,7 +77,7 @@ describe("useReportForm", () => {
         id: "r1",
         status: "draft",
         values: { nombre: "Juan" },
-        template_structure_snapshot: {
+        templateStructureSnapshot: {
           sections: [
             { id: "s1", label: "Datos", display: "default", rows: [{ id: "r1", columns: [{ id: "c1", fields: [{ id: "f1", key: "nombre", type: "text", label: "Nombre", required: true }] }] }] },
           ],
@@ -117,7 +117,7 @@ describe("useReportForm", () => {
         id: "r1",
         status: "draft",
         values: {},
-        template_structure_snapshot: {
+        templateStructureSnapshot: {
           sections: [
             { id: "s1", label: "Datos", display: "default", rows: [{ id: "r1", columns: [{ id: "c1", fields: [{ id: "f1", key: "nombre", type: "text", label: "Nombre", required: true }] }] }] },
           ],
@@ -136,7 +136,7 @@ describe("useReportForm", () => {
         id: "r1",
         status: "draft",
         values: {},
-        template_structure_snapshot: {
+        templateStructureSnapshot: {
           sections: [
             { id: "s1", label: "Datos", display: "default", rows: [{ id: "r1", columns: [{ id: "c1", fields: [{ id: "f1", key: "nombre", type: "text", label: "Nombre", required: true }] }] }] },
           ],
@@ -156,7 +156,7 @@ describe("useReportForm", () => {
         id: "r1",
         status: "draft",
         values: {},
-        template_structure_snapshot: {
+        templateStructureSnapshot: {
           sections: [
             { id: "s1", label: "Datos", display: "default", rows: [{ id: "r1", columns: [{ id: "c1", fields: [{ id: "f1", key: "nombre", type: "text", label: "Nombre", required: true }] }] }] },
           ],
@@ -175,7 +175,7 @@ describe("useReportForm", () => {
   describe("sign", () => {
     it("throws if user is not the author", async () => {
       const store = useReportForm();
-      store.report.value = { id: "r1", status: "draft", user_id: 99 } as any;
+      store.report.value = { id: "r1", status: "draft", userId: "99" } as any;
       store.signatureValue.value = "data:image/png;base64,abc";
       store.values.value = {};
 
@@ -183,12 +183,12 @@ describe("useReportForm", () => {
     });
 
     it("calls SignReportUseCase when valid", async () => {
-      const report = { id: "r1", status: "signed", user_id: 1 };
+      const report = { id: "r1", status: "signed", userId: "1" };
       const execute = vi.fn().mockResolvedValue(report);
       (provideSignReportUseCase as any).mockReturnValue({ execute });
 
       const store = useReportForm();
-      store.report.value = { id: "r1", status: "draft", user_id: 1, template_structure_snapshot: { sections: [] } } as any;
+      store.report.value = { id: "r1", status: "draft", userId: "1", templateStructureSnapshot: { sections: [] } } as any;
       store.signatureValue.value = "data:image/png;base64,abc";
       store.values.value = {};
 
@@ -217,18 +217,18 @@ describe("useReportForm", () => {
   describe("close", () => {
     it("throws if report is not signed", async () => {
       const store = useReportForm();
-      store.report.value = { id: "r1", status: "draft", user_id: 1 } as any;
+      store.report.value = { id: "r1", status: "draft", userId: "1" } as any;
 
       await expect(store.close()).rejects.toThrow(/firmad/);
     });
 
     it("calls CloseReportUseCase when valid", async () => {
-      const report = { id: "r1", status: "closed", user_id: 1 };
+      const report = { id: "r1", status: "closed", userId: "1" };
       const execute = vi.fn().mockResolvedValue(report);
       (provideCloseReportUseCase as any).mockReturnValue({ execute });
 
       const store = useReportForm();
-      store.report.value = { id: "r1", status: "signed", user_id: 1 } as any;
+      store.report.value = { id: "r1", status: "signed", userId: "1" } as any;
 
       await store.close();
       expect(execute).toHaveBeenCalledWith("r1");

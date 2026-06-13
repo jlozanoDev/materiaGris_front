@@ -239,7 +239,7 @@ describe('useTemplateBuilder', () => {
     store.addField(col.id, 'select')
     const field = col.fields[0]
     expect(field.type).toBe('select')
-    expect(field.options).toEqual([])
+    expect((field as any).options).toEqual([])
   })
 
   it('addField with dynamic_table type includes empty columns array', () => {
@@ -251,7 +251,7 @@ describe('useTemplateBuilder', () => {
     store.addField(col.id, 'dynamic_table')
     const field = col.fields[0]
     expect(field.type).toBe('dynamic_table')
-    expect(field.columns).toEqual([])
+    expect((field as any).columns).toEqual([])
   })
 
   // --- removeField ---
@@ -282,7 +282,7 @@ describe('useTemplateBuilder', () => {
     const updated = col.fields[0]
     expect(updated.label).toBe('Nombre del paciente')
     expect(updated.required).toBe(true)
-    expect(updated.placeholder).toBe('Ingrese nombre')
+    expect((updated as any).placeholder).toBe('Ingrese nombre')
     expect(store.isDirty).toBe(true)
   })
 

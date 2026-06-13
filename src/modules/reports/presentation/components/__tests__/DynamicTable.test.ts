@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import DynamicTable from '../DynamicTable.vue'
-import type { FieldType } from '@/shared/types'
+import type { TableColumnDef } from '@/shared/types'
 
-const columns = [
-  { name: 'Medicamento', type: 'text' as FieldType },
-  { name: 'Dosis', type: 'text' as FieldType },
-  { name: 'Frecuencia', type: 'text' as FieldType },
+const columns: TableColumnDef[] = [
+  { key: 'medicamento', label: 'Medicamento', type: 'text', required: false },
+  { key: 'dosis', label: 'Dosis', type: 'text', required: false },
+  { key: 'frecuencia', label: 'Frecuencia', type: 'text', required: false },
 ]
 
 describe('DynamicTable', () => {
@@ -35,7 +35,7 @@ describe('DynamicTable', () => {
     const emitted = wrapper.emitted('update:modelValue')
     expect(emitted).toBeTruthy()
     expect(emitted![0][0]).toEqual([
-      { Medicamento: '', Dosis: '', Frecuencia: '' },
+      { medicamento: '', dosis: '', frecuencia: '' },
     ])
   })
 
@@ -73,7 +73,7 @@ describe('DynamicTable', () => {
     })
     const inputs = wrapper.findAll('input')
     // 3 columns × 1 row = 3 inputs
-    expect(inputs.length).toBeGreaterThanOrEqual(1)
+    expect(inputs.length).toBeGreaterThanOrEqual(3)
   })
 
   it('respects disabled prop', () => {
@@ -89,5 +89,63 @@ describe('DynamicTable', () => {
       props: { columns, modelValue: [], disabled: true },
     })
     expect(wrapper.emitted('update:modelValue')).toBeFalsy()
+  })
+
+  describe('calculated columns', () => {
+    const calcColumns: import('@/shared/types').TableColumnDef[] = [
+      { key: 'item', label: 'Item', type: 'text', required: false },
+      { key: 'cantidad', label: 'Cantidad', type: 'number', required: false },
+      {
+        key: 'subtotal',
+        label: 'Subtotal',
+        type: 'number',
+        required: false,
+        calculated: true,
+        formula: { op: 'sum', sourceKey: 'cantidad' },
+      } as import('@/shared/types').CalculatedColumnDef,
+    ]
+
+    it('shows (calc) badge on calculated column headers', () => {
+      const wrapper = mount(DynamicTable, {
+        props: { columns: calcColumns, modelValue: [], disabled: false },
+      })
+      expect(wrapper.text()).toContain('(calc)')
+    })
+
+    it('displays calculated value for a column', () => {
+      const modelValue = [
+        { item: 'Guantes', cantidad: 5 },
+        { item: 'Jeringas', cantidad: 10 },
+      ]
+      const wrapper = mount(DynamicTable, {
+        props: { columns: calcColumns, modelValue, disabled: false },
+      })
+      // subtotal = sum of cantidad = 15
+      expect(wrapper.text()).toContain('15')
+    })
+  })
+
+  describe('footer totals', () => {
+    const ftColumns: import('@/shared/types').TableColumnDef[] = [
+      { key: 'item', label: 'Item', type: 'text', required: false },
+      { key: 'cantidad', label: 'Cantidad', type: 'number', required: false },
+    ]
+
+    const footerTotals: import('@/shared/types').FooterTotal[] = [
+      { label: 'Total:', formula: { op: 'sum', sourceKey: 'cantidad' } },
+    ]
+
+    it('renders footer row with total', () => {
+      const modelValue = [
+        { item: 'A', cantidad: 10 },
+        { item: 'B', cantidad: 20 },
+      ]
+      const wrapper = mount(DynamicTable, {
+        props: { columns: ftColumns, footerTotals, modelValue, disabled: false },
+      })
+      expect(wrapper.text()).toContain('Total:')
+      // Footer total should be 30
+      expect(wrapper.text()).toContain('30')
+    })
   })
 })

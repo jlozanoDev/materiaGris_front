@@ -60,15 +60,14 @@ const allTypesSection: Section = {
           id: 'col_all',
           label: 'col_all',
           fields: [
-            { id: 't1', type: 'text', label: 'Texto', key: 'texto' },
-            { id: 't2', type: 'textarea', label: 'Area', key: 'area' },
-            { id: 't3', type: 'date', label: 'Fecha', key: 'fecha' },
-            { id: 't4', type: 'select', label: 'Select', key: 'select', options: [{ label: 'X', value: 'x' }] },
-            { id: 't5', type: 'radio', label: 'Radio', key: 'radio', options: [{ label: 'Si', value: 'si' }] },
-            { id: 't6', type: 'checkbox', label: 'Check', key: 'check', options: [{ label: 'Op1', value: 'op1' }] },
-            { id: 't7', type: 'dynamic_table', label: 'Tabla', key: 'tabla', columns: [{ name: 'Col1', type: 'text' }] },
-            { id: 't8', type: 'signature', label: 'Firma', key: 'firma' },
-            { id: 't9', type: 'number', label: 'Numero', key: 'numero' },
+            { id: 't1', type: 'text', label: 'Texto', key: 'texto', required: false },
+            { id: 't2', type: 'textarea', label: 'Area', key: 'area', required: false },
+            { id: 't3', type: 'date', label: 'Fecha', key: 'fecha', required: false },
+            { id: 't4', type: 'select', label: 'Select', key: 'select', options: [{ label: 'X', value: 'x' }], required: false },
+            { id: 't5', type: 'radio', label: 'Radio', key: 'radio', options: [{ label: 'Si', value: 'si' }], required: false },
+            { id: 't6', type: 'checkbox', label: 'Check', key: 'check', options: [{ label: 'Op1', value: 'op1' }], required: false },
+            { id: 't7', type: 'dynamic_table', label: 'Tabla', key: 'tabla', columns: [{ key: 'col1', label: 'Col1', type: 'text', required: false }], required: false },
+            { id: 't9', type: 'number', label: 'Numero', key: 'numero', required: false },
           ],
         },
       ],
@@ -106,7 +105,7 @@ describe('DynamicFormRenderer', () => {
     expect(wrapper.text()).toContain('Tipo')
   })
 
-  it('renders all 9 field types', () => {
+  it('renders all 8 field types', () => {
     const wrapper = mount(DynamicFormRenderer, {
       props: { sections: [allTypesSection], modelValue: {}, isEditable: true },
     })
@@ -116,7 +115,6 @@ describe('DynamicFormRenderer', () => {
     expect(wrapper.text()).toContain('Radio')
     expect(wrapper.text()).toContain('Check')
     expect(wrapper.text()).toContain('Tabla')
-    expect(wrapper.text()).toContain('Firma')
     expect(wrapper.text()).toContain('Numero')
 
     // Date field label
@@ -196,77 +194,6 @@ describe('DynamicFormRenderer', () => {
       expect(wrapper.emitted('auto-save')).toBeFalsy()
     }
     vi.useRealTimers()
-  })
-
-  it('shows conditional field when condition is met', () => {
-    const sectionsWithCondition: Section[] = [
-      {
-        id: 'sec_c',
-        label: 'Condicional',
-        display: 'default',
-        rows: [
-          {
-            id: 'row_c',
-            columns: [
-              {
-                id: 'col_c',
-                label: 'col_c',
-                fields: [
-                  { id: 'f_c1', type: 'text', label: 'Trigger', key: 'trigger' },
-                  {
-                    id: 'f_c2',
-                    type: 'textarea',
-                    label: 'Condicional',
-                    key: 'condicional',
-                    conditionalRule: { field: 'trigger', op: '==', value: 'mostrar' },
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-    ]
-    const wrapper = mount(DynamicFormRenderer, {
-      props: { sections: sectionsWithCondition, modelValue: { trigger: 'mostrar' }, isEditable: true },
-    })
-    expect(wrapper.text()).toContain('Condicional')
-  })
-
-  it('hides conditional field when condition is not met', () => {
-    const sectionsWithCondition: Section[] = [
-      {
-        id: 'sec_c',
-        label: 'Condicional',
-        display: 'default',
-        rows: [
-          {
-            id: 'row_c',
-            columns: [
-              {
-                id: 'col_c',
-                label: 'col_c',
-                fields: [
-                  { id: 'f_c1', type: 'text', label: 'Trigger', key: 'trigger' },
-                  {
-                    id: 'f_c2',
-                    type: 'textarea',
-                    label: 'Condicional',
-                    key: 'condicional',
-                    conditionalRule: { field: 'trigger', op: '==', value: 'mostrar' },
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-    ]
-    const wrapper = mount(DynamicFormRenderer, {
-      props: { sections: sectionsWithCondition, modelValue: { trigger: 'ocultar' }, isEditable: true },
-    })
-    // The conditional textarea should NOT be rendered
-    expect(wrapper.find('textarea').exists()).toBe(false)
   })
 
   describe('permission checks', () => {

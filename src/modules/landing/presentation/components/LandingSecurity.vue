@@ -17,7 +17,7 @@ import hceConnection from '@/assets/hce-connection.png'
             <h2 class="font-sans font-bold tracking-tight" style="font-size: clamp(30px, 3.6vw, 44px); line-height: 1.12; letter-spacing: -0.02em; color: #0b0817;">
               Diseñada para el entorno clínico real
             </h2>
-            <p class="leading-relaxed" style="font-size: 18px; line-height: 1.6; color: #6b6b7b; max-width: 60ch; margin-top: 12px;">
+            <p class="leading-[1.625]" style="font-size: 18px; line-height: 1.6; color: #6b6b7b; max-width: 60ch; margin-top: 12px;">
               Cumplimiento normativo total, integración fluida con los sistemas que ya usas, y cifrado de extremo a extremo en todos los datos de paciente.
             </p>
           </div>

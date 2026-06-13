@@ -61,7 +61,7 @@ useParticleNetwork(canvasRef)
           </h1>
 
           <!-- Lead -->
-          <p class="leading-relaxed" style="font-size: 18px; line-height: 1.6; color: #9690a8; max-width: 56ch; margin-bottom: 32px;">
+          <p class="leading-[1.625]" style="font-size: 18px; line-height: 1.6; color: #9690a8; max-width: 56ch; margin-bottom: 32px;">
             Diagnóstico asistido, informes inteligentes y gestión integral del paciente en una sola plataforma.
           </p>
 

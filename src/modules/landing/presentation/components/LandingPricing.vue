@@ -15,7 +15,7 @@ const emit = defineEmits<{
         <h2 class="font-sans font-bold tracking-tight" style="font-size: clamp(30px, 3.6vw, 44px); line-height: 1.12; letter-spacing: -0.02em; color: #0b0817;">
           Escala con tus necesidades clínicas
         </h2>
-        <p class="leading-relaxed mx-auto" style="font-size: 18px; line-height: 1.6; color: #6b6b7b; max-width: 60ch; margin-top: 12px;">
+        <p class="leading-[1.625] mx-auto" style="font-size: 18px; line-height: 1.6; color: #6b6b7b; max-width: 60ch; margin-top: 12px;">
           Desde el consultorio individual hasta el hospital de alta complejidad. Todos los planes incluyen actualizaciones y soporte técnico.
         </p>
       </div>

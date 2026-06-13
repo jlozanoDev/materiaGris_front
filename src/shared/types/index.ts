@@ -98,6 +98,10 @@ export type PermissionFormat =
 // Report Template Types — Módulo de Informes Dinámicos
 // =============================================================================
 
+// =============================================================================
+// Field Types — Discriminated Union
+// =============================================================================
+
 export type FieldType =
   | 'text'
   | 'textarea'
@@ -108,31 +112,92 @@ export type FieldType =
   | 'radio'
   | 'checkbox'
   | 'dynamic_table'
-  | 'signature'
+  | 'fixed_text'
 
 export interface FieldOption {
   label: string
   value: string
 }
 
-export interface ConditionalRule {
-  field: string
-  op: '==' | '!=' | 'contains' | '>' | '<' | '>=' | '<='
-  value: string
+/** Base properties shared by all field variants */
+export interface FieldBase {
+  id: string
+  key: string
+  label: string
+  required: boolean
+  ai_help_description?: string
 }
 
-export interface FieldConfig {
-  id: string
-  type: FieldType
-  label: string
+// --- Column types for DynamicTable ---
+
+export interface TableColumnDef {
   key: string
-  placeholder?: string
-  required?: boolean
-  systemVariable?: string
+  label: string
+  type: 'text' | 'number' | 'date' | 'select'
+  required: boolean
   options?: FieldOption[]
-  columns?: Array<{ name: string; type: FieldType }>
-  conditionalRule?: ConditionalRule
 }
+
+export type CalculatedFormula =
+  | { op: 'sum' | 'avg' | 'count'; sourceKey: string }
+  | { expression: string }
+
+export interface CalculatedColumnDef extends TableColumnDef {
+  calculated: true
+  formula: CalculatedFormula
+}
+
+export interface FooterTotal {
+  label: string
+  formula: CalculatedFormula
+}
+
+// --- Field variants ---
+
+export interface TextField extends FieldBase {
+  type: 'text' | 'textarea'
+  max_chars?: number
+  placeholder?: string
+  default_value?: string
+}
+
+export interface NumberField extends FieldBase {
+  type: 'number'
+  decimals?: number
+  min?: number
+  max?: number
+  default_value?: number
+}
+
+export interface DateField extends FieldBase {
+  type: 'date'
+  min_date?: string
+  max_date?: string
+  placeholder?: string
+  default_value?: string
+}
+
+export interface SelectionField extends FieldBase {
+  type: 'select' | 'multi_select' | 'radio' | 'checkbox'
+  options: FieldOption[]
+  placeholder?: string
+  default_value?: string | string[]
+}
+
+export interface FixedTextField extends FieldBase {
+  type: 'fixed_text'
+  text_content: string
+  styling_options?: { bold?: boolean; size?: 'sm' | 'md' | 'lg' }
+}
+
+export interface DynamicTableField extends FieldBase {
+  type: 'dynamic_table'
+  columns: TableColumnDef[]
+  footer_totals?: FooterTotal[]
+}
+
+/** Discriminated union of all field config variants */
+export type FieldConfig = TextField | NumberField | DateField | SelectionField | FixedTextField | DynamicTableField
 
 export interface Column {
   id: string

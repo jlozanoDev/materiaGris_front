@@ -19,7 +19,7 @@ import sangreBg from '@/assets/sangre-bg.png'
         <h2 class="font-sans font-bold tracking-tight" style="font-size: clamp(30px, 3.6vw, 44px); line-height: 1.12; letter-spacing: -0.02em; color: #0b0817;">
           Tres pilares para una práctica clínica sin fricción
         </h2>
-        <p class="leading-relaxed mx-auto" style="font-size: 18px; line-height: 1.6; color: #6b6b7b; max-width: 60ch; margin-top: 12px;">
+        <p class="leading-[1.625] mx-auto" style="font-size: 18px; line-height: 1.6; color: #6b6b7b; max-width: 60ch; margin-top: 12px;">
           Cada módulo está potenciado por modelos de IA entrenados con literatura médica actualizada y datos clínicos anonimizados.
         </p>
       </div>

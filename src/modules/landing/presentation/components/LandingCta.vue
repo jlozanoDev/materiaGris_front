@@ -14,7 +14,7 @@ const emit = defineEmits<{
       <h2 class="font-sans font-bold tracking-tight text-white" style="font-size: clamp(30px, 3.6vw, 44px); line-height: 1.12; letter-spacing: -0.02em;">
         Transforma tu práctica clínica con inteligencia artificial
       </h2>
-      <p class="leading-relaxed" style="font-size: 18px; line-height: 1.6; color: #9690a8; margin: 12px auto 32px; max-width: 60ch;">
+      <p class="leading-[1.625]" style="font-size: 18px; line-height: 1.6; color: #9690a8; margin: 12px auto 32px; max-width: 60ch;">
         Únete a más de 300 profesionales que ya confían en MaterIA Gris. Sin contrato, sin compromiso.
       </p>
       <div class="flex flex-wrap gap-3 justify-center">
