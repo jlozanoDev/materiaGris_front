@@ -37,6 +37,7 @@ export interface UseTemplateBuilderReturn {
   addRow: (sectionId: string) => void
   removeRow: (rowId: string) => void
   addColumn: (rowId: string) => void
+  removeColumn: (rowId: string, columnId: string) => void
   addField: (columnId: string, type: FieldType, config?: { label?: string; description?: string; required?: boolean }) => void
   removeField: (fieldId: string) => void
   updateField: (fieldId: string, config: Record<string, any>) => void
@@ -271,6 +272,30 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
     })
   }
 
+  function removeColumn(rowId: string, columnId: string): void {
+    const row = sections.value.flatMap((s) => s.rows).find((r) => r.id === rowId)
+    if (!row) return
+    const index = row.columns.findIndex((c) => c.id === columnId)
+    if (index === -1) return
+    const removed = row.columns[index]
+    row.columns = row.columns.filter((c) => c.id !== columnId)
+    isDirty.value = true
+    redoStack.value = []
+
+    pushCommand(undoStack, {
+      type: 'removeColumn',
+      payload: { rowId, index, column: JSON.parse(JSON.stringify(removed)) },
+      forward: () => {
+        const r = sections.value.flatMap((s) => s.rows).find((r) => r.id === rowId)
+        if (r) r.columns.splice(index, 0, removed)
+      },
+      inverse: () => {
+        const r = sections.value.flatMap((s) => s.rows).find((r) => r.id === rowId)
+        if (r) r.columns = r.columns.filter((c) => c.id !== columnId)
+      },
+    })
+  }
+
   function addField(columnId: string, type: FieldType, config?: { label?: string; description?: string; required?: boolean }): void {
     const column = sections.value
       .flatMap((s) => s.rows)
@@ -473,6 +498,7 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
     addRow,
     removeRow,
     addColumn,
+    removeColumn,
     addField,
     removeField,
     updateField,

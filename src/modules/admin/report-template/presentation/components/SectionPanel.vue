@@ -31,23 +31,17 @@ function updateDisplay(val: unknown) {
 </script>
 
 <template>
-  <div class="border border-[rgba(124,58,237,0.10)] rounded-xl overflow-hidden bg-white shadow-sm" data-section-panel>
+  <div class="rounded-lg border border-[rgba(124,58,237,0.10)] overflow-hidden" data-section-panel>
     <!-- Section header -->
-    <div class="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-[#faf9ff] to-[#f5f3ff] border-b border-[rgba(124,58,237,0.08)]">
-      <div class="flex items-center gap-2.5 flex-1 min-w-0">
-        <div class="h-7 w-7 rounded-lg bg-[#ede9fe] flex items-center justify-center shrink-0">
-          <i class="pi pi-th-large text-[#7c3aed] text-xs" />
-        </div>
-        <div class="relative flex-1 min-w-0">
-          <input
-            :value="section.label"
-            class="w-full text-sm font-semibold text-[#0b0817] bg-white/60 border border-[rgba(124,58,237,0.12)] rounded-lg px-2.5 py-1.5 placeholder:text-[#b4afc8] hover:border-[rgba(124,58,237,0.25)] focus:border-[#7c3aed] focus:ring-2 focus:ring-[#7c3aed]/10 focus:outline-none focus:bg-white transition-all duration-150"
-            aria-label="Título de sección"
-            placeholder="Nombre de la sección"
-            @input="updateLabel"
-          />
-          <i class="pi pi-pencil absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-[#b4afc8] pointer-events-none" />
-        </div>
+    <div class="flex items-center justify-between px-3 py-2 bg-slate-50 border-b border-slate-200">
+      <div class="flex items-center gap-2 flex-1 min-w-0">
+        <input
+          :value="section.label"
+          class="form-input text-sm font-semibold"
+          aria-label="Título de sección"
+          placeholder="Nombre de la sección"
+          @input="updateLabel"
+        />
         <CustomSelect
           :model-value="section.display"
           :options="[
@@ -62,7 +56,7 @@ function updateDisplay(val: unknown) {
         />
       </div>
       <button
-        class="inline-flex items-center justify-center h-8 w-8 rounded-lg text-[#b4afc8] hover:text-red-500 hover:bg-red-50 transition-all duration-150 ml-2 shrink-0"
+        class="inline-flex items-center justify-center h-7 w-7 rounded text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all duration-150 ml-2 shrink-0"
         title="Eliminar sección"
         data-remove-section
         @click="builder.removeSection(section.id)"
@@ -78,7 +72,7 @@ function updateDisplay(val: unknown) {
         group="report-rows"
         item-key="id"
         tag="div"
-        class="min-h-[40px] space-y-2"
+        class="space-y-2"
       >
         <template #item="{ element }">
           <DroppableRow :row="element" />
@@ -86,15 +80,17 @@ function updateDisplay(val: unknown) {
       </draggable>
 
       <button
-        class="w-full text-xs text-[#7c3aed] font-semibold mt-3 px-3 py-2.5 rounded-xl border border-dashed border-[rgba(124,58,237,0.15)] hover:border-[#7c3aed] hover:bg-[#f5f3ff] hover:-translate-y-0.5 transition-all duration-200 group"
+        class="w-full text-xs text-[#7c3aed] font-medium mt-2 px-3 py-2 rounded-lg border border-dashed border-[rgba(124,58,237,0.15)] hover:border-[#7c3aed] hover:bg-[#f5f3ff] transition-colors"
         data-add-row
         @click="builder.addRow(section.id)"
       >
-        <span class="inline-flex items-center gap-1.5">
-          <i class="pi pi-plus text-[10px] transition-transform duration-200 group-hover:scale-110" />
-          Añadir fila
-        </span>
+        <i class="pi pi-plus mr-1 text-[10px]" />
+        Añadir fila
       </button>
     </div>
   </div>
 </template>
+
+<style scoped>
+@reference "tailwindcss";
+</style>

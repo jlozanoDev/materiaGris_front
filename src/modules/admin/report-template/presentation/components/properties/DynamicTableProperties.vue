@@ -109,12 +109,20 @@ function updateColumn(index: number, partial: Partial<TableColumnDef>) {
             </div>
           </div>
 
-          <label class="flex items-center gap-2 text-xs text-[#6b6b7b] cursor-pointer">
+          <label class="relative inline-flex items-center gap-2 text-xs text-[#6b6b7b] cursor-pointer">
             <input
               type="checkbox"
               :checked="col.required"
-              class="h-3.5 w-3.5 rounded border-[rgba(124,58,237,0.25)] accent-[#7c3aed]"
+              class="peer sr-only"
               @change="updateColumn(idx, { required: ($event.target as HTMLInputElement).checked })"
+            />
+            <span
+              class="relative h-3.5 w-3.5 rounded border-2 border-[#c4b5fd] bg-white transition-colors
+                     peer-checked:border-[#7c3aed] peer-checked:bg-[#7c3aed]
+                     after:content-[''] after:absolute after:inset-0 after:m-auto
+                     after:h-[7px] after:w-[3px] after:border-r-2 after:border-b-2 after:border-white
+                     after:rotate-45 after:scale-0 peer-checked:after:scale-100
+                     after:transition-transform after:duration-100"
             />
             Requerido
           </label>

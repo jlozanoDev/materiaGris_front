@@ -15,6 +15,18 @@ watch(() => props.column.fields, (val) => {
   localFields.value = [...val]
 }, { immediate: true, deep: true })
 
+function findRowId(): string | null {
+  const sections = (builder.sections as unknown) as Section[]
+  for (const section of sections) {
+    for (const row of section.rows) {
+      if (row.columns.some((c: Column) => c.id === props.column.id)) {
+        return row.id
+      }
+    }
+  }
+  return null
+}
+
 function syncToStore() {
   const sections = (builder.sections as unknown) as Section[]
   for (const section of sections) {
@@ -39,13 +51,11 @@ function onChange(evt: any) {
   if (evt.added) {
     const { element, newIndex } = evt.added
     if (element && !element.id) {
-      // Elemento de la paleta: eliminar fantasma y crear campo real
       localFields.value.splice(newIndex, 1)
       builder.addField(props.column.id, element.type, {
         label: element.label,
       })
     } else if (element && element.id) {
-      // Elemento movido desde otra columna
       localFields.value.splice(newIndex, 0, element)
       syncToStore()
     }
@@ -64,17 +74,13 @@ function onRemove(evt: any) {
 </script>
 
 <template>
-  <div class="border border-[rgba(124,58,237,0.15)] rounded-lg p-2 bg-white min-h-[80px]" data-column-panel>
-    <div class="flex items-center justify-between mb-1">
-      <span class="text-xs text-[#7c3aed] font-medium">Columna</span>
-    </div>
-
+  <div class="group relative rounded-lg border border-slate-200 bg-slate-50/30 p-2 min-h-[80px]" data-column-panel>
     <draggable
       :list="localFields"
       group="report-fields"
       item-key="id"
       tag="div"
-      class="space-y-1 min-h-[40px]"
+      class="space-y-2 min-h-[40px]"
       @change="onChange"
       @remove="onRemove"
     >
@@ -82,5 +88,18 @@ function onRemove(evt: any) {
         <DroppableField :field="element" />
       </template>
     </draggable>
+
+    <button
+      class="absolute -top-2 -right-2 inline-flex items-center justify-center h-5 w-5 rounded-full bg-white border border-slate-300 text-slate-500 shadow-sm opacity-0 group-hover:opacity-100 hover:text-red-500 hover:border-red-300 hover:bg-red-50 transition-all duration-150 cursor-pointer"
+      title="Eliminar columna"
+      data-remove-column
+      @click="() => { const rowId = findRowId(); if (rowId) builder.removeColumn(rowId, column.id) }"
+    >
+      <i class="pi pi-times" style="font-size: 10px; line-height: 1;" />
+    </button>
   </div>
 </template>
+
+<style scoped>
+@reference "tailwindcss";
+</style>

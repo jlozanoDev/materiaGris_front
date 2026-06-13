@@ -101,15 +101,26 @@ function onLabelChange(e: Event) {
         </div>
       </div>
 
-      <!-- Required -->
-      <div class="flex items-center gap-2">
-        <input
-          type="checkbox"
-          :checked="selectedField.required"
-          class="h-4 w-4 rounded border-[rgba(124,58,237,0.25)] accent-[#7c3aed] focus:ring-[#7c3aed] focus:ring-offset-0 focus:ring-2 cursor-pointer"
-          @change="update({ required: ($event.target as HTMLInputElement).checked })"
-        />
-        <label class="text-sm text-[#0b0817] font-medium cursor-pointer select-none">Requerido</label>
+      <!-- Required (not applicable for fixed_text) -->
+      <div v-if="selectedField.type !== 'fixed_text'" class="flex items-center gap-2">
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input
+            type="checkbox"
+            :checked="selectedField.required"
+            class="peer sr-only"
+            @change="update({ required: ($event.target as HTMLInputElement).checked })"
+          />
+          <span
+            class="relative h-4 w-4 rounded border-2 border-[#c4b5fd] bg-white transition-colors
+                   peer-checked:border-[#7c3aed] peer-checked:bg-[#7c3aed]
+                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7c3aed] focus-visible:ring-offset-0
+                   after:content-[''] after:absolute after:inset-0 after:m-auto
+                   after:h-2 after:w-1 after:border-r-2 after:border-b-2 after:border-white
+                   after:rotate-45 after:scale-0 peer-checked:after:scale-100
+                   after:transition-transform after:duration-100"
+          />
+          <span class="text-sm text-[#0b0817] font-medium select-none ml-2">Requerido</span>
+        </label>
       </div>
 
       <hr class="border-[rgba(124,58,237,0.08)]" />
