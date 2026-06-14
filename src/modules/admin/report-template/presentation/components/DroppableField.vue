@@ -29,6 +29,12 @@ function handleSelect() {
 function handleRemove() {
   builder.removeField(props.field.id)
 }
+
+function stripHtml(html: string): string {
+  if (!html) return ''
+  const doc = new DOMParser().parseFromString(html, 'text/html')
+  return doc.body.textContent || ''
+}
 </script>
 
 <template>
@@ -170,12 +176,8 @@ function handleRemove() {
 
     <!-- fixed_text -->
     <div v-else-if="field.type === 'fixed_text'" class="px-0.5">
-      <div
-        class="text-sm text-slate-500 line-clamp-3"
-        :class="{ 'font-bold': field.styling_options?.bold }"
-        :style="{ fontSize: field.styling_options?.size === 'lg' ? '1rem' : field.styling_options?.size === 'sm' ? '0.75rem' : '0.875rem' }"
-      >
-        {{ field.text_content || 'Texto fijo...' }}
+      <div class="text-sm text-slate-500 line-clamp-3">
+        {{ stripHtml(field.text_content) || 'Texto fijo...' }}
       </div>
     </div>
 

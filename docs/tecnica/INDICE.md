@@ -28,6 +28,7 @@
 | **Admin — Permisos** | [`modules/admin/permisos-sistema/permisos-sistema.md`](./modules/admin/permisos-sistema/permisos-sistema.md) |
 | **Admin — Informes: Campos** | [`modules/admin/report-template-campos/report-template-campos.md`](./modules/admin/report-template-campos/report-template-campos.md) |
 | **Admin — Informes: Menú** | [`modules/admin/report-templates-menu/report-templates-menu.md`](./modules/admin/report-templates-menu/report-templates-menu.md) |
+| **Admin — Informes: Cabecera/Pie** | [`modulos/admin-report-template.md`](./modulos/admin-report-template.md) |
 
 ## Referencia cruzada con funcional
 
@@ -41,3 +42,4 @@
 | admin — permissions | `tecnica/modules/admin/permisos-sistema/` | [`funcional/modulos/administracion/permisos.md`](../funcional/modulos/administracion/permisos.md) |
 | admin — report template fields | `tecnica/modules/admin/report-template-campos/` | [`funcional/modulos/administracion/informes.md`](../funcional/modulos/administracion/informes.md) |
 | admin — report templates menu | `tecnica/modules/admin/report-templates-menu/` | [`funcional/modulos/administracion/informes.md`](../funcional/modulos/administracion/informes.md) |
+| admin — report header/footer | `tecnica/modulos/admin-report-template.md` | [`funcional/modulos/admin-report-template.md`](../funcional/modulos/admin-report-template.md) |

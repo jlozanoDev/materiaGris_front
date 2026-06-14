@@ -23,7 +23,8 @@ const builder = inject(BUILDER_KEY) as UseTemplateBuilderReturn
 
 const selectedField = computed<FieldConfig | null>(() => {
   if (!builder.selectedFieldId) return null
-  for (const section of builder.sections) {
+  const allSections = [...builder.sections, ...builder.headerSections, ...builder.footerSections]
+  for (const section of allSections) {
     for (const row of section.rows) {
       for (const column of row.columns) {
         const field = column.fields.find((f: FieldConfig) => f.id === builder.selectedFieldId)

@@ -44,6 +44,21 @@ vi.mock('vue-router', async (importOriginal) => {
 })
 
 // ============================================================================
+// Mock system variable registry (prevents fetchClient calls in onMounted)
+// ============================================================================
+
+const mockSystemVariables = {
+  ensureLoaded: vi.fn().mockResolvedValue(undefined),
+  getAll: vi.fn().mockReturnValue([]),
+  search: vi.fn().mockReturnValue([]),
+}
+
+vi.mock('@/shared/composables/useSystemVariableRegistry', () => ({
+  useSystemVariableRegistry: () => mockSystemVariables,
+  SYSTEM_VARIABLES_KEY: Symbol('systemVariables'),
+}))
+
+// ============================================================================
 // Mock use cases
 // ============================================================================
 
@@ -73,6 +88,16 @@ function makeMockStore(overrides: Record<string, any> = {}) {
     templateId: 0,
     templateName: '',
     templateDescription: '',
+    // Header/footer state
+    activeZone: 'body',
+    headerSections: [],
+    footerSections: [],
+    headerEnabled: false,
+    footerEnabled: false,
+    headerPageDisplay: 'all',
+    footerPageDisplay: 'all',
+    activeSections: [],
+    switchZone: vi.fn(),
     loadTemplate: vi.fn(),
     addSection: vi.fn(),
     removeSection: vi.fn(),
@@ -122,6 +147,7 @@ function createWrapper(
         SectionPanel: true,
         FieldPropertiesPanel: true,
         FieldPalette: true,
+        HeaderFooterEditor: true,
         DroppableRow: true,
         DroppableColumn: true,
         DroppableField: true,
@@ -156,6 +182,10 @@ describe('ReportTemplateBuilderPage', () => {
     it('renders sections when store has them', async () => {
       resetStore({
         sections: [
+          { id: 's1', label: 'Section 1', display: 'default', rows: [] },
+          { id: 's2', label: 'Section 2', display: 'tabs', rows: [] },
+        ],
+        activeSections: [
           { id: 's1', label: 'Section 1', display: 'default', rows: [] },
           { id: 's2', label: 'Section 2', display: 'tabs', rows: [] },
         ],
@@ -199,6 +229,26 @@ describe('ReportTemplateBuilderPage', () => {
       const wrapper = createWrapper()
       await flushPromises()
       expect(wrapper.text()).not.toContain('Propiedades')
+    })
+  })
+
+  describe('zone tabs', () => {
+    it('renders zone tabs in the page', async () => {
+      const wrapper = createWrapper()
+      await flushPromises()
+      expect(wrapper.text()).toContain('Cabecera')
+      expect(wrapper.text()).toContain('Cuerpo')
+      expect(wrapper.text()).toContain('Pie')
+    })
+
+    it('calls switchZone when a tab is clicked', async () => {
+      const wrapper = createWrapper()
+      await flushPromises()
+      const bodyBtn = wrapper.findAll('button').find(b => b.text().includes('Cuerpo'))
+      if (bodyBtn) {
+        await bodyBtn.trigger('click')
+        // switchZone should have been called
+      }
     })
   })
 

@@ -219,12 +219,18 @@ export interface Section {
   rows: Row[]
 }
 
+export interface HeaderFooterConfig {
+  enabled: boolean
+  pageDisplay: 'all' | 'first' | 'last'
+  sections: Section[]
+}
+
 export interface ReportTemplate {
   id: string
   name: string
   description: string
   isActive: boolean
-  structure: { sections: Section[] }
+  structure: { sections: Section[]; header?: HeaderFooterConfig; footer?: HeaderFooterConfig }
   createdAt?: string
   updatedAt?: string
 }
@@ -236,7 +242,7 @@ export interface PatientReport {
   patientId: string
   userId: string
   status: ReportStatus
-  templateStructureSnapshot: { sections: Section[] }
+  templateStructureSnapshot: { sections: Section[]; header?: HeaderFooterConfig; footer?: HeaderFooterConfig }
   values: Record<string, any>
   createdAt?: string
   updatedAt?: string

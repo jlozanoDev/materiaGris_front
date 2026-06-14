@@ -1,24 +1,54 @@
 <template>
   <div class="report-document">
-    <!-- Header -->
-    <div class="report-document__header">
-      <h1 class="report-document__title">Informe de Evaluación</h1>
-      <div class="report-document__meta">
-        <span>Paciente: Juan Pérez García</span>
-        <span>Fecha: {{ today }}</span>
+    <!-- Dynamic Header -->
+    <div v-if="hasHeader" class="report-document__zone report-document__zone--header">
+      <div
+        v-for="section in headerSections"
+        :key="section.id"
+        class="report-document__section"
+      >
+        <template
+          v-for="row in section.rows"
+          :key="row.id"
+        >
+          <div
+            class="report-document__row"
+            :style="rowStyle(row)"
+          >
+            <div
+              v-for="col in row.columns"
+              :key="col.id"
+              class="report-document__col"
+            >
+              <template
+                v-for="field in col.fields"
+                :key="field.id"
+              >
+                <div
+                  v-if="field.type === 'fixed_text'"
+                  class="report-document__fixed-text"
+                  v-html="interpolateContent(field.text_content)"
+                />
+                <div v-else class="report-document__preview-field">
+                  <span class="report-document__preview-label">{{ field.label }}:</span>
+                  <span class="report-document__preview-value">{{ getPreviewValue(field) }}</span>
+                </div>
+              </template>
+            </div>
+          </div>
+        </template>
       </div>
     </div>
 
-    <hr class="report-document__divider" />
+    <div class="report-document__body">
+      <div
+        v-if="!sections || sections.length === 0"
+        class="report-document__empty"
+      >
+        No hay contenido para mostrar
+      </div>
 
-    <div
-      v-if="!sections || sections.length === 0"
-      class="report-document__empty"
-    >
-      No hay contenido para mostrar
-    </div>
-
-    <template v-else>
+      <template v-else>
       <!-- Tabs nav -->
       <div
         v-if="displayMode === 'tabs' && sections.length > 1"
@@ -64,11 +94,6 @@
                 <div
                   v-if="field.type === 'fixed_text'"
                   class="report-document__fixed-text"
-                  :class="{
-                    'font-bold': field.styling_options?.bold,
-                    'text-sm': field.styling_options?.size === 'sm',
-                    'text-lg': field.styling_options?.size === 'lg',
-                  }"
                   v-html="interpolateContent(field.text_content)"
                 />
 
@@ -138,6 +163,47 @@
         </template>
       </div>
     </template>
+    </div>
+
+    <!-- Dynamic Footer -->
+    <div v-if="hasFooter" class="report-document__zone report-document__zone--footer">
+      <div
+        v-for="section in footerSections"
+        :key="section.id"
+        class="report-document__section"
+      >
+        <template
+          v-for="row in section.rows"
+          :key="row.id"
+        >
+          <div
+            class="report-document__row"
+            :style="rowStyle(row)"
+          >
+            <div
+              v-for="col in row.columns"
+              :key="col.id"
+              class="report-document__col"
+            >
+              <template
+                v-for="field in col.fields"
+                :key="field.id"
+              >
+                <div
+                  v-if="field.type === 'fixed_text'"
+                  class="report-document__fixed-text"
+                  v-html="interpolateContent(field.text_content)"
+                />
+                <div v-else class="report-document__preview-field">
+                  <span class="report-document__preview-label">{{ field.label }}:</span>
+                  <span class="report-document__preview-value">{{ getPreviewValue(field) }}</span>
+                </div>
+              </template>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -147,10 +213,19 @@ import type { Section } from '@/shared/types'
 
 interface Props {
   sections: Section[]
+  headerSections?: Section[]
+  footerSections?: Section[]
+  headerEnabled?: boolean
+  footerEnabled?: boolean
   values: Record<string, any>
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  headerSections: () => [],
+  footerSections: () => [],
+  headerEnabled: false,
+  footerEnabled: false,
+})
 
 const activeTab = 0
 
@@ -168,6 +243,9 @@ const displayMode = computed<'tabs' | 'accordion' | 'default'>(() => {
   }
   return 'default'
 })
+
+const hasHeader = computed(() => props.headerEnabled && props.headerSections.length > 0)
+const hasFooter = computed(() => props.footerEnabled && props.footerSections.length > 0)
 
 function getValue(key: string): string {
   const val = props.values[key]
@@ -195,15 +273,29 @@ function formatCellValue(val: unknown, type: string): string {
 }
 
 function interpolateContent(text: string): string {
-  return text
-    .replace(/\{([^}]+)\}/g, (_match, path: string) => {
-      const resolved = previewResolve(path.trim())
-      return resolved ?? `{${path}}`
-    })
+  // First substitute variables
+  const resolved = text.replace(/\{([^}]+)\}/g, (_match, path: string) => {
+    const value = previewResolve(path.trim())
+    return value ?? `{${path}}`
+  })
+
+  // If content contains HTML tags (WYSIWYG output), render as rich text
+  if (/<[a-zA-Z][^>]*>/.test(resolved)) {
+    return resolved
+  }
+
+  // Plain text fallback (backward compat)
+  return resolved
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/\n/g, '<br />')
+}
+
+function getPreviewValue(field: any): string {
+  if (field.type === 'fixed_text') return ''
+  if (field.default_value !== undefined) return String(field.default_value)
+  return `[${field.label}]`
 }
 
 const previewVars: Record<string, string> = {
@@ -237,7 +329,7 @@ function rowStyle(row: { columns: any[] }): Record<string, string> {
 @reference "tailwindcss";
 
 .report-document {
-  @apply bg-white mx-auto;
+  @apply bg-white mx-auto flex flex-col;
   width: 210mm;
   padding: 20mm 20mm 25mm 20mm;
   min-height: 270mm;
@@ -250,6 +342,10 @@ function rowStyle(row: { columns: any[] }): Record<string, string> {
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   color: #1a1a1a;
   line-height: 1.6;
+}
+
+.report-document__body {
+  @apply flex-1;
 }
 
 .report-document__header {
@@ -298,7 +394,6 @@ function rowStyle(row: { columns: any[] }): Record<string, string> {
 .report-document__section-title {
   @apply text-lg font-bold mb-4 pb-1.5;
   color: #1a1a1a;
-  border-bottom: 1px solid #e5e7eb;
 }
 
 .report-document__row {
@@ -349,6 +444,27 @@ function rowStyle(row: { columns: any[] }): Record<string, string> {
 
 .report-document__table tfoot td {
   @apply bg-gray-50;
+}
+
+.report-document__preview-field {
+  @apply mb-2;
+}
+
+.report-document__preview-label {
+  @apply font-semibold text-sm mr-1;
+}
+
+.report-document__preview-value {
+  @apply text-sm italic;
+  color: #666;
+}
+
+.report-document__zone--header {
+  @apply mb-2;
+}
+
+.report-document__zone--footer {
+  @apply mt-4;
 }
 
 .hidden {

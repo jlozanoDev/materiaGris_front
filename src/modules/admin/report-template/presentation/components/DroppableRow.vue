@@ -12,7 +12,8 @@ const builder = inject(BUILDER_KEY) as UseTemplateBuilderReturn
 const localColumns = computed({
   get: () => props.row.columns,
   set: (val) => {
-    const section = builder.sections.find((s: Section) =>
+    const allSections = [...builder.sections, ...builder.headerSections, ...builder.footerSections]
+    const section = allSections.find((s: Section) =>
       s.rows.some((r: Row) => r.id === props.row.id)
     )
     if (section) {

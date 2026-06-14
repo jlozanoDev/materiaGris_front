@@ -464,4 +464,197 @@ describe('useTemplateBuilder', () => {
     store.addSection('accordion')
     expect(store.sections[0].display).toBe('accordion')
   })
+
+  // ============================================================================
+  // Header / Footer
+  // ============================================================================
+
+  describe('header/footer state', () => {
+    it('starts with header disabled and empty', () => {
+      const store = useTemplateBuilder()
+      expect(store.headerEnabled).toBe(false)
+      expect(store.headerSections).toEqual([])
+      expect(store.headerPageDisplay).toBe('all')
+    })
+
+    it('starts with footer disabled and empty', () => {
+      const store = useTemplateBuilder()
+      expect(store.footerEnabled).toBe(false)
+      expect(store.footerSections).toEqual([])
+      expect(store.footerPageDisplay).toBe('all')
+    })
+
+    it('activeZone defaults to body', () => {
+      const store = useTemplateBuilder()
+      expect(store.activeZone).toBe('body')
+    })
+
+    it('activeSections reflects body sections by default', () => {
+      const store = useTemplateBuilder()
+      store.addSection()
+      expect(store.activeSections).toHaveLength(1)
+      expect(store.activeSections[0]).toBe(store.sections[0])
+    })
+
+    it('switchZone changes activeZone and clears selectedFieldId', () => {
+      const store = useTemplateBuilder()
+      store.addSection()
+      store.switchZone('header')
+      expect(store.activeZone).toBe('header')
+      expect(store.selectedFieldId).toBeNull()
+    })
+
+    it('activeSections returns headerSections when on header zone', () => {
+      const store = useTemplateBuilder()
+      store.switchZone('header')
+      store.addSection()
+      expect(store.activeSections).toHaveLength(1)
+      expect(store.activeSections).toBe(store.headerSections)
+    })
+
+    it('activeSections returns footerSections when on footer zone', () => {
+      const store = useTemplateBuilder()
+      store.switchZone('footer')
+      store.addSection()
+      expect(store.footerSections).toHaveLength(1)
+      expect(store.activeSections).toBe(store.footerSections)
+    })
+
+    it('mutations on header zone affect headerSections only', () => {
+      const store = useTemplateBuilder()
+      store.switchZone('header')
+      store.addSection()
+      expect(store.headerSections).toHaveLength(1)
+      expect(store.sections).toHaveLength(0)
+      expect(store.footerSections).toHaveLength(0)
+    })
+
+    it('mutations on footer zone affect footerSections only', () => {
+      const store = useTemplateBuilder()
+      store.switchZone('footer')
+      store.addSection()
+      expect(store.footerSections).toHaveLength(1)
+      expect(store.sections).toHaveLength(0)
+      expect(store.headerSections).toHaveLength(0)
+    })
+  })
+
+  describe('header/footer persistence', () => {
+    it('loadTemplate restores header/footer with defaults when absent', async () => {
+      mockGetUseCase.execute.mockResolvedValue({
+        id: 1,
+        name: 'Legacy',
+        description: '',
+        structure: { sections: [] },
+      })
+      const store = useTemplateBuilder()
+      await store.loadTemplate(1)
+      expect(store.headerEnabled).toBe(false)
+      expect(store.headerSections).toEqual([])
+      expect(store.headerPageDisplay).toBe('all')
+      expect(store.footerEnabled).toBe(false)
+      expect(store.footerSections).toEqual([])
+      expect(store.footerPageDisplay).toBe('all')
+    })
+
+    it('loadTemplate restores header/footer when present', async () => {
+      mockGetUseCase.execute.mockResolvedValue({
+        id: 1,
+        name: 'With Header',
+        description: '',
+        structure: {
+          sections: [],
+          header: { enabled: true, pageDisplay: 'first', sections: [{ id: 'h1', label: 'Header', display: 'default', rows: [] }] },
+          footer: { enabled: true, pageDisplay: 'last', sections: [{ id: 'f1', label: 'Footer', display: 'default', rows: [] }] },
+        },
+      })
+      const store = useTemplateBuilder()
+      await store.loadTemplate(1)
+      expect(store.headerEnabled).toBe(true)
+      expect(store.headerSections).toHaveLength(1)
+      expect(store.headerSections[0].id).toBe('h1')
+      expect(store.headerPageDisplay).toBe('first')
+      expect(store.footerEnabled).toBe(true)
+      expect(store.footerSections).toHaveLength(1)
+      expect(store.footerSections[0].id).toBe('f1')
+      expect(store.footerPageDisplay).toBe('last')
+    })
+
+    it('saveTemplate serializes header/footer when enabled', async () => {
+      mockCreateUseCase.execute.mockResolvedValue({ id: 99 })
+      const store = useTemplateBuilder()
+      store.switchZone('header')
+      store.addSection()
+      store.headerEnabled = true
+      store.headerPageDisplay = 'first'
+
+      await store.saveTemplate()
+      const payload = mockCreateUseCase.execute.mock.calls[0][0]
+      expect(payload.structure.header).toBeDefined()
+      expect(payload.structure.header.enabled).toBe(true)
+      expect(payload.structure.header.pageDisplay).toBe('first')
+      expect(payload.structure.header.sections).toHaveLength(1)
+      expect(payload.structure.footer).toBeUndefined() // not enabled
+    })
+
+    it('saveTemplate omits footer when not configured', async () => {
+      mockCreateUseCase.execute.mockResolvedValue({ id: 99 })
+      const store = useTemplateBuilder()
+      store.templateName = 'Test'
+
+      await store.saveTemplate()
+      const payload = mockCreateUseCase.execute.mock.calls[0][0]
+      expect(payload.structure.footer).toBeUndefined()
+      expect(payload.structure.header).toBeUndefined()
+    })
+  })
+
+  describe('cross-zone findFieldById', () => {
+    it('finds field in header zone', () => {
+      const store = useTemplateBuilder()
+      store.switchZone('header')
+      store.addSection()
+      const section = store.headerSections[0]
+      store.addRow(section.id)
+      const row = section.rows[0]
+      store.addColumn(row.id)
+      const col = row.columns[0]
+      store.addField(col.id, 'text')
+      const fieldId = col.fields[0].id
+
+      // removeField uses findFieldByIdMulti internally and should find it
+      store.removeField(fieldId)
+      expect(col.fields).toHaveLength(0)
+    })
+
+    it('validates duplicate keys across all zones', () => {
+      const store = useTemplateBuilder()
+      // Add field in body
+      store.addSection()
+      const section = store.sections[0]
+      store.addRow(section.id)
+      const row = section.rows[0]
+      store.addColumn(row.id)
+      const col = row.columns[0]
+      store.addField(col.id, 'text')
+      const field1 = col.fields[0]
+      store.updateField(field1.id, { key: 'shared_key' })
+
+      // Add field in header with same key
+      store.switchZone('header')
+      store.addSection()
+      const hSection = store.headerSections[0]
+      store.addRow(hSection.id)
+      const hRow = hSection.rows[0]
+      store.addColumn(hRow.id)
+      const hCol = hRow.columns[0]
+      store.addField(hCol.id, 'text')
+      const field2 = hCol.fields[0]
+
+      // Attempting to set same key should fail
+      expect(() => {
+        store.updateField(field2.id, { key: 'shared_key' })
+      }).toThrow(/ya está en uso|duplicada|duplicate/i)
+    })
+  })
 })

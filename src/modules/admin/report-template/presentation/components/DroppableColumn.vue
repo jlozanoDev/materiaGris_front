@@ -16,8 +16,8 @@ watch(() => props.column.fields, (val) => {
 }, { immediate: true, deep: true })
 
 function findRowId(): string | null {
-  const sections = (builder.sections as unknown) as Section[]
-  for (const section of sections) {
+  const allSections = [...(builder.sections as unknown as Section[]), ...(builder.headerSections as unknown as Section[]), ...(builder.footerSections as unknown as Section[])]
+  for (const section of allSections) {
     for (const row of section.rows) {
       if (row.columns.some((c: Column) => c.id === props.column.id)) {
         return row.id
@@ -28,8 +28,8 @@ function findRowId(): string | null {
 }
 
 function syncToStore() {
-  const sections = (builder.sections as unknown) as Section[]
-  for (const section of sections) {
+  const allSections = [...(builder.sections as unknown as Section[]), ...(builder.headerSections as unknown as Section[]), ...(builder.footerSections as unknown as Section[])]
+  for (const section of allSections) {
     for (const row of section.rows) {
       const col = row.columns.find((c: Column) => c.id === props.column.id)
       if (col) {

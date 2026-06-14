@@ -1,4 +1,4 @@
-import { ref, reactive, type Ref } from 'vue'
+import { ref, computed, reactive, type Ref, type ComputedRef } from 'vue'
 import { useAuthStore } from '@/core/store/auth'
 import {
   provideGetReportTemplateUseCase,
@@ -6,7 +6,7 @@ import {
   provideUpdateReportTemplateUseCase,
 } from '@/modules/admin/report-template/application/containers/reportTemplateContainer'
 import type { Section, Row, Column, FieldConfig, FieldType, FieldBase } from '@/shared/types'
-import type { TextField, NumberField, DateField, SelectionField, FixedTextField, DynamicTableField } from '@/shared/types'
+import type { TextField, NumberField, DateField, SelectionField, FixedTextField, DynamicTableField, HeaderFooterConfig } from '@/shared/types'
 import { generateId } from '@/shared/utils/id'
 
 // ============================================================================
@@ -22,6 +22,8 @@ interface UndoCommand {
   inverse: () => void
 }
 
+export type ZoneType = 'header' | 'body' | 'footer'
+
 export interface UseTemplateBuilderReturn {
   sections: Section[]
   selectedFieldId: string | null
@@ -31,6 +33,17 @@ export interface UseTemplateBuilderReturn {
   templateId: number
   templateName: string
   templateDescription: string
+  // Header/footer state
+  activeZone: ZoneType
+  headerSections: Section[]
+  footerSections: Section[]
+  headerEnabled: boolean
+  footerEnabled: boolean
+  headerPageDisplay: 'all' | 'first' | 'last'
+  footerPageDisplay: 'all' | 'first' | 'last'
+  activeSections: Section[]
+  // Methods
+  switchZone: (zone: ZoneType) => void
   loadTemplate: (id: number | string) => Promise<void>
   addSection: (display?: 'tabs' | 'accordion' | 'default') => void
   removeSection: (id: string) => void
@@ -54,19 +67,35 @@ const MAX_STACK = 50
 export const BUILDER_KEY = Symbol('templateBuilder')
 
 // ============================================================================
-// Helpers
+// Helpers — multi-zone aware
 // ============================================================================
 
-function findFieldById(
-  sections: Section[],
+function collectAllSections(
+  bodySections: Section[],
+  headerSections: Section[],
+  footerSections: Section[]
+): { sections: Section[]; source: 'header' | 'body' | 'footer' }[] {
+  return [
+    { sections: bodySections, source: 'body' as const },
+    { sections: headerSections, source: 'header' as const },
+    { sections: footerSections, source: 'footer' as const },
+  ]
+}
+
+function findFieldByIdMulti(
+  bodySections: Section[],
+  headerSections: Section[],
+  footerSections: Section[],
   fieldId: string
-): { section: Section; row: Row; column: Column; field: FieldConfig; index: number } | null {
-  for (const section of sections) {
-    for (const row of section.rows) {
-      for (const column of row.columns) {
-        const index = column.fields.findIndex((f) => f.id === fieldId)
-        if (index !== -1) {
-          return { section, row, column, field: column.fields[index], index }
+): { section: Section; row: Row; column: Column; field: FieldConfig; index: number; zone: 'header' | 'body' | 'footer' } | null {
+  for (const { sections: secs, source } of collectAllSections(bodySections, headerSections, footerSections)) {
+    for (const section of secs) {
+      for (const row of section.rows) {
+        for (const column of row.columns) {
+          const index = column.fields.findIndex((f) => f.id === fieldId)
+          if (index !== -1) {
+            return { section, row, column, field: column.fields[index], index, zone: source }
+          }
         }
       }
     }
@@ -74,9 +103,16 @@ function findFieldById(
   return null
 }
 
-function findSectionByRowId(sections: Section[], rowId: string): Section | null {
-  for (const section of sections) {
-    if (section.rows.some((r) => r.id === rowId)) return section
+function findSectionByRowIdMulti(
+  bodySections: Section[],
+  headerSections: Section[],
+  footerSections: Section[],
+  rowId: string
+): { section: Section; zone: 'header' | 'body' | 'footer' } | null {
+  for (const { sections: secs, source } of collectAllSections(bodySections, headerSections, footerSections)) {
+    for (const section of secs) {
+      if (section.rows.some((r) => r.id === rowId)) return { section, zone: source }
+    }
   }
   return null
 }
@@ -88,13 +124,21 @@ function slugify(text: string): string {
     .replace(/^_|_$/g, '')
 }
 
-function isDuplicateKey(sections: Section[], fieldId: string, newKey: string): boolean {
-  for (const section of sections) {
-    for (const row of section.rows) {
-      for (const column of row.columns) {
-        for (const field of column.fields) {
-          if (field.id !== fieldId && field.key === newKey) {
-            return true
+function isDuplicateKeyMulti(
+  bodySections: Section[],
+  headerSections: Section[],
+  footerSections: Section[],
+  fieldId: string,
+  newKey: string
+): boolean {
+  for (const { sections: secs } of collectAllSections(bodySections, headerSections, footerSections)) {
+    for (const section of secs) {
+      for (const row of section.rows) {
+        for (const column of row.columns) {
+          for (const field of column.fields) {
+            if (field.id !== fieldId && field.key === newKey) {
+              return true
+            }
           }
         }
       }
@@ -157,12 +201,41 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
   const templateName: Ref<string> = ref('')
   const templateDescription: Ref<string> = ref('')
 
+  // ---- Header / Footer state ----
+
+  const activeZone: Ref<ZoneType> = ref('body')
+  const headerSections: Ref<Section[]> = ref([])
+  const footerSections: Ref<Section[]> = ref([])
+  const headerEnabled: Ref<boolean> = ref(false)
+  const footerEnabled: Ref<boolean> = ref(false)
+  const headerPageDisplay: Ref<'all' | 'first' | 'last'> = ref('all')
+  const footerPageDisplay: Ref<'all' | 'first' | 'last'> = ref('all')
+
+  /** Resolve the sections ref for a given zone (defaults to activeZone) */
+  function currentSectionsRef(zone?: ZoneType): Ref<Section[]> {
+    const z = zone ?? activeZone.value
+    if (z === 'header') return headerSections
+    if (z === 'footer') return footerSections
+    return sections
+  }
+
+  /** Computed that returns the sections array for the active zone */
+  const activeSections: ComputedRef<Section[]> = computed(() => {
+    return currentSectionsRef().value
+  })
+
+  function switchZone(zone: ZoneType): void {
+    activeZone.value = zone
+    selectedFieldId.value = null
+  }
+
   // ---- Mutations ----
 
   function addSection(display: 'tabs' | 'accordion' | 'default' = 'default'): void {
+    const ref = currentSectionsRef()
     const id = generateId()
     const section: Section = { id, label: 'Nueva sección', display, rows: [] }
-    sections.value.push(section)
+    ref.value.push(section)
     isDirty.value = true
     redoStack.value = []
 
@@ -170,19 +243,20 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
       type: 'addSection',
       payload: { id },
       forward: () => {
-        sections.value.push(section)
+        ref.value.push(section)
       },
       inverse: () => {
-        sections.value = sections.value.filter((s) => s.id !== id)
+        ref.value = ref.value.filter((s) => s.id !== id)
       },
     })
   }
 
   function removeSection(id: string): void {
-    const index = sections.value.findIndex((s) => s.id === id)
+    const ref = currentSectionsRef()
+    const index = ref.value.findIndex((s) => s.id === id)
     if (index === -1) return
-    const removed = sections.value[index]
-    sections.value = sections.value.filter((s) => s.id !== id)
+    const removed = ref.value[index]
+    ref.value = ref.value.filter((s) => s.id !== id)
     if (selectedFieldId.value === id) selectedFieldId.value = null
     isDirty.value = true
     redoStack.value = []
@@ -191,16 +265,17 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
       type: 'removeSection',
       payload: { index, section: JSON.parse(JSON.stringify(removed)) },
       forward: () => {
-        sections.value = sections.value.filter((s) => s.id !== id)
+        ref.value = ref.value.filter((s) => s.id !== id)
       },
       inverse: () => {
-        sections.value.splice(index, 0, removed)
+        ref.value.splice(index, 0, removed)
       },
     })
   }
 
   function addRow(sectionId: string): void {
-    const section = sections.value.find((s) => s.id === sectionId)
+    const ref = currentSectionsRef()
+    const section = ref.value.find((s) => s.id === sectionId)
     if (!section) return
 
     const rowId = generateId()
@@ -217,18 +292,19 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
       type: 'addRow',
       payload: { sectionId, rowId },
       forward: () => {
-        const sec = sections.value.find((s) => s.id === sectionId)
+        const sec = ref.value.find((s) => s.id === sectionId)
         if (sec) sec.rows.push(row)
       },
       inverse: () => {
-        const sec = sections.value.find((s) => s.id === sectionId)
+        const sec = ref.value.find((s) => s.id === sectionId)
         if (sec) sec.rows = sec.rows.filter((r) => r.id !== rowId)
       },
     })
   }
 
   function removeRow(rowId: string): void {
-    const section = findSectionByRowId(sections.value, rowId)
+    const ref = currentSectionsRef()
+    const section = ref.value.find((s) => s.rows.some((r) => r.id === rowId))
     if (!section) return
     const index = section.rows.findIndex((r) => r.id === rowId)
     if (index === -1) return
@@ -241,18 +317,19 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
       type: 'removeRow',
       payload: { sectionId: section.id, index, row: JSON.parse(JSON.stringify(removed)) },
       forward: () => {
-        const sec = sections.value.find((s) => s.id === section.id)
+        const sec = ref.value.find((s) => s.id === section.id)
         if (sec) sec.rows.splice(index, 0, removed)
       },
       inverse: () => {
-        const sec = sections.value.find((s) => s.id === section.id)
+        const sec = ref.value.find((s) => s.id === section.id)
         if (sec) sec.rows = sec.rows.filter((r) => r.id !== rowId)
       },
     })
   }
 
   function addColumn(rowId: string): void {
-    const row = sections.value.flatMap((s) => s.rows).find((r) => r.id === rowId)
+    const ref = currentSectionsRef()
+    const row = ref.value.flatMap((s) => s.rows).find((r) => r.id === rowId)
     if (!row) return
 
     const colId = generateId()
@@ -274,7 +351,8 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
   }
 
   function removeColumn(rowId: string, columnId: string): void {
-    const row = sections.value.flatMap((s) => s.rows).find((r) => r.id === rowId)
+    const ref = currentSectionsRef()
+    const row = ref.value.flatMap((s) => s.rows).find((r) => r.id === rowId)
     if (!row) return
     const index = row.columns.findIndex((c) => c.id === columnId)
     if (index === -1) return
@@ -287,18 +365,19 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
       type: 'removeColumn',
       payload: { rowId, index, column: JSON.parse(JSON.stringify(removed)) },
       forward: () => {
-        const r = sections.value.flatMap((s) => s.rows).find((r) => r.id === rowId)
+        const r = ref.value.flatMap((s) => s.rows).find((r) => r.id === rowId)
         if (r) r.columns.splice(index, 0, removed)
       },
       inverse: () => {
-        const r = sections.value.flatMap((s) => s.rows).find((r) => r.id === rowId)
+        const r = ref.value.flatMap((s) => s.rows).find((r) => r.id === rowId)
         if (r) r.columns = r.columns.filter((c) => c.id !== columnId)
       },
     })
   }
 
   function addField(columnId: string, type: FieldType, config?: { label?: string; description?: string; required?: boolean }): void {
-    const column = sections.value
+    const ref = currentSectionsRef()
+    const column = ref.value
       .flatMap((s) => s.rows)
       .flatMap((r) => r.columns)
       .find((c) => c.id === columnId)
@@ -333,7 +412,7 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
   }
 
   function removeField(fieldId: string): void {
-    const found = findFieldById(sections.value, fieldId)
+    const found = findFieldByIdMulti(sections.value, headerSections.value, footerSections.value, fieldId)
     if (!found) return
     const { column, index } = found
     const removed = column.fields[index]
@@ -355,13 +434,13 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
   }
 
   function updateField(fieldId: string, config: Record<string, any>): void {
-    const found = findFieldById(sections.value, fieldId)
+    const found = findFieldByIdMulti(sections.value, headerSections.value, footerSections.value, fieldId)
     if (!found) return
     const { field } = found
 
-    // Duplicate key validation
+    // Duplicate key validation — check all zones
     if (config.key !== undefined && config.key !== field.key) {
-      if (isDuplicateKey(sections.value, fieldId, config.key)) {
+      if (isDuplicateKeyMulti(sections.value, headerSections.value, footerSections.value, fieldId, config.key)) {
         throw new Error(`La clave "${config.key}" ya está en uso`)
       }
     }
@@ -384,24 +463,30 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
   }
 
   function reorderSections(order: string[]): void {
-    if (order.length !== sections.value.length) return
-    const map = new Map(sections.value.map((s) => [s.id, s]))
+    const ref = currentSectionsRef()
+    if (order.length !== ref.value.length) return
+    const map = new Map(ref.value.map((s) => [s.id, s]))
     const reordered = order.map((id) => map.get(id)).filter(Boolean) as Section[]
-    if (reordered.length !== sections.value.length) return
-    sections.value = reordered
+    if (reordered.length !== ref.value.length) return
+    ref.value = reordered
     isDirty.value = true
   }
 
   function moveField(fieldId: string, targetColumnId: string): void {
-    const found = findFieldById(sections.value, fieldId)
+    const found = findFieldByIdMulti(sections.value, headerSections.value, footerSections.value, fieldId)
     if (!found) return
     const { column, index } = found
     const field = column.fields[index]
 
-    const targetColumn = sections.value
-      .flatMap((s) => s.rows)
-      .flatMap((r) => r.columns)
-      .find((c) => c.id === targetColumnId)
+    // Search across all zones for target column
+    let targetColumn: Column | undefined
+    for (const secs of [sections.value, headerSections.value, footerSections.value]) {
+      targetColumn = secs
+        .flatMap((s) => s.rows)
+        .flatMap((r) => r.columns)
+        .find((c) => c.id === targetColumnId)
+      if (targetColumn) break
+    }
     if (!targetColumn) return
 
     column.fields.splice(index, 1)
@@ -413,10 +498,10 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
       type: 'moveField',
       payload: { fieldId, fromColumnId: column.id, targetColumnId },
       forward: () => {
-        targetColumn.fields.push(field)
+        targetColumn!.fields.push(field)
       },
       inverse: () => {
-        targetColumn.fields = targetColumn.fields.filter((f) => f.id !== fieldId)
+        targetColumn!.fields = targetColumn!.fields.filter((f) => f.id !== fieldId)
         column.fields.splice(index, 0, field)
       },
     })
@@ -449,7 +534,21 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
   async function loadTemplate(id: number | string): Promise<void> {
     const useCase = provideGetReportTemplateUseCase()
     const data = await useCase.execute(id)
-    sections.value = data.structure?.sections ?? []
+
+    const structure = data.structure ?? {}
+    sections.value = structure.sections ?? []
+
+    // Restore header/footer with defaults
+    const hdr: HeaderFooterConfig | undefined = structure.header
+    headerSections.value = hdr?.sections ?? []
+    headerEnabled.value = hdr?.enabled ?? false
+    headerPageDisplay.value = hdr?.pageDisplay ?? 'all'
+
+    const ftr: HeaderFooterConfig | undefined = structure.footer
+    footerSections.value = ftr?.sections ?? []
+    footerEnabled.value = ftr?.enabled ?? false
+    footerPageDisplay.value = ftr?.pageDisplay ?? 'all'
+
     templateName.value = data.name ?? ''
     templateDescription.value = data.description ?? ''
     templateId.value = data.id ?? 0
@@ -457,6 +556,7 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
     undoStack.value = []
     redoStack.value = []
     selectedFieldId.value = null
+    activeZone.value = 'body'
   }
 
   async function saveTemplate(): Promise<any> {
@@ -465,10 +565,28 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
       throw new Error('No tiene permiso para guardar plantillas de informe')
     }
 
+    const structure: Record<string, any> = { sections: sections.value }
+
+    // Only serialize header/footer if they were ever configured (have data)
+    if (headerSections.value.length > 0 || headerEnabled.value) {
+      structure.header = {
+        enabled: headerEnabled.value,
+        pageDisplay: headerPageDisplay.value,
+        sections: headerSections.value,
+      }
+    }
+    if (footerSections.value.length > 0 || footerEnabled.value) {
+      structure.footer = {
+        enabled: footerEnabled.value,
+        pageDisplay: footerPageDisplay.value,
+        sections: footerSections.value,
+      }
+    }
+
     const payload = {
       name: templateName.value,
       description: templateDescription.value,
-      structure: { sections: sections.value },
+      structure,
     }
 
     let result
@@ -493,6 +611,17 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
     templateId,
     templateName,
     templateDescription,
+    // Header/footer state
+    activeZone,
+    headerSections,
+    footerSections,
+    headerEnabled,
+    footerEnabled,
+    headerPageDisplay,
+    footerPageDisplay,
+    activeSections,
+    // Methods
+    switchZone,
     loadTemplate,
     addSection,
     removeSection,

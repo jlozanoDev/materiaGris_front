@@ -41,6 +41,8 @@
           <DynamicFormRenderer
             v-if="report.templateStructureSnapshot"
             :sections="report.templateStructureSnapshot.sections"
+            :header-sections="report.templateStructureSnapshot.header?.enabled ? report.templateStructureSnapshot.header.sections : undefined"
+            :footer-sections="report.templateStructureSnapshot.footer?.enabled ? report.templateStructureSnapshot.footer.sections : undefined"
             :model-value="report.values || {}"
             :is-editable="false"
             @update:model-value="() => {}"

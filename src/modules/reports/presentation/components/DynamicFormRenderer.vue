@@ -1,5 +1,39 @@
 <template>
   <div class="dynamic-form-renderer">
+    <!-- Read-only header zone -->
+    <div
+      v-if="headerSections && headerSections.length > 0"
+      class="dynamic-form-renderer__readonly-zone"
+    >
+      <div
+        v-for="section in headerSections"
+        :key="section.id"
+        class="dynamic-form-renderer__section"
+      >
+        <div
+          v-for="row in section.rows"
+          :key="row.id"
+          class="dynamic-form-renderer__row"
+          :style="rowStyle(row)"
+        >
+          <div
+            v-for="col in row.columns"
+            :key="col.id"
+            class="dynamic-form-renderer__col"
+          >
+            <DynamicField
+              v-for="field in col.fields"
+              :key="field.id"
+              :field="field"
+              :model-value="getFieldValue(field.key)"
+              :disabled="true"
+              @update:model-value="() => {}"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Empty state -->
     <div v-if="!sections || sections.length === 0" class="dynamic-form-renderer__empty">
       Este informe no tiene campos configurados
@@ -90,6 +124,40 @@
       </div>
     </div>
 
+    <!-- Read-only footer zone -->
+    <div
+      v-if="footerSections && footerSections.length > 0"
+      class="dynamic-form-renderer__readonly-zone dynamic-form-renderer__readonly-zone--footer"
+    >
+      <div
+        v-for="section in footerSections"
+        :key="section.id"
+        class="dynamic-form-renderer__section"
+      >
+        <div
+          v-for="row in section.rows"
+          :key="row.id"
+          class="dynamic-form-renderer__row"
+          :style="rowStyle(row)"
+        >
+          <div
+            v-for="col in row.columns"
+            :key="col.id"
+            class="dynamic-form-renderer__col"
+          >
+            <DynamicField
+              v-for="field in col.fields"
+              :key="field.id"
+              :field="field"
+              :model-value="getFieldValue(field.key)"
+              :disabled="true"
+              @update:model-value="() => {}"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Saving indicator -->
     <div v-if="isSaving" class="dynamic-form-renderer__saving">
       Guardando...
@@ -104,11 +172,17 @@ import DynamicField from './DynamicField.vue'
 
 interface Props {
   sections: Section[]
+  headerSections?: Section[]
+  footerSections?: Section[]
   modelValue: Record<string, any>
   isEditable: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  headerSections: undefined,
+  footerSections: undefined,
+})
+
 const emit = defineEmits<{
   'update:modelValue': [value: Record<string, any>]
   'auto-save': []
@@ -230,5 +304,11 @@ onMounted(() => {
 }
 .dynamic-form-renderer__saving {
   @apply mt-4 text-sm text-indigo-600 italic;
+}
+.dynamic-form-renderer__readonly-zone {
+  @apply mb-6 rounded-md bg-gray-50 p-4 border border-gray-200;
+}
+.dynamic-form-renderer__readonly-zone--footer {
+  @apply mt-6;
 }
 </style>

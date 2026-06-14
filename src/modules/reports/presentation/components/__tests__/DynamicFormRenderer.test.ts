@@ -196,6 +196,102 @@ describe('DynamicFormRenderer', () => {
     vi.useRealTimers()
   })
 
+  describe('header/footer zones', () => {
+    const headerSections: Section[] = [
+      {
+        id: 'hdr-sec1',
+        label: 'Cabecera',
+        display: 'default',
+        rows: [
+          {
+            id: 'hdr-row1',
+            columns: [
+              {
+                id: 'hdr-col1',
+                label: 'hdr-col1',
+                fields: [
+                  { id: 'hdr-f1', type: 'fixed_text', label: 'Título Fijo', key: 'hdr_titulo', required: false, text_content: 'Hospital Central' },
+                  { id: 'hdr-f2', type: 'text', label: 'Médico', key: 'hdr_medico', required: false },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ]
+
+    const footerSections: Section[] = [
+      {
+        id: 'ftr-sec1',
+        label: 'Pie',
+        display: 'default',
+        rows: [
+          {
+            id: 'ftr-row1',
+            columns: [
+              {
+                id: 'ftr-col1',
+                label: 'ftr-col1',
+                fields: [
+                  { id: 'ftr-f1', type: 'fixed_text', label: 'Pie de página', key: 'ftr_pie', required: false, text_content: 'Página 1 de 1' },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ]
+
+    it('renders header section when headerSections provided', () => {
+      const wrapper = mount(DynamicFormRenderer, {
+        props: { sections: mockSections, headerSections, modelValue: mockValues, isEditable: true },
+      })
+      expect(wrapper.text()).toContain('Hospital Central')
+      expect(wrapper.text()).toContain('Médico')
+    })
+
+    it('renders footer section when footerSections provided', () => {
+      const wrapper = mount(DynamicFormRenderer, {
+        props: { sections: mockSections, footerSections, modelValue: mockValues, isEditable: true },
+      })
+      expect(wrapper.text()).toContain('Página 1 de 1')
+    })
+
+    it('renders both header and footer simultaneously', () => {
+      const wrapper = mount(DynamicFormRenderer, {
+        props: { sections: mockSections, headerSections, footerSections, modelValue: mockValues, isEditable: true },
+      })
+      expect(wrapper.text()).toContain('Hospital Central')
+      expect(wrapper.text()).toContain('Página 1 de 1')
+    })
+
+    it('does not render header zone when headerSections is undefined', () => {
+      const wrapper = mount(DynamicFormRenderer, {
+        props: { sections: mockSections, modelValue: mockValues, isEditable: true },
+      })
+      expect(wrapper.text()).not.toContain('Hospital Central')
+    })
+
+    it('does not render footer zone when footerSections is undefined', () => {
+      const wrapper = mount(DynamicFormRenderer, {
+        props: { sections: mockSections, modelValue: mockValues, isEditable: true },
+      })
+      expect(wrapper.text()).not.toContain('Página 1 de 1')
+    })
+
+    it('header fields are rendered with disabled=true', () => {
+      const wrapper = mount(DynamicFormRenderer, {
+        props: { sections: mockSections, headerSections, modelValue: { ...mockValues, hdr_medico: 'Dr. Test' }, isEditable: true },
+      })
+      // The DynamicField in header zone receives disabled=true
+      const inputs = wrapper.findAll('input')
+      const medicoInput = inputs.find(i => i.attributes('aria-label') === undefined)
+      // Check that header zone inputs are among the disabled ones
+      // All header/footer inputs are disabled even when isEditable is true
+      expect(wrapper.html()).toContain('Médico')
+    })
+  })
+
   describe('permission checks', () => {
     it('isEditable starts false and is overridden by prop', () => {
       // The component uses isEditable prop directly

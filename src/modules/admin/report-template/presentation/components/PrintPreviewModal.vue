@@ -24,6 +24,10 @@
     <ReportDocumentRenderer
       v-else
       :sections="sections"
+      :header-sections="headerSections"
+      :footer-sections="footerSections"
+      :header-enabled="headerSections.length > 0"
+      :footer-enabled="footerSections.length > 0"
       :values="exampleData"
     />
 
@@ -47,16 +51,23 @@ import { generateExampleData } from '../utils/generateExampleData'
 interface Props {
   show: boolean
   sections: Section[]
+  headerSections?: Section[]
+  footerSections?: Section[]
   templateName?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   templateName: '',
+  headerSections: () => [],
+  footerSections: () => [],
 })
 
 defineEmits<{
   close: []
 }>()
 
-const exampleData = computed(() => generateExampleData(props.sections))
+const exampleData = computed(() => {
+  const allSections = [...props.sections, ...(props.headerSections ?? []), ...(props.footerSections ?? [])]
+  return generateExampleData(allSections)
+})
 </script>

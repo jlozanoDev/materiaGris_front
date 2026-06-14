@@ -25,6 +25,7 @@
 | Admin — Roles | [`modulos/administracion/roles.md`](./modulos/administracion/roles.md) | Roles y asignación de permisos |
 | Admin — Permisos | [`modulos/administracion/permisos.md`](./modulos/administracion/permisos.md) | Catálogo de permisos del sistema |
 | Admin — Informes | [`modulos/administracion/informes.md`](./modulos/administracion/informes.md) | Configuración de campos de plantillas de informes |
+| Admin — Cabecera/Pie informes | [`modulos/admin-report-template.md`](./modulos/admin-report-template.md) | Cabecera y pie configurables en plantillas |
 
 ## Flujos de usuario
 
@@ -45,6 +46,7 @@
 | Admin — Roles | ✅ Documentado | ⚠️ Parcial | Alta |
 | Admin — Permisos | ✅ Documentado | ✅ Completo | Media |
 | Admin — Informes (campos) | ✅ Documentado | ✅ Completo | Alta |
+| Admin — Cabecera/Pie informes | ✅ Documentado | ✅ Completo | Media |
 | Consultas médicas | ❌ Pendiente | ❌ No implementado | Futura |
 
 ✅ Documentado / Implementado · ⚠️ Parcial / En progreso · ❌ No existe / No implementado

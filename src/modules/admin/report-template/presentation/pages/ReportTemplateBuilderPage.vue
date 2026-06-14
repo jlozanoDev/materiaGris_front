@@ -3,8 +3,10 @@ import { ref, onMounted, provide, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import draggable from 'vuedraggable'
 import { BUILDER_KEY, useTemplateBuilder } from '../composables/useTemplateBuilder'
+import type { ZoneType } from '../composables/useTemplateBuilder'
 import SectionPanel from '../components/SectionPanel.vue'
 import FieldPropertiesPanel from '../components/FieldPropertiesPanel.vue'
+import HeaderFooterEditor from '../components/HeaderFooterEditor.vue'
 import AppSidebar from '@/shared/components/AppSidebar.vue'
 import TopBar from '@/shared/components/TopBar.vue'
 import Breadcrumb from '@/shared/components/Breadcrumb.vue'
@@ -43,6 +45,12 @@ const breadcrumb = computed(() => [
   { text: 'Tipos de Informe', icon: 'pi pi-file', to: '/admin/report-templates' },
   { text: isEditMode.value ? 'Editar Plantilla' : 'Nueva Plantilla', icon: 'pi pi-pencil' },
 ])
+
+const zoneTabs: { key: ZoneType; label: string; icon: string }[] = [
+  { key: 'header', label: 'Cabecera', icon: 'pi pi-align-left' },
+  { key: 'body', label: 'Cuerpo', icon: 'pi pi-align-center' },
+  { key: 'footer', label: 'Pie', icon: 'pi pi-align-right' },
+]
 
 // ============================================================================
 // Lifecycle
@@ -186,6 +194,45 @@ onMounted(async () => {
 
           <hr class="border-[rgba(124,58,237,0.08)] mb-4" />
 
+          <!-- Zone tabs -->
+          <div class="flex gap-1 mb-4 shrink-0">
+            <button
+              v-for="tab in zoneTabs"
+              :key="tab.key"
+              type="button"
+              :class="[
+                'rounded-lg px-4 py-2 text-sm font-medium transition-all',
+                builder.activeZone === tab.key
+                  ? 'bg-[#ede9fe] text-[#7c3aed] shadow-sm'
+                  : 'text-[#9690a8] hover:text-[#7c3aed] hover:bg-[#f5f3ff]',
+              ]"
+              @click="builder.switchZone(tab.key)"
+            >
+              <i :class="[tab.icon, 'mr-1.5']" />
+              {{ tab.label }}
+            </button>
+          </div>
+
+          <!-- Header/Footer editor (only for header/footer zones) -->
+          <HeaderFooterEditor
+            v-if="builder.activeZone === 'header'"
+            :enabled="builder.headerEnabled"
+            :page-display="builder.headerPageDisplay"
+            zone="header"
+            class="mb-4 shrink-0"
+            @update:enabled="builder.headerEnabled = $event"
+            @update:page-display="builder.headerPageDisplay = $event"
+          />
+          <HeaderFooterEditor
+            v-if="builder.activeZone === 'footer'"
+            :enabled="builder.footerEnabled"
+            :page-display="builder.footerPageDisplay"
+            zone="footer"
+            class="mb-4 shrink-0"
+            @update:enabled="builder.footerEnabled = $event"
+            @update:page-display="builder.footerPageDisplay = $event"
+          />
+
           <!-- 3-panel layout -->
           <div class="flex flex-1 min-h-0 overflow-hidden gap-4">
             <!-- Left: Palette -->
@@ -197,7 +244,7 @@ onMounted(async () => {
             <main class="flex-1 overflow-y-auto border border-[rgba(124,58,237,0.10)] rounded-lg bg-white p-4 app-scrollbar">
               <!-- Empty state -->
               <div
-                v-if="builder.sections.length === 0"
+                v-if="builder.activeSections.length === 0"
                 class="flex flex-col items-center justify-center h-full px-6"
               >
                 <div class="relative mb-6">
@@ -207,10 +254,10 @@ onMounted(async () => {
                   </div>
                 </div>
                 <h3 class="text-lg font-bold text-[#0b0817] mb-1.5">
-                  Crea tu primera sección
+                  {{ builder.activeZone === 'header' ? 'Añade contenido a la cabecera' : builder.activeZone === 'footer' ? 'Añade contenido al pie' : 'Crea tu primera sección' }}
                 </h3>
                 <p class="text-sm text-[#9690a8] mb-6 max-w-xs text-center leading-[1.625]">
-                  Las secciones organizan los campos del informe. Arrastra campos desde la paleta para construir el formulario.
+                  {{ builder.activeZone === 'header' ? 'La cabecera aparece al inicio del informe. Arrastra campos desde la paleta.' : builder.activeZone === 'footer' ? 'El pie aparece al final del informe. Arrastra campos desde la paleta.' : 'Las secciones organizan los campos del informe. Arrastra campos desde la paleta para construir el formulario.' }}
                 </p>
                 <button
                   class="btn btn-primary px-5 py-2.5 text-sm rounded-xl font-semibold shadow-md shadow-[#7c3aed]/20 hover:shadow-lg hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 transition-all duration-200"
@@ -218,14 +265,14 @@ onMounted(async () => {
                   @click="builder.addSection()"
                 >
                   <i class="pi pi-plus mr-1.5 text-xs" />
-                  Añadir sección
+                  {{ builder.activeZone === 'body' ? 'Añadir sección' : 'Añadir contenido' }}
                 </button>
               </div>
 
               <!-- Sections -->
               <div v-else class="space-y-3">
                 <draggable
-                  :list="builder.sections"
+                  :list="builder.activeSections"
                   group="report-sections"
                   item-key="id"
                   tag="div"
@@ -245,7 +292,7 @@ onMounted(async () => {
                   >
                     <span class="inline-flex items-center gap-1.5">
                       <i class="pi pi-plus text-xs transition-transform duration-200 group-hover:scale-110" />
-                      Añadir sección
+                      {{ builder.activeZone === 'body' ? 'Añadir sección' : 'Añadir contenido' }}
                     </span>
                   </button>
                 </div>
@@ -267,12 +314,16 @@ onMounted(async () => {
     <PreviewModal
       :show="showPreview"
       :sections="builder.sections"
+      :header-sections="builder.headerEnabled ? builder.headerSections : undefined"
+      :footer-sections="builder.footerEnabled ? builder.footerSections : undefined"
       :template-name="builder.templateName"
       @close="showPreview = false"
     />
     <PrintPreviewModal
       :show="showPrintPreview"
       :sections="builder.sections"
+      :header-sections="builder.headerEnabled ? builder.headerSections : []"
+      :footer-sections="builder.footerEnabled ? builder.footerSections : []"
       :template-name="builder.templateName"
       @close="showPrintPreview = false"
     />

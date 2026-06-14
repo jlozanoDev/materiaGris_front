@@ -27,6 +27,8 @@
     >
       <DynamicFormRenderer
         :sections="sections"
+        :header-sections="headerSections"
+        :footer-sections="footerSections"
         :model-value="exampleData"
         :is-editable="false"
       />
@@ -52,16 +54,23 @@ import { generateExampleData } from '../utils/generateExampleData'
 interface Props {
   show: boolean
   sections: Section[]
+  headerSections?: Section[]
+  footerSections?: Section[]
   templateName?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   templateName: '',
+  headerSections: undefined,
+  footerSections: undefined,
 })
 
 defineEmits<{
   close: []
 }>()
 
-const exampleData = computed(() => generateExampleData(props.sections))
+const exampleData = computed(() => {
+  const allSections = [...props.sections, ...(props.headerSections ?? []), ...(props.footerSections ?? [])]
+  return generateExampleData(allSections)
+})
 </script>
