@@ -141,6 +141,8 @@ onMounted(async () => {
   if (isEditMode.value && route.params.id) {
     const id = route.params.id as string
     await builder.loadTemplate(Number(id))
+  } else {
+    builder.activeZone = 'header'
   }
 })
 
