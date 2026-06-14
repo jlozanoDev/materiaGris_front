@@ -46,7 +46,7 @@ export interface UseTemplateBuilderReturn {
   // Methods
   switchZone: (zone: ZoneType) => void
   loadTemplate: (id: number | string) => Promise<void>
-  addSection: (display?: 'tabs' | 'accordion' | 'default') => void
+  addSection: () => void
   removeSection: (id: string) => void
   addRow: (sectionId: string) => void
   removeRow: (rowId: string) => void
@@ -245,10 +245,10 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
 
   // ---- Mutations ----
 
-  function addSection(display: 'tabs' | 'accordion' | 'default' = 'default'): void {
+  function addSection(): void {
     const ref = currentSectionsRef()
     const id = generateId()
-    const section: Section = { id, label: 'Nueva sección', display, rows: [] }
+    const section: Section = { id, label: 'Nueva sección', rows: [] }
     ref.value.push(section)
     isDirty.value = true
     redoStack.value = []

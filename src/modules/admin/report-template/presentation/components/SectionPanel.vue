@@ -2,7 +2,6 @@
 /* eslint-disable vue/no-mutating-props */
 import { inject, computed } from 'vue'
 import draggable from 'vuedraggable'
-import CustomSelect from '@/shared/components/CustomSelect.vue'
 import { BUILDER_KEY } from '../composables/useTemplateBuilder'
 import type { UseTemplateBuilderReturn } from '../composables/useTemplateBuilder'
 import type { Section } from '@/shared/types'
@@ -23,11 +22,6 @@ function updateLabel(e: Event) {
   props.section.label = (e.target as HTMLInputElement).value
   builder.isDirty = true
 }
-
-function updateDisplay(val: unknown) {
-  props.section.display = val as 'tabs' | 'accordion' | 'default'
-  builder.isDirty = true
-}
 </script>
 
 <template>
@@ -41,18 +35,6 @@ function updateDisplay(val: unknown) {
           aria-label="Título de sección"
           placeholder="Nombre de la sección"
           @input="updateLabel"
-        />
-        <CustomSelect
-          :model-value="section.display"
-          :options="[
-            { value: 'default', label: 'Default' },
-            { value: 'tabs', label: 'Tabs' },
-            { value: 'accordion', label: 'Acordeón' },
-          ]"
-          size="sm"
-          class="shrink-0"
-          aria-label="Tipo de visualización"
-          @update:model-value="updateDisplay"
         />
       </div>
       <button

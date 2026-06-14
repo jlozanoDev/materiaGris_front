@@ -104,7 +104,6 @@ describe('useTemplateBuilder', () => {
     expect(section.id).toBeDefined()
     expect(typeof section.id).toBe('string')
     expect(section.label).toBe('Nueva sección')
-    expect(section.display).toBe('default')
     expect(section.rows).toEqual([])
     expect(store.isDirty).toBe(true)
   })
@@ -449,20 +448,6 @@ describe('useTemplateBuilder', () => {
     expect(store.templateId).toBe(0)
     store.addSection()
     expect(store.templateId).toBe(0)
-  })
-
-  // --- sections with tabs display ---
-
-  it('addSection creates section with tab display type', () => {
-    const store = useTemplateBuilder()
-    store.addSection('tabs')
-    expect(store.sections[0].display).toBe('tabs')
-  })
-
-  it('addSection creates section with accordion display type', () => {
-    const store = useTemplateBuilder()
-    store.addSection('accordion')
-    expect(store.sections[0].display).toBe('accordion')
   })
 
   // ============================================================================

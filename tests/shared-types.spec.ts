@@ -127,48 +127,6 @@ describe('Shared Types — Report Template Structure', () => {
     expect(row.columns[0].fields[0].type).toBe('date')
   })
 
-  it('Section with display mode tabs', () => {
-    const section: Section = {
-      id: 'sec-1',
-      label: 'Antecedentes',
-      display: 'tabs',
-      rows: [
-        {
-          id: 'r1',
-          columns: [
-            {
-              id: 'c1',
-              label: 'Col',
-              fields: [{ id: 'f1', type: 'number', label: 'Edad', key: 'edad' }],
-            },
-          ],
-        },
-      ],
-    }
-    expect(section.display).toBe('tabs')
-    expect(section.label).toBe('Antecedentes')
-  })
-
-  it('Section supports accordion display', () => {
-    const section: Section = {
-      id: 's1',
-      label: 'Examen',
-      display: 'accordion',
-      rows: [],
-    }
-    expect(section.display).toBe('accordion')
-  })
-
-  it('Section supports default display', () => {
-    const section: Section = {
-      id: 's1',
-      label: 'Básico',
-      display: 'default',
-      rows: [],
-    }
-    expect(section.display).toBe('default')
-  })
-
   it('ReportTemplate with nested structure', () => {
     const template: ReportTemplate = {
       id: 'tpl-1',

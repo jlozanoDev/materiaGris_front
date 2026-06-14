@@ -49,27 +49,10 @@
       </div>
 
       <template v-else>
-      <!-- Tabs nav -->
       <div
-        v-if="displayMode === 'tabs' && sections.length > 1"
-        class="report-document__tabs"
-      >
-        <span
-          v-for="(section, idx) in sections"
-          :key="section.id"
-          :class="['report-document__tab', activeTab === idx ? 'report-document__tab--active' : '']"
-        >
-          {{ section.label }}
-        </span>
-      </div>
-
-      <div
-        v-for="(section, secIdx) in sections"
+        v-for="section in sections"
         :key="section.id"
-        :class="[
-          'report-document__section',
-          displayMode === 'tabs' && activeTab !== secIdx ? 'hidden' : '',
-        ]"
+        class="report-document__section"
       >
         <h2 class="report-document__section-title">{{ section.label }}</h2>
 
@@ -208,7 +191,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import type { Section } from '@/shared/types'
 
 interface Props {
@@ -227,21 +209,10 @@ const props = withDefaults(defineProps<Props>(), {
   footerEnabled: false,
 })
 
-const activeTab = 0
-
 const today = new Date().toLocaleDateString('es-ES', {
   year: 'numeric',
   month: 'long',
   day: 'numeric',
-})
-
-const displayMode = computed<'tabs' | 'accordion' | 'default'>(() => {
-  if (props.sections.length === 0) return 'default'
-  const first = props.sections[0]
-  if (first.display === 'tabs' || first.display === 'accordion' || first.display === 'default') {
-    return first.display
-  }
-  return 'default'
 })
 
 const hasHeader = computed(() => props.headerEnabled && props.headerSections.length > 0)
@@ -373,20 +344,6 @@ function rowStyle(row: { columns: any[] }): Record<string, string> {
   color: #999;
 }
 
-.report-document__tabs {
-  @apply mb-6 flex border-b border-gray-300;
-}
-
-.report-document__tab {
-  @apply border-b-2 border-transparent px-4 py-2 text-sm font-medium;
-  color: #888;
-}
-
-.report-document__tab--active {
-  @apply border-gray-800;
-  color: #1a1a1a;
-}
-
 .report-document__section {
   @apply mb-8;
 }
@@ -467,7 +424,4 @@ function rowStyle(row: { columns: any[] }): Record<string, string> {
   @apply mt-4;
 }
 
-.hidden {
-  display: none;
-}
 </style>

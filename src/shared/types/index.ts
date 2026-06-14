@@ -215,7 +215,7 @@ export interface Row {
 export interface Section {
   id: string
   label: string
-  display: 'tabs' | 'accordion' | 'default'
+  display?: string
   rows: Row[]
 }
 
