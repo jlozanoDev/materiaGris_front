@@ -151,11 +151,82 @@ export function useSystemVariableAutocomplete(
     }, 150)
   }
 
-  function getCursorPosition(element: HTMLElement): { top: number; left: number } | null {
-    // For textareas, estimate position based on text metrics
-    // For inputs, use the element's bounding rect
+  function getCursorPosition(element: HTMLInputElement | HTMLTextAreaElement): { top: number; left: number } | null {
     const rect = element.getBoundingClientRect()
-    return { top: rect.bottom + window.scrollY, left: rect.left + window.scrollX }
+    const style = window.getComputedStyle(element)
+    const cursor = element.selectionStart ?? element.value.length
+
+    // For inputs, simple horizontal calculation
+    if (element instanceof HTMLInputElement) {
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        return { top: rect.bottom, left: rect.left + 24 }
+      }
+      ctx.font = `${style.fontSize} ${style.fontFamily}`
+      const textBefore = element.value.slice(0, cursor)
+      const charWidth = ctx.measureText(textBefore).width
+      const padLeft = parseFloat(style.paddingLeft) || 0
+      return {
+        top: rect.bottom + 4,
+        left: rect.left + charWidth + padLeft + 24,
+      }
+    }
+
+    // For textareas, use mirror div technique
+    const mirror = document.createElement('div')
+    mirror.style.position = 'fixed'
+    mirror.style.top = `${rect.top}px`
+    mirror.style.left = `${rect.left}px`
+    mirror.style.visibility = 'hidden'
+    mirror.style.pointerEvents = 'none'
+    mirror.style.whiteSpace = 'pre-wrap'
+    mirror.style.wordWrap = 'break-word'
+    mirror.style.overflowWrap = 'break-word'
+    mirror.style.width = `${rect.width}px`
+    mirror.style.fontFamily = style.fontFamily
+    mirror.style.fontSize = style.fontSize
+    mirror.style.fontWeight = style.fontWeight
+    mirror.style.lineHeight = style.lineHeight
+    mirror.style.letterSpacing = style.letterSpacing
+    mirror.style.paddingTop = style.paddingTop
+    mirror.style.paddingBottom = style.paddingBottom
+    mirror.style.paddingLeft = style.paddingLeft
+    mirror.style.paddingRight = style.paddingRight
+    mirror.style.boxSizing = style.boxSizing
+    mirror.style.border = style.border
+    document.body.appendChild(mirror)
+
+    const textBeforeCursor = element.value.slice(0, cursor)
+
+    const textContent = textBeforeCursor + '\u200B' // zero-width space as cursor marker
+    mirror.textContent = textContent
+
+    const range = document.createRange()
+    const textNode = mirror.firstChild
+    if (textNode && textNode.textContent) {
+      const markerIndex = textNode.textContent.indexOf('\u200B')
+      if (markerIndex >= 0) {
+        range.setStart(textNode, markerIndex)
+        range.setEnd(textNode, markerIndex + 1)
+        const rangeRect = range.getBoundingClientRect()
+
+        // Place dropdown below the cursor line
+        const rowHeight = parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.2
+        const dropdownTop = rangeRect.top + rowHeight
+
+        document.body.removeChild(mirror)
+        return { top: dropdownTop, left: rangeRect.left + 24 }
+      }
+    }
+
+    document.body.removeChild(mirror)
+
+    // Fallback: use textarea bounding rect
+    const lines = textBeforeCursor.split('\n')
+    const rowHeight = parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.2
+    const estimatedTop = rect.top + lines.length * rowHeight + parseFloat(style.paddingTop)
+    return { top: estimatedTop + 4, left: rect.left + parseFloat(style.paddingLeft) + 24 }
   }
 
   return {

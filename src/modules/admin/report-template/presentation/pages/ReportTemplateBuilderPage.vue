@@ -14,8 +14,12 @@ import FieldPalette from '../components/FieldPalette.vue'
 import PreviewModal from '../components/PreviewModal.vue'
 import PrintPreviewModal from '../components/PrintPreviewModal.vue'
 import { createDefaultFieldTypeRegistry } from '@/shared/types/defaultFieldTypeRegistry'
+import { useSystemVariableRegistry, SYSTEM_VARIABLES_KEY } from '@/shared/composables/useSystemVariableRegistry'
 
 const fieldRegistry = createDefaultFieldTypeRegistry()
+
+const systemVariables = useSystemVariableRegistry()
+provide(SYSTEM_VARIABLES_KEY, systemVariables)
 
 const canSave = computed(() => authStore.hasPermission('admin.reporttemplate.update'))
 
@@ -46,6 +50,7 @@ const breadcrumb = computed(() => [
 
 onMounted(async () => {
   await authStore.fetchUser()
+  await systemVariables.ensureLoaded()
   pageLoading.value = false
   if (isEditMode.value && route.params.id) {
     const id = route.params.id as string

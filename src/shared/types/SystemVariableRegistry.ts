@@ -104,8 +104,11 @@ export class SystemVariableRegistry {
    * Search for variables matching a partial key prefix (for autocomplete).
    */
   search(prefix: string): SystemVarDef[] {
-    if (!prefix) return []
     const lower = prefix.toLowerCase()
+
+    if (!lower) {
+      return Array.from(this.flat.values())
+    }
 
     const results: SystemVarDef[] = []
     for (const def of this.flat.values()) {
