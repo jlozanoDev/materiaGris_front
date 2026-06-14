@@ -1,6 +1,6 @@
 <template>
   <div class="dynamic-field">
-    <label v-if="field.label" class="dynamic-field__label">
+    <label v-if="field.label && field.showLabel !== false" class="dynamic-field__label">
       {{ field.label }}
       <span v-if="field.required" class="text-red-500">*</span>
     </label>
@@ -17,14 +17,35 @@
     />
 
     <!-- number -->
-    <input
-      v-else-if="field.type === 'number'"
-      type="number"
-      :value="modelValue"
-      :disabled="isDisabled"
-      class="form-input"
-      @input="emitValue(($event.target as HTMLInputElement).value)"
-    />
+    <div v-else-if="field.type === 'number'" class="flex items-stretch">
+      <input
+        type="number"
+        :value="modelValue"
+        :disabled="isDisabled"
+        class="form-input number-input"
+        style="flex: 1 1 0%; min-width: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; border-right: 0;"
+        @input="emitValue(($event.target as HTMLInputElement).value)"
+      />
+      <div class="flex flex-col border border-l-0 border-[rgba(124,58,237,0.10)] rounded-r-xl overflow-hidden shrink-0">
+        <button
+          type="button"
+          class="flex items-center justify-center w-7 flex-1 text-slate-400 hover:text-[#7c3aed] hover:bg-[#ede9fe] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          :disabled="isDisabled"
+          @click="emitValue(Number(modelValue || 0) + 1)"
+        >
+          <span class="text-[10px] leading-none select-none pointer-events-none">▲</span>
+        </button>
+        <div class="h-px bg-[rgba(124,58,237,0.10)]" />
+        <button
+          type="button"
+          class="flex items-center justify-center w-7 flex-1 text-slate-400 hover:text-[#7c3aed] hover:bg-[#ede9fe] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          :disabled="isDisabled"
+          @click="emitValue(Number(modelValue || 0) - 1)"
+        >
+          <span class="text-[10px] leading-none select-none pointer-events-none">▼</span>
+        </button>
+      </div>
+    </div>
 
     <!-- textarea -->
     <textarea

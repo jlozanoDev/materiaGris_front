@@ -50,13 +50,13 @@ function handleRemove() {
       <i class="pi pi-times" style="font-size: 10px; line-height: 1;" />
     </button>
 
-    <!-- Label row with icon on left -->
+    <!-- Label row -->
     <div class="flex items-center gap-1.5 mb-1.5">
       <i
         :class="FIELD_ICONS[field.type] || 'pi pi-question'"
         class="text-xs text-slate-400 shrink-0"
       />
-      <label class="block text-sm font-medium text-slate-700 leading-tight">
+      <label v-if="field.showLabel !== false" class="block text-sm font-medium text-slate-700 leading-tight">
         {{ field.label || field.key }}
         <span v-if="field.required && field.type !== 'fixed_text'" class="text-red-500 ml-0.5">*</span>
         <span

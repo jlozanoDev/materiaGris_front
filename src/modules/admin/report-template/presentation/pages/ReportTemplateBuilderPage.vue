@@ -3,7 +3,6 @@ import { ref, onMounted, provide, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import draggable from 'vuedraggable'
 import { BUILDER_KEY, useTemplateBuilder } from '../composables/useTemplateBuilder'
-import TemplateBuilderToolbar from '../components/TemplateBuilderToolbar.vue'
 import SectionPanel from '../components/SectionPanel.vue'
 import FieldPropertiesPanel from '../components/FieldPropertiesPanel.vue'
 import AppSidebar from '@/shared/components/AppSidebar.vue'
@@ -12,9 +11,13 @@ import Breadcrumb from '@/shared/components/Breadcrumb.vue'
 import { useAuthStore } from '@/core/store/auth'
 import { useLogout } from '@/shared/composables/useLogout'
 import FieldPalette from '../components/FieldPalette.vue'
+import PreviewModal from '../components/PreviewModal.vue'
+import PrintPreviewModal from '../components/PrintPreviewModal.vue'
 import { createDefaultFieldTypeRegistry } from '@/shared/types/defaultFieldTypeRegistry'
 
 const fieldRegistry = createDefaultFieldTypeRegistry()
+
+const canSave = computed(() => authStore.hasPermission('admin.reporttemplate.update'))
 
 // ============================================================================
 // State
@@ -28,6 +31,8 @@ provide(BUILDER_KEY, builder)
 
 const isEditMode = computed(() => route.name === 'AdminReportTemplateEdit')
 const pageLoading = ref(true)
+const showPreview = ref(false)
+const showPrintPreview = ref(false)
 
 const breadcrumb = computed(() => [
   { text: 'Dashboard', icon: 'pi pi-objects-column', to: '/' },
@@ -89,20 +94,89 @@ onMounted(async () => {
         <!-- Main builder -->
         <div v-else class="card p-6 flex flex-col h-full overflow-hidden">
           <!-- Header -->
-          <div class="flex items-center gap-3 mb-4 shrink-0">
-            <div class="h-8 w-8 rounded-full bg-[#ede9fe] flex items-center justify-center">
-              <i class="pi pi-pencil text-[#7c3aed] text-sm" />
+          <div class="flex items-center justify-between mb-4 shrink-0">
+            <div class="flex items-center gap-3">
+              <div class="h-8 w-8 rounded-full bg-[#ede9fe] flex items-center justify-center">
+                <i class="pi pi-pencil text-[#7c3aed] text-sm" />
+              </div>
+              <h1 class="text-xl font-bold text-[#0b0817]">
+                {{ isEditMode ? 'Editar Plantilla de Informe' : 'Nueva Plantilla de Informe' }}
+              </h1>
+              <button
+                class="btn btn-outline btn-sm"
+                :disabled="builder.sections.length === 0"
+                title="Vista previa"
+                @click="showPreview = true"
+              >
+                <i class="pi pi-eye mr-1" />
+                Vista previa
+              </button>
+              <button
+                class="btn btn-outline btn-sm"
+                :disabled="builder.sections.length === 0"
+                title="Vista impresión"
+                @click="showPrintPreview = true"
+              >
+                <i class="pi pi-print mr-1" />
+                Vista impresión
+              </button>
             </div>
-            <h1 class="text-xl font-bold text-[#0b0817]">
-              {{ isEditMode ? 'Editar Plantilla de Informe' : 'Nueva Plantilla de Informe' }}
-            </h1>
+            <div class="flex items-center gap-2">
+              <button
+                class="btn btn-ghost btn-sm"
+                :disabled="builder.undoStack.length === 0"
+                data-undo-btn
+                title="Deshacer"
+                @click="builder.undo()"
+              >
+                <i class="pi pi-undo mr-1" />
+                Deshacer
+              </button>
+              <button
+                class="btn btn-ghost btn-sm"
+                :disabled="builder.redoStack.length === 0"
+                data-redo-btn
+                title="Rehacer"
+                @click="builder.redo()"
+              >
+                <i class="pi pi-redo mr-1" />
+                Rehacer
+              </button>
+              <button
+                v-if="canSave"
+                class="btn btn-primary btn-sm"
+                :disabled="!builder.isDirty"
+                data-save-btn
+                @click="builder.saveTemplate()"
+              >
+                <i class="pi pi-save mr-1" />
+                Guardar
+              </button>
+            </div>
           </div>
 
-          <hr class="border-[rgba(124,58,237,0.08)] mb-4" />
-
-          <!-- Toolbar -->
-          <div class="mb-4 shrink-0">
-            <TemplateBuilderToolbar />
+          <!-- General info -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 shrink-0">
+            <div>
+              <label class="block text-sm font-medium text-[#6b6b7b] mb-1">Nombre de la plantilla</label>
+              <input
+                v-model="builder.templateName"
+                placeholder="Ej: Informe de Evaluación"
+                class="form-input"
+                :disabled="!canSave"
+                aria-label="Nombre de la plantilla"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-[#6b6b7b] mb-1">Descripción (opcional)</label>
+              <input
+                v-model="builder.templateDescription"
+                placeholder="Breve descripción del propósito"
+                class="form-input"
+                :disabled="!canSave"
+                aria-label="Descripción"
+              />
+            </div>
           </div>
 
           <hr class="border-[rgba(124,58,237,0.08)] mb-4" />
@@ -176,7 +250,7 @@ onMounted(async () => {
             <!-- Right: Properties -->
             <aside
               v-if="builder.selectedFieldId"
-              class="w-72 border border-[rgba(124,58,237,0.10)] rounded-lg bg-white overflow-y-auto shrink-0 app-scrollbar"
+              class="w-72 border border-[rgba(124,58,237,0.10)] rounded-lg bg-white flex flex-col shrink-0 overflow-hidden"
             >
               <FieldPropertiesPanel />
             </aside>
@@ -184,6 +258,19 @@ onMounted(async () => {
         </div>
       </div>
     </div>
+
+    <PreviewModal
+      :show="showPreview"
+      :sections="builder.sections"
+      :template-name="builder.templateName"
+      @close="showPreview = false"
+    />
+    <PrintPreviewModal
+      :show="showPrintPreview"
+      :sections="builder.sections"
+      :template-name="builder.templateName"
+      @close="showPrintPreview = false"
+    />
   </div>
 
 </template>

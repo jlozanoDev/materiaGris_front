@@ -61,16 +61,16 @@ function onLabelChange(e: Event) {
 </script>
 
 <template>
-  <div v-if="selectedField" data-property-panel>
+  <div v-if="selectedField" data-property-panel class="flex flex-col h-full">
     <!-- Panel header -->
-    <div class="flex items-center gap-2 px-4 py-3 bg-[#faf9ff] border-b border-[rgba(124,58,237,0.06)]">
+    <div class="flex items-center gap-2 px-4 py-3 bg-[#faf9ff] border-b border-[rgba(124,58,237,0.06)] shrink-0">
       <i class="pi pi-cog text-[#7c3aed] text-xs" />
       <h3 class="text-xs font-semibold uppercase tracking-wider text-[#7c3aed]">
         Propiedades del campo
       </h3>
     </div>
 
-    <div class="p-4 space-y-5">
+    <div class="p-4 space-y-5 overflow-y-auto app-scrollbar flex-1">
       <!-- Label -->
       <div>
         <label class="block text-sm font-medium text-[#6b6b7b] mb-1">Etiqueta</label>
@@ -80,6 +80,24 @@ function onLabelChange(e: Event) {
           placeholder="Etiqueta del campo"
           @input="onLabelChange"
         />
+        <label class="flex items-center gap-2 mt-1.5 cursor-pointer">
+          <input
+            type="checkbox"
+            :checked="selectedField.showLabel !== false"
+            class="peer sr-only"
+            @change="update({ showLabel: ($event.target as HTMLInputElement).checked })"
+          />
+          <span
+            class="relative h-4 w-4 rounded border-2 border-[#c4b5fd] bg-white transition-colors
+                   peer-checked:border-[#7c3aed] peer-checked:bg-[#7c3aed]
+                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7c3aed] focus-visible:ring-offset-0
+                   after:content-[''] after:absolute after:inset-0 after:m-auto
+                   after:h-2 after:w-1 after:border-r-2 after:border-b-2 after:border-white
+                   after:rotate-45 after:scale-0 peer-checked:after:scale-100
+                   after:transition-transform after:duration-100"
+          />
+          <span class="text-xs text-[#6b6b7b] select-none">Mostrar etiqueta</span>
+        </label>
       </div>
 
       <!-- Key -->

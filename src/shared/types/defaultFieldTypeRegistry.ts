@@ -20,7 +20,7 @@ export function createDefaultFieldTypeRegistry(): FieldTypeRegistry {
       key: 'nuevo_campo',
       required: false,
     }),
-    allowedProperties: ['id', 'type', 'label', 'key', 'required', 'ai_help_description', 'max_chars', 'placeholder', 'default_value'],
+    allowedProperties: ['id', 'type', 'label', 'key', 'required', 'ai_help_description', 'showLabel', 'max_chars', 'placeholder', 'default_value'],
   }
 
   const textareaMeta: FieldTypeMeta = {
@@ -51,7 +51,7 @@ export function createDefaultFieldTypeRegistry(): FieldTypeRegistry {
       key: 'nuevo_campo',
       required: false,
     }),
-    allowedProperties: ['id', 'type', 'label', 'key', 'required', 'ai_help_description', 'decimals', 'min', 'max', 'default_value'],
+    allowedProperties: ['id', 'type', 'label', 'key', 'required', 'ai_help_description', 'showLabel', 'decimals', 'min', 'max', 'default_value'],
   }
 
   const dateMeta: FieldTypeMeta = {
@@ -67,7 +67,7 @@ export function createDefaultFieldTypeRegistry(): FieldTypeRegistry {
       key: 'nuevo_campo',
       required: false,
     }),
-    allowedProperties: ['id', 'type', 'label', 'key', 'required', 'ai_help_description', 'min_date', 'max_date', 'placeholder', 'default_value'],
+    allowedProperties: ['id', 'type', 'label', 'key', 'required', 'ai_help_description', 'showLabel', 'min_date', 'max_date', 'placeholder', 'default_value'],
   }
 
   const selectMeta: FieldTypeMeta = {
@@ -84,7 +84,7 @@ export function createDefaultFieldTypeRegistry(): FieldTypeRegistry {
       required: false,
       options: [],
     }),
-    allowedProperties: ['id', 'type', 'label', 'key', 'required', 'ai_help_description', 'options', 'placeholder', 'default_value'],
+    allowedProperties: ['id', 'type', 'label', 'key', 'required', 'ai_help_description', 'showLabel', 'options', 'placeholder', 'default_value'],
   }
 
   const multiSelectMeta: FieldTypeMeta = {
@@ -125,7 +125,7 @@ export function createDefaultFieldTypeRegistry(): FieldTypeRegistry {
       required: false,
       text_content: '',
     }),
-    allowedProperties: ['id', 'type', 'label', 'key', 'required', 'ai_help_description', 'text_content', 'styling_options'],
+    allowedProperties: ['id', 'type', 'label', 'key', 'required', 'ai_help_description', 'showLabel', 'text_content', 'styling_options'],
   }
 
   const dynamicTableMeta: FieldTypeMeta = {
@@ -142,7 +142,7 @@ export function createDefaultFieldTypeRegistry(): FieldTypeRegistry {
       required: false,
       columns: [],
     }),
-    allowedProperties: ['id', 'type', 'label', 'key', 'required', 'ai_help_description', 'columns', 'footer_totals'],
+    allowedProperties: ['id', 'type', 'label', 'key', 'required', 'ai_help_description', 'showLabel', 'columns', 'footer_totals'],
   }
 
   registry.register(textMeta)

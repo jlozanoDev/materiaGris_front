@@ -1,0 +1,357 @@
+<template>
+  <div class="report-document">
+    <!-- Header -->
+    <div class="report-document__header">
+      <h1 class="report-document__title">Informe de Evaluación</h1>
+      <div class="report-document__meta">
+        <span>Paciente: Juan Pérez García</span>
+        <span>Fecha: {{ today }}</span>
+      </div>
+    </div>
+
+    <hr class="report-document__divider" />
+
+    <div
+      v-if="!sections || sections.length === 0"
+      class="report-document__empty"
+    >
+      No hay contenido para mostrar
+    </div>
+
+    <template v-else>
+      <!-- Tabs nav -->
+      <div
+        v-if="displayMode === 'tabs' && sections.length > 1"
+        class="report-document__tabs"
+      >
+        <span
+          v-for="(section, idx) in sections"
+          :key="section.id"
+          :class="['report-document__tab', activeTab === idx ? 'report-document__tab--active' : '']"
+        >
+          {{ section.label }}
+        </span>
+      </div>
+
+      <div
+        v-for="(section, secIdx) in sections"
+        :key="section.id"
+        :class="[
+          'report-document__section',
+          displayMode === 'tabs' && activeTab !== secIdx ? 'hidden' : '',
+        ]"
+      >
+        <h2 class="report-document__section-title">{{ section.label }}</h2>
+
+        <template
+          v-for="row in section.rows"
+          :key="row.id"
+        >
+          <div
+            class="report-document__row"
+            :style="rowStyle(row)"
+          >
+            <div
+              v-for="col in row.columns"
+              :key="col.id"
+              class="report-document__col"
+            >
+              <template
+                v-for="field in col.fields"
+                :key="field.id"
+              >
+                <!-- fixed_text -->
+                <div
+                  v-if="field.type === 'fixed_text'"
+                  class="report-document__fixed-text"
+                  :class="{
+                    'font-bold': field.styling_options?.bold,
+                    'text-sm': field.styling_options?.size === 'sm',
+                    'text-lg': field.styling_options?.size === 'lg',
+                  }"
+                  v-html="interpolateContent(field.text_content)"
+                />
+
+                <!-- dynamic_table -->
+                <table
+                  v-else-if="field.type === 'dynamic_table'"
+                  class="report-document__table"
+                >
+                  <thead>
+                    <tr>
+                      <th
+                        v-for="colDef in field.columns"
+                        :key="colDef.key"
+                      >
+                        {{ colDef.label }}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="(dataRow, drIdx) in getArrayValue(field.key)"
+                      :key="drIdx"
+                    >
+                      <td
+                        v-for="colDef in field.columns"
+                        :key="colDef.key"
+                      >
+                        {{ formatCellValue(dataRow[colDef.key], colDef.type) }}
+                      </td>
+                    </tr>
+                  </tbody>
+                  <tfoot v-if="field.footer_totals && field.footer_totals.length">
+                    <tr>
+                      <td
+                        v-for="(ft, ftIdx) in field.footer_totals"
+                        :key="ftIdx"
+                        :colspan="ftIdx === 0 ? field.columns.length - field.footer_totals.length + 1 : undefined"
+                      >
+                        <span class="font-semibold">{{ ft.label }}</span>
+                      </td>
+                      <td
+                        v-for="_ in Math.max(0, field.columns.length - field.footer_totals.length - 1)"
+                        :key="'empty-'+_"
+                      />
+                    </tr>
+                  </tfoot>
+                </table>
+
+                <!-- All other field types -->
+                <div v-else class="report-document__field">
+                  <span class="report-document__field-label">{{ field.label }}:</span>
+                  <span class="report-document__field-value">
+                    <template v-if="field.type === 'checkbox' || field.type === 'multi_select'">
+                      {{ formatMultiValue(field.key) }}
+                    </template>
+                    <template v-else-if="field.type === 'textarea'">
+                      <div class="whitespace-pre-wrap">{{ getValue(field.key) || '—' }}</div>
+                    </template>
+                    <template v-else>
+                      {{ getValue(field.key) || '—' }}
+                    </template>
+                  </span>
+                </div>
+              </template>
+            </div>
+          </div>
+        </template>
+      </div>
+    </template>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue'
+import type { Section } from '@/shared/types'
+
+interface Props {
+  sections: Section[]
+  values: Record<string, any>
+}
+
+const props = defineProps<Props>()
+
+const activeTab = 0
+
+const today = new Date().toLocaleDateString('es-ES', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+})
+
+const displayMode = computed<'tabs' | 'accordion' | 'default'>(() => {
+  if (props.sections.length === 0) return 'default'
+  const first = props.sections[0]
+  if (first.display === 'tabs' || first.display === 'accordion' || first.display === 'default') {
+    return first.display
+  }
+  return 'default'
+})
+
+function getValue(key: string): string {
+  const val = props.values[key]
+  if (val === undefined || val === null) return ''
+  return String(val)
+}
+
+function getArrayValue(key: string): Record<string, any>[] {
+  const val = props.values[key]
+  return Array.isArray(val) ? val : []
+}
+
+function formatMultiValue(key: string): string {
+  const val = props.values[key]
+  if (Array.isArray(val)) return val.join(', ')
+  return val ?? '—'
+}
+
+function formatCellValue(val: unknown, type: string): string {
+  if (val === undefined || val === null) return '—'
+  if (type === 'date' && typeof val === 'string') {
+    return new Date(val).toLocaleDateString('es-ES')
+  }
+  return String(val)
+}
+
+function interpolateContent(text: string): string {
+  return text
+    .replace(/\{([^}]+)\}/g, (_match, path: string) => {
+      const resolved = previewResolve(path.trim())
+      return resolved ?? `{${path}}`
+    })
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\n/g, '<br />')
+}
+
+const previewVars: Record<string, string> = {
+  'paciente.nombre': 'Juan Pérez García',
+  'paciente.edad': '42',
+  'paciente.genero': 'Masculino',
+  'paciente.identificacion': '8-888-888',
+  'clinica.nombre': 'Clínica Materia Gris',
+  'clinica.direccion': 'Av. Central 123, Panamá',
+  'fecha.hoy': new Date().toLocaleDateString('es-ES'),
+  'fecha.actual': new Date().toLocaleDateString('es-ES'),
+  'usuario.nombre': 'Dr. Carlos Rodríguez',
+  'usuario.especialidad': 'Psicología Clínica',
+}
+
+function previewResolve(fullKey: string): string | undefined {
+  return previewVars[fullKey]
+}
+
+function rowStyle(row: { columns: any[] }): Record<string, string> {
+  const count = row.columns.length || 1
+  return {
+    display: 'grid',
+    gridTemplateColumns: `repeat(${count}, 1fr)`,
+    gap: '1.5rem',
+  }
+}
+</script>
+
+<style scoped>
+@reference "tailwindcss";
+
+.report-document {
+  @apply bg-white mx-auto;
+  width: 210mm;
+  padding: 20mm 20mm 25mm 20mm;
+  min-height: 270mm;
+  max-height: calc(100vh - 260px);
+  overflow-y: auto;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.06),
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    0 8px 24px rgba(0, 0, 0, 0.05);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: #1a1a1a;
+  line-height: 1.6;
+}
+
+.report-document__header {
+  @apply mb-6;
+}
+
+.report-document__title {
+  @apply text-2xl font-bold mb-2;
+  color: #1a1a1a;
+}
+
+.report-document__meta {
+  @apply flex gap-6 text-sm;
+  color: #555;
+}
+
+.report-document__divider {
+  @apply mb-6;
+  border: none;
+  border-top: 2px solid #1a1a1a;
+}
+
+.report-document__empty {
+  @apply py-12 text-center;
+  color: #999;
+}
+
+.report-document__tabs {
+  @apply mb-6 flex border-b border-gray-300;
+}
+
+.report-document__tab {
+  @apply border-b-2 border-transparent px-4 py-2 text-sm font-medium;
+  color: #888;
+}
+
+.report-document__tab--active {
+  @apply border-gray-800;
+  color: #1a1a1a;
+}
+
+.report-document__section {
+  @apply mb-8;
+}
+
+.report-document__section-title {
+  @apply text-lg font-bold mb-4 pb-1.5;
+  color: #1a1a1a;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.report-document__row {
+  gap: 1.5rem;
+  page-break-inside: avoid;
+}
+
+@media (max-width: 768px) {
+  .report-document__row {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.report-document__col {
+  @apply min-w-0;
+}
+
+.report-document__field {
+  @apply mb-2.5;
+}
+
+.report-document__field-label {
+  @apply font-semibold mr-1;
+}
+
+.report-document__field-value {
+  color: #333;
+}
+
+.report-document__fixed-text {
+  @apply mb-4;
+  line-height: 1.7;
+}
+
+.report-document__table {
+  @apply w-full mb-4 border-collapse;
+}
+
+.report-document__table th,
+.report-document__table td {
+  @apply border border-gray-300 px-3 py-2 text-sm text-left;
+}
+
+.report-document__table th {
+  @apply bg-gray-100 font-semibold;
+  color: #1a1a1a;
+}
+
+.report-document__table tfoot td {
+  @apply bg-gray-50;
+}
+
+.hidden {
+  display: none;
+}
+</style>

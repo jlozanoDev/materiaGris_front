@@ -116,6 +116,7 @@ function createField(type: FieldType): FieldConfig {
     key: slugify(type),
     label: type,
     required: false,
+    showLabel: true,
   }
 
   switch (type) {

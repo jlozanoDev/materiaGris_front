@@ -125,6 +125,7 @@ export interface FieldBase {
   key: string
   label: string
   required: boolean
+  showLabel?: boolean
   ai_help_description?: string
 }
 
