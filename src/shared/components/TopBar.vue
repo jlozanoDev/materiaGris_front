@@ -5,20 +5,7 @@
   >
     <!-- Search -->
     <div class="relative flex-1 max-w-sm">
-      <svg
-        class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4"
-        style="color: #9690a8;"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <circle cx="11" cy="11" r="8" />
-        <line x1="21" y1="21" x2="16.65" y2="16.65" />
-      </svg>
-      <input type="text" placeholder="Buscar..." aria-label="Buscar" class="form-input pl-9 pr-4" />
+      
     </div>
 
     <div class="flex-1" />
