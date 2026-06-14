@@ -1,4 +1,4 @@
-import { ref, computed, reactive, type Ref, type ComputedRef } from 'vue'
+import { ref, computed, reactive, watch, type Ref, type ComputedRef } from 'vue'
 import { useAuthStore } from '@/core/store/auth'
 import {
   provideGetReportTemplateUseCase,
@@ -30,6 +30,7 @@ export interface UseTemplateBuilderReturn {
   undoStack: UndoCommand[]
   redoStack: UndoCommand[]
   isDirty: boolean
+  isSaving: boolean
   templateId: number
   templateName: string
   templateDescription: string
@@ -197,9 +198,22 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
   const undoStack: Ref<UndoCommand[]> = ref([])
   const redoStack: Ref<UndoCommand[]> = ref([])
   const isDirty: Ref<boolean> = ref(false)
+  const isSaving: Ref<boolean> = ref(false)
   const templateId: Ref<number> = ref(0)
   const templateName: Ref<string> = ref('')
   const templateDescription: Ref<string> = ref('')
+
+  // Track loaded values to detect name/description changes
+  let _loadedName = ''
+  let _loadedDescription = ''
+
+  // Mark dirty when name or description changes from loaded values
+  watch(templateName, (val) => {
+    if (val !== _loadedName) isDirty.value = true
+  })
+  watch(templateDescription, (val) => {
+    if (val !== _loadedDescription) isDirty.value = true
+  })
 
   // ---- Header / Footer state ----
 
@@ -551,8 +565,11 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
 
     templateName.value = data.name ?? ''
     templateDescription.value = data.description ?? ''
+    _loadedName = templateName.value
+    _loadedDescription = templateDescription.value
     templateId.value = data.id ?? 0
     isDirty.value = false
+    isSaving.value = false
     undoStack.value = []
     redoStack.value = []
     selectedFieldId.value = null
@@ -565,41 +582,55 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
       throw new Error('No tiene permiso para guardar plantillas de informe')
     }
 
-    const structure: Record<string, any> = { sections: sections.value }
+    isSaving.value = true
 
-    // Only serialize header/footer if they were ever configured (have data)
-    if (headerSections.value.length > 0 || headerEnabled.value) {
-      structure.header = {
-        enabled: headerEnabled.value,
-        pageDisplay: headerPageDisplay.value,
-        sections: headerSections.value,
+    try {
+      const structure: Record<string, any> = { sections: sections.value }
+
+      // Only serialize header/footer if they were ever configured (have data)
+      if (headerSections.value.length > 0 || headerEnabled.value) {
+        structure.header = {
+          enabled: headerEnabled.value,
+          pageDisplay: headerPageDisplay.value,
+          sections: headerSections.value,
+        }
       }
-    }
-    if (footerSections.value.length > 0 || footerEnabled.value) {
-      structure.footer = {
-        enabled: footerEnabled.value,
-        pageDisplay: footerPageDisplay.value,
-        sections: footerSections.value,
+      if (footerSections.value.length > 0 || footerEnabled.value) {
+        structure.footer = {
+          enabled: footerEnabled.value,
+          pageDisplay: footerPageDisplay.value,
+          sections: footerSections.value,
+        }
       }
-    }
 
-    const payload = {
-      name: templateName.value,
-      description: templateDescription.value,
-      structure,
-    }
+      const payload = {
+        name: templateName.value,
+        description: templateDescription.value,
+        structure,
+      }
 
-    let result
-    if (templateId.value > 0) {
-      const useCase = provideUpdateReportTemplateUseCase()
-      result = await useCase.execute(templateId.value, payload)
-    } else {
-      const useCase = provideCreateReportTemplateUseCase()
-      result = await useCase.execute(payload)
-    }
+      let result
+      if (templateId.value > 0) {
+        const useCase = provideUpdateReportTemplateUseCase()
+        result = await useCase.execute(templateId.value, payload)
+      } else {
+        const useCase = provideCreateReportTemplateUseCase()
+        result = await useCase.execute(payload)
+      }
 
-    isDirty.value = false
-    return result
+      isDirty.value = false
+      _loadedName = templateName.value
+      _loadedDescription = templateDescription.value
+
+      // If a new template was created, store the returned id
+      if (result && result.id && templateId.value === 0) {
+        templateId.value = result.id
+      }
+
+      return result
+    } finally {
+      isSaving.value = false
+    }
   }
 
   return reactive({
@@ -608,6 +639,7 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
     undoStack,
     redoStack,
     isDirty,
+    isSaving,
     templateId,
     templateName,
     templateDescription,

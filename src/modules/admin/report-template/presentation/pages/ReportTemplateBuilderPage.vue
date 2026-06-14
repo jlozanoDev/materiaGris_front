@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, provide, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, onMounted, onBeforeUnmount, provide, computed } from 'vue'
+import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router'
 import draggable from 'vuedraggable'
 import { BUILDER_KEY, useTemplateBuilder } from '../composables/useTemplateBuilder'
 import type { ZoneType } from '../composables/useTemplateBuilder'
@@ -15,6 +15,7 @@ import { useLogout } from '@/shared/composables/useLogout'
 import FieldPalette from '../components/FieldPalette.vue'
 import PreviewModal from '../components/PreviewModal.vue'
 import PrintPreviewModal from '../components/PrintPreviewModal.vue'
+import Modal from '@/shared/components/Modal.vue'
 import { createDefaultFieldTypeRegistry } from '@/shared/types/defaultFieldTypeRegistry'
 import { useSystemVariableRegistry, SYSTEM_VARIABLES_KEY } from '@/shared/composables/useSystemVariableRegistry'
 
@@ -30,6 +31,7 @@ const canSave = computed(() => authStore.hasPermission('admin.reporttemplate.upd
 // ============================================================================
 
 const route = useRoute()
+const router = useRouter()
 const authStore = useAuthStore()
 const { logout } = useLogout()
 const builder = useTemplateBuilder()
@@ -39,12 +41,88 @@ const isEditMode = computed(() => route.name === 'AdminReportTemplateEdit')
 const pageLoading = ref(true)
 const showPreview = ref(false)
 const showPrintPreview = ref(false)
+const saveError = ref('')
+const saveSuccess = ref(false)
+const showUnsavedModal = ref(false)
+
+// Store the route-leave next callback so the modal can use it
+let pendingLeaveNext: ((v: boolean | void) => void) | null = null
+
+// Save handler with error feedback
+async function handleSave() {
+  saveError.value = ''
+  saveSuccess.value = false
+  try {
+    await builder.saveTemplate()
+    saveSuccess.value = true
+    setTimeout(() => { saveSuccess.value = false }, 2500)
+  } catch (e: any) {
+    saveError.value = e?.message || 'Error al guardar la plantilla'
+    setTimeout(() => { saveError.value = '' }, 5000)
+  }
+}
+
+// Unsaved changes guard
+onBeforeRouteLeave((_to, _from, next) => {
+  if (builder.isDirty && !builder.isSaving) {
+    pendingLeaveNext = next
+    showUnsavedModal.value = true
+  } else {
+    next()
+  }
+})
+
+function confirmLeave() {
+  showUnsavedModal.value = false
+  if (pendingLeaveNext) {
+    pendingLeaveNext()
+    pendingLeaveNext = null
+  }
+}
+
+function cancelLeave() {
+  showUnsavedModal.value = false
+  if (pendingLeaveNext) {
+    pendingLeaveNext(false)
+    pendingLeaveNext = null
+  }
+}
+
+// Browser tab close guard
+function handleBeforeUnload(e: BeforeUnloadEvent) {
+  if (builder.isDirty) {
+    e.preventDefault()
+    e.returnValue = ''
+  }
+}
+onMounted(() => { window.addEventListener('beforeunload', handleBeforeUnload) })
+onBeforeUnmount(() => { window.removeEventListener('beforeunload', handleBeforeUnload) })
 
 const breadcrumb = computed(() => [
   { text: 'Dashboard', icon: 'pi pi-objects-column', to: '/' },
   { text: 'Tipos de Informe', icon: 'pi pi-file', to: '/admin/report-templates' },
   { text: isEditMode.value ? 'Editar Plantilla' : 'Nueva Plantilla', icon: 'pi pi-pencil' },
 ])
+
+// Save button visual states
+const saveButtonClass = computed(() => {
+  if (builder.isSaving) return 'btn-outline opacity-70 cursor-wait'
+  if (saveSuccess.value) return 'bg-emerald-500 text-white border-emerald-500 hover:bg-emerald-600'
+  if (!builder.isDirty) return 'bg-emerald-100 text-emerald-700 border-emerald-200'
+  return 'btn-primary'
+})
+const saveButtonIcon = computed(() => {
+  if (builder.isSaving) return 'pi pi-spin pi-spinner'
+  if (saveSuccess.value) return 'pi pi-check'
+  if (!builder.isDirty) return 'pi pi-check'
+  return 'pi pi-save'
+})
+const saveButtonText = computed(() => {
+  if (builder.isSaving) return 'Guardando...'
+  if (saveSuccess.value) return 'Guardado'
+  if (!builder.isDirty) return 'Guardado'
+  return 'Guardar'
+})
 
 const zoneTabs: { key: ZoneType; label: string; icon: string }[] = [
   { key: 'header', label: 'Cabecera', icon: 'pi pi-align-left' },
@@ -157,15 +235,25 @@ onMounted(async () => {
               </button>
               <button
                 v-if="canSave"
-                class="btn btn-primary btn-sm"
-                :disabled="!builder.isDirty"
+                class="btn btn-sm transition-all duration-200"
+                :class="saveButtonClass"
+                :disabled="builder.isSaving"
                 data-save-btn
-                @click="builder.saveTemplate()"
+                @click="handleSave"
               >
-                <i class="pi pi-save mr-1" />
-                Guardar
+                <i :class="saveButtonIcon" class="mr-1" />
+                {{ saveButtonText }}
               </button>
             </div>
+          </div>
+
+          <!-- Save error message -->
+          <div
+            v-if="saveError"
+            class="mb-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm shrink-0"
+          >
+            <i class="pi pi-exclamation-triangle" />
+            {{ saveError }}
           </div>
 
           <!-- General info -->
@@ -327,6 +415,36 @@ onMounted(async () => {
       :template-name="builder.templateName"
       @close="showPrintPreview = false"
     />
+
+    <!-- Unsaved changes modal -->
+    <Modal
+      :show="showUnsavedModal"
+      title="Cambios sin guardar"
+      size="sm"
+      :close-on-backdrop="false"
+      @close="cancelLeave"
+    >
+      <p class="text-[#6b6b7b] text-sm">
+        Tienes cambios sin guardar. Si sales ahora, se perderán.
+      </p>
+
+      <template #footer>
+        <div class="flex justify-end gap-3">
+          <button
+            class="btn btn-outline btn-sm"
+            @click="cancelLeave"
+          >
+            Quedarme
+          </button>
+          <button
+            class="btn btn-primary btn-sm"
+            @click="confirmLeave"
+          >
+            Salir sin guardar
+          </button>
+        </div>
+      </template>
+    </Modal>
   </div>
 
 </template>
