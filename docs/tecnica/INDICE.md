@@ -22,11 +22,12 @@
 | **Autenticación** | [`modules/auth/modulo-autenticacion.md`](./modules/auth/modulo-autenticacion.md) |
 | **Dashboard** | [`modules/dashboard/panel-principal.md`](./modules/dashboard/panel-principal.md) |
 | **Pacientes** | [`modules/patients/modulo-gestion.md`](./modules/patients/modulo-gestion.md) |
-| **Admin — General** | [`modules/admin/panel-control.md`](./modules/admin/panel-control.md) |
-| **Admin — Usuarios** | [`modules/admin/usuarios-crud.md`](./modules/admin/usuarios-crud.md) |
-| **Admin — Roles** | [`modules/admin/roles-editor.md`](./modules/admin/roles-editor.md) |
-| **Admin — Permisos** | [`modules/admin/permisos-sistema.md`](./modules/admin/permisos-sistema.md) |
-| **Admin — Informes: Campos** | [`modules/admin/report-template-campos.md`](./modules/admin/report-template-campos.md) |
+| **Admin — General** | [`modules/admin/panel-control/panel-control.md`](./modules/admin/panel-control/panel-control.md) |
+| **Admin — Usuarios** | [`modules/admin/usuarios-crud/usuarios-crud.md`](./modules/admin/usuarios-crud/usuarios-crud.md) |
+| **Admin — Roles** | [`modules/admin/roles-editor/roles-editor.md`](./modules/admin/roles-editor/roles-editor.md) |
+| **Admin — Permisos** | [`modules/admin/permisos-sistema/permisos-sistema.md`](./modules/admin/permisos-sistema/permisos-sistema.md) |
+| **Admin — Informes: Campos** | [`modules/admin/report-template-campos/report-template-campos.md`](./modules/admin/report-template-campos/report-template-campos.md) |
+| **Admin — Informes: Menú** | [`modules/admin/report-templates-menu/report-templates-menu.md`](./modules/admin/report-templates-menu/report-templates-menu.md) |
 
 ## Referencia cruzada con funcional
 
@@ -35,7 +36,8 @@
 | auth | `tecnica/modules/auth/` | [`funcional/modulos/autenticacion.md`](../funcional/modulos/autenticacion.md) |
 | dashboard | `tecnica/modules/dashboard/` | [`funcional/modulos/dashboard.md`](../funcional/modulos/dashboard.md) |
 | patients | `tecnica/modules/patients/` | [`funcional/modulos/pacientes.md`](../funcional/modulos/pacientes.md) |
-| admin — users | `tecnica/modules/admin/usuarios-crud.md` | [`funcional/modulos/administracion/usuarios.md`](../funcional/modulos/administracion/usuarios.md) |
-| admin — roles | `tecnica/modules/admin/roles-editor.md` | [`funcional/modulos/administracion/roles.md`](../funcional/modulos/administracion/roles.md) |
-| admin — permissions | `tecnica/modules/admin/permisos-sistema.md` | [`funcional/modulos/administracion/permisos.md`](../funcional/modulos/administracion/permisos.md) |
-| admin — report template fields | `tecnica/modules/admin/report-template-campos.md` | [`funcional/modulos/administracion/informes.md`](../funcional/modulos/administracion/informes.md) |
+| admin — users | `tecnica/modules/admin/usuarios-crud/` | [`funcional/modulos/administracion/usuarios.md`](../funcional/modulos/administracion/usuarios.md) |
+| admin — roles | `tecnica/modules/admin/roles-editor/` | [`funcional/modulos/administracion/roles.md`](../funcional/modulos/administracion/roles.md) |
+| admin — permissions | `tecnica/modules/admin/permisos-sistema/` | [`funcional/modulos/administracion/permisos.md`](../funcional/modulos/administracion/permisos.md) |
+| admin — report template fields | `tecnica/modules/admin/report-template-campos/` | [`funcional/modulos/administracion/informes.md`](../funcional/modulos/administracion/informes.md) |
+| admin — report templates menu | `tecnica/modules/admin/report-templates-menu/` | [`funcional/modulos/administracion/informes.md`](../funcional/modulos/administracion/informes.md) |
