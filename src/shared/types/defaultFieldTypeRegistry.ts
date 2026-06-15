@@ -162,6 +162,23 @@ export function createDefaultFieldTypeRegistry(): FieldTypeRegistry {
     allowedProperties: ['id', 'type', 'label', 'key'],
   }
 
+  const horizontalSeparatorMeta: FieldTypeMeta = {
+    type: 'horizontal_separator',
+    label: 'Separador Horizontal',
+    icon: 'pi pi-minus',
+    group: 'special',
+    description: 'Línea horizontal separadora entre filas',
+    defaultFactory: () => ({
+      id: crypto.randomUUID(),
+      type: 'horizontal_separator',
+      label: '',
+      key: 'separador_horizontal',
+      required: false,
+      showLabel: false,
+    }),
+    allowedProperties: ['id', 'type', 'label', 'key'],
+  }
+
   registry.register(textMeta)
   registry.register(textareaMeta)
   registry.register(numberMeta)
@@ -173,6 +190,7 @@ export function createDefaultFieldTypeRegistry(): FieldTypeRegistry {
   registry.register(fixedTextMeta)
   registry.register(dynamicTableMeta)
   registry.register(verticalSeparatorMeta)
+  registry.register(horizontalSeparatorMeta)
 
   return registry
 }

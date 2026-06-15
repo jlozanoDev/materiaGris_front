@@ -19,6 +19,7 @@ const FIELD_ICONS: Record<string, string> = {
   dynamic_table: 'pi pi-table',
   fixed_text: 'pi pi-file',
   vertical_separator: 'pi pi-minus vertical-separator-icon',
+  horizontal_separator: 'pi pi-minus',
 }
 
 const isSelected = computed(() => builder.selectedFieldId === props.field.id)
@@ -218,6 +219,14 @@ function stripHtml(html: string): string {
       style="min-height: 60px;"
     >
       <div class="w-px bg-slate-300 rounded-full mx-auto" />
+    </div>
+
+    <!-- horizontal_separator -->
+    <div
+      v-else-if="field.type === 'horizontal_separator'"
+      class="py-2"
+    >
+      <hr class="border-t border-slate-300" />
     </div>
 
     <!-- unknown -->

@@ -184,6 +184,8 @@ function createField(type: FieldType): FieldConfig {
       return { ...base, type, columns: [], footer_totals: undefined }
     case 'vertical_separator':
       return { ...base, type, showLabel: false }
+    case 'horizontal_separator':
+      return { ...base, type, showLabel: false }
     default:
       // Exhaustive check — unreachable
       const _exhaustive: never = type

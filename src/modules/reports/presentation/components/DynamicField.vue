@@ -156,6 +156,14 @@
       <div class="w-px bg-slate-300 rounded-full mx-auto" />
     </div>
 
+    <!-- horizontal_separator -->
+    <div
+      v-else-if="field.type === 'horizontal_separator'"
+      class="py-2"
+    >
+      <hr class="border-t border-slate-300" />
+    </div>
+
     <!-- unknown type fallback -->
     <div v-else class="dynamic-field__unsupported">
       Tipo de campo no soportado: {{ field.type }}

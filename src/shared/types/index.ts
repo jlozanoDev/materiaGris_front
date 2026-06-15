@@ -114,6 +114,7 @@ export type FieldType =
   | 'dynamic_table'
   | 'fixed_text'
   | 'vertical_separator'
+  | 'horizontal_separator'
 
 export interface FieldOption {
   label: string
@@ -202,8 +203,12 @@ export interface VerticalSeparatorField extends FieldBase {
   type: 'vertical_separator'
 }
 
+export interface HorizontalSeparatorField extends FieldBase {
+  type: 'horizontal_separator'
+}
+
 /** Discriminated union of all field config variants */
-export type FieldConfig = TextField | NumberField | DateField | SelectionField | FixedTextField | DynamicTableField | VerticalSeparatorField
+export type FieldConfig = TextField | NumberField | DateField | SelectionField | FixedTextField | DynamicTableField | VerticalSeparatorField | HorizontalSeparatorField
 
 export interface Column {
   id: string

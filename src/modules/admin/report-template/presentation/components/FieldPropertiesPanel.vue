@@ -120,8 +120,8 @@ function onLabelChange(e: Event) {
         </div>
       </div>
 
-      <!-- Required (not applicable for fixed_text and vertical_separator) -->
-      <div v-if="selectedField.type !== 'fixed_text' && selectedField.type !== 'vertical_separator'" class="flex items-center gap-2">
+      <!-- Required (not applicable for fixed_text, vertical_separator and horizontal_separator) -->
+      <div v-if="selectedField.type !== 'fixed_text' && selectedField.type !== 'vertical_separator' && selectedField.type !== 'horizontal_separator'" class="flex items-center gap-2">
         <label class="relative inline-flex items-center cursor-pointer">
           <input
             type="checkbox"
