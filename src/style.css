@@ -394,6 +394,11 @@ body {
   box-shadow: var(--shadow-card);
 }
 
+.vertical-separator-icon {
+  display: inline-flex;
+  transform: rotate(90deg);
+}
+
 /* Reglas de accesibilidad / UX: todos los botones deben mostrar el cursor pointer */
 button,
 [role="button"] {

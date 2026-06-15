@@ -30,7 +30,7 @@
         :options="pageOptions"
         size="sm"
         class="w-auto"
-        @update:model-value="$emit('update:pageDisplay', $event)"
+        @update:model-value="$emit('update:pageDisplay', $event as string)"
       />
     </div>
   </div>

@@ -52,7 +52,8 @@ export interface UseTemplateBuilderReturn {
   removeRow: (rowId: string) => void
   addColumn: (rowId: string) => void
   removeColumn: (rowId: string, columnId: string) => void
-  addField: (columnId: string, type: FieldType, config?: { label?: string; description?: string; required?: boolean }) => void
+  addField: (columnId: string, type: FieldType, config?: { label?: string; description?: string; required?: boolean }, index?: number) => void
+  addSeparatorColumn: (rowId: string, index: number) => void
   removeField: (fieldId: string) => void
   updateField: (fieldId: string, config: Record<string, any>) => void
   reorderSections: (order: string[]) => void
@@ -181,6 +182,8 @@ function createField(type: FieldType): FieldConfig {
       return { ...base, type, text_content: '', styling_options: undefined }
     case 'dynamic_table':
       return { ...base, type, columns: [], footer_totals: undefined }
+    case 'vertical_separator':
+      return { ...base, type, showLabel: false }
     default:
       // Exhaustive check — unreachable
       const _exhaustive: never = type
@@ -389,7 +392,50 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
     })
   }
 
-  function addField(columnId: string, type: FieldType, config?: { label?: string; description?: string; required?: boolean }): void {
+  function addSeparatorColumn(rowId: string, index: number): void {
+    const ref = currentSectionsRef()
+    const row = ref.value.flatMap((s) => s.rows).find((r) => r.id === rowId)
+    if (!row) return
+
+    const colId = generateId()
+    const fieldId = generateId()
+    const separatorField: import('@/shared/types').VerticalSeparatorField = {
+      id: fieldId,
+      type: 'vertical_separator',
+      key: 'separador',
+      label: '',
+      required: false,
+      showLabel: false,
+    }
+
+    const column: Column = {
+      id: colId,
+      label: '',
+      width: 40,
+      fields: [separatorField],
+    }
+
+    const insertAt = Math.min(index, row.columns.length)
+    row.columns.splice(insertAt, 0, column)
+    selectedFieldId.value = fieldId
+    isDirty.value = true
+    redoStack.value = []
+
+    pushCommand(undoStack, {
+      type: 'addSeparatorColumn',
+      payload: { rowId, index: insertAt, colId, fieldId },
+      forward: () => {
+        const r = ref.value.flatMap((s) => s.rows).find((r) => r.id === rowId)
+        if (r) r.columns.splice(insertAt, 0, column)
+      },
+      inverse: () => {
+        const r = ref.value.flatMap((s) => s.rows).find((r) => r.id === rowId)
+        if (r) r.columns = r.columns.filter((c) => c.id !== colId)
+      },
+    })
+  }
+
+  function addField(columnId: string, type: FieldType, config?: { label?: string; description?: string; required?: boolean }, index?: number): void {
     const ref = currentSectionsRef()
     const column = ref.value
       .flatMap((s) => s.rows)
@@ -402,13 +448,26 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
       field.label = config.label
       field.key = slugify(config.label) || slugify(type)
     }
+
+    // Ensure unique key within all zones
+    if (isDuplicateKeyMulti(sections.value, headerSections.value, footerSections.value, field.id, field.key)) {
+      let suffix = 2
+      while (isDuplicateKeyMulti(sections.value, headerSections.value, footerSections.value, field.id, `${field.key}_${suffix}`)) {
+        suffix++
+      }
+      field.key = `${field.key}_${suffix}`
+    }
     if (config?.description) {
       ;(field as any).placeholder = config.description
     }
     if (config?.required !== undefined) {
       field.required = config.required
     }
-    column.fields.push(field)
+    if (index !== undefined) {
+      column.fields.splice(index, 0, field)
+    } else {
+      column.fields.push(field)
+    }
     selectedFieldId.value = field.id
     isDirty.value = true
     redoStack.value = []
@@ -417,7 +476,11 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
       type: 'addField',
       payload: { columnId, fieldId: field.id },
       forward: () => {
-        column.fields.push(field)
+        if (index !== undefined) {
+          column.fields.splice(index, 0, field)
+        } else {
+          column.fields.push(field)
+        }
       },
       inverse: () => {
         column.fields = column.fields.filter((f) => f.id !== field.id)
@@ -662,6 +725,7 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
     addColumn,
     removeColumn,
     addField,
+    addSeparatorColumn,
     removeField,
     updateField,
     reorderSections,

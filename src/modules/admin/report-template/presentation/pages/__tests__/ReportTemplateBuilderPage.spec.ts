@@ -89,7 +89,7 @@ function makeMockStore(overrides: Record<string, any> = {}) {
     templateName: '',
     templateDescription: '',
     // Header/footer state
-    activeZone: 'body',
+    activeZone: 'header',
     headerSections: [],
     footerSections: [],
     headerEnabled: false,
@@ -176,7 +176,7 @@ describe('ReportTemplateBuilderPage', () => {
     it('shows empty canvas message when no sections', async () => {
       const wrapper = createWrapper()
       await flushPromises()
-      expect(wrapper.text()).toContain('Crea tu primera sección')
+      expect(wrapper.text()).toContain('Añade contenido a la cabecera')
     })
 
     it('renders sections when store has them', async () => {
@@ -192,7 +192,7 @@ describe('ReportTemplateBuilderPage', () => {
       })
       const wrapper = createWrapper()
       await flushPromises()
-      expect(wrapper.text()).not.toContain('Crea tu primera sección')
+      expect(wrapper.text()).not.toContain('Añade contenido a la cabecera')
     })
 
     it('calls addSection when section placeholder is clicked', async () => {

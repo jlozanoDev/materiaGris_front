@@ -145,6 +145,23 @@ export function createDefaultFieldTypeRegistry(): FieldTypeRegistry {
     allowedProperties: ['id', 'type', 'label', 'key', 'required', 'ai_help_description', 'showLabel', 'columns', 'footer_totals'],
   }
 
+  const verticalSeparatorMeta: FieldTypeMeta = {
+    type: 'vertical_separator',
+    label: 'Separador Vertical',
+    icon: 'pi pi-minus vertical-separator-icon',
+    group: 'special',
+    description: 'Línea vertical separadora entre columnas',
+    defaultFactory: () => ({
+      id: crypto.randomUUID(),
+      type: 'vertical_separator',
+      label: '',
+      key: 'separador',
+      required: false,
+      showLabel: false,
+    }),
+    allowedProperties: ['id', 'type', 'label', 'key'],
+  }
+
   registry.register(textMeta)
   registry.register(textareaMeta)
   registry.register(numberMeta)
@@ -155,6 +172,7 @@ export function createDefaultFieldTypeRegistry(): FieldTypeRegistry {
   registry.register(checkboxMeta)
   registry.register(fixedTextMeta)
   registry.register(dynamicTableMeta)
+  registry.register(verticalSeparatorMeta)
 
   return registry
 }

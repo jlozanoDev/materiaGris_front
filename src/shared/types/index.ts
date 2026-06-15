@@ -113,6 +113,7 @@ export type FieldType =
   | 'checkbox'
   | 'dynamic_table'
   | 'fixed_text'
+  | 'vertical_separator'
 
 export interface FieldOption {
   label: string
@@ -197,8 +198,12 @@ export interface DynamicTableField extends FieldBase {
   footer_totals?: FooterTotal[]
 }
 
+export interface VerticalSeparatorField extends FieldBase {
+  type: 'vertical_separator'
+}
+
 /** Discriminated union of all field config variants */
-export type FieldConfig = TextField | NumberField | DateField | SelectionField | FixedTextField | DynamicTableField
+export type FieldConfig = TextField | NumberField | DateField | SelectionField | FixedTextField | DynamicTableField | VerticalSeparatorField
 
 export interface Column {
   id: string

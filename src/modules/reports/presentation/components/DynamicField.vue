@@ -147,6 +147,15 @@
       @update:model-value="emitValue($event)"
     />
 
+    <!-- vertical_separator -->
+    <div
+      v-else-if="field.type === 'vertical_separator'"
+      class="flex items-stretch"
+      style="min-height: 60px;"
+    >
+      <div class="w-px bg-slate-300 rounded-full mx-auto" />
+    </div>
+
     <!-- unknown type fallback -->
     <div v-else class="dynamic-field__unsupported">
       Tipo de campo no soportado: {{ field.type }}

@@ -29,6 +29,12 @@
                   class="report-document__fixed-text"
                   v-html="interpolateContent(field.text_content)"
                 />
+                <div
+                  v-else-if="field.type === 'vertical_separator'"
+                  class="report-document__separator"
+                >
+                  <div class="w-px bg-slate-300 rounded-full mx-auto" />
+                </div>
                 <div v-else class="report-document__preview-field">
                   <span class="report-document__preview-label">{{ field.label }}:</span>
                   <span class="report-document__preview-value">{{ getPreviewValue(field) }}</span>
@@ -79,6 +85,14 @@
                   class="report-document__fixed-text"
                   v-html="interpolateContent(field.text_content)"
                 />
+
+                <!-- vertical_separator -->
+                <div
+                  v-else-if="field.type === 'vertical_separator'"
+                  class="report-document__separator"
+                >
+                  <div class="w-px bg-slate-300 rounded-full mx-auto" />
+                </div>
 
                 <!-- dynamic_table -->
                 <table
@@ -177,6 +191,12 @@
                   class="report-document__fixed-text"
                   v-html="interpolateContent(field.text_content)"
                 />
+                <div
+                  v-else-if="field.type === 'vertical_separator'"
+                  class="report-document__separator"
+                >
+                  <div class="w-px bg-slate-300 rounded-full mx-auto" />
+                </div>
                 <div v-else class="report-document__preview-field">
                   <span class="report-document__preview-label">{{ field.label }}:</span>
                   <span class="report-document__preview-value">{{ getPreviewValue(field) }}</span>
@@ -191,6 +211,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { Section } from '@/shared/types'
 
 interface Props {
@@ -286,11 +307,15 @@ function previewResolve(fullKey: string): string | undefined {
   return previewVars[fullKey]
 }
 
-function rowStyle(row: { columns: any[] }): Record<string, string> {
-  const count = row.columns.length || 1
+function rowStyle(row: { columns: { width?: number }[] }): Record<string, string> {
+  const widths = row.columns.map((c) => {
+    if (c.width) return `${c.width}px`
+    return '1fr'
+  })
+  if (widths.length === 0) widths.push('1fr')
   return {
     display: 'grid',
-    gridTemplateColumns: `repeat(${count}, 1fr)`,
+    gridTemplateColumns: widths.join(' '),
     gap: '1.5rem',
   }
 }
@@ -401,6 +426,11 @@ function rowStyle(row: { columns: any[] }): Record<string, string> {
 
 .report-document__table tfoot td {
   @apply bg-gray-50;
+}
+
+.report-document__separator {
+  @apply flex items-stretch;
+  min-height: 60px;
 }
 
 .report-document__preview-field {

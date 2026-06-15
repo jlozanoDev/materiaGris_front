@@ -41,6 +41,9 @@ function generateForField(field: FieldConfig): unknown {
     case 'fixed_text':
       return ''
 
+    case 'vertical_separator':
+      return ''
+
     case 'dynamic_table': {
       const rows: Record<string, any>[] = [
         generateTableRow(field),

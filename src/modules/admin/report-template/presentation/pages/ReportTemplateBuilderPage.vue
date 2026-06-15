@@ -311,7 +311,7 @@ onMounted(async () => {
             zone="header"
             class="mb-4 shrink-0"
             @update:enabled="builder.headerEnabled = $event"
-            @update:page-display="builder.headerPageDisplay = $event"
+            @update:page-display="builder.headerPageDisplay = $event as 'all' | 'first' | 'last'"
           />
           <HeaderFooterEditor
             v-if="builder.activeZone === 'footer'"
@@ -320,7 +320,7 @@ onMounted(async () => {
             zone="footer"
             class="mb-4 shrink-0"
             @update:enabled="builder.footerEnabled = $event"
-            @update:page-display="builder.footerPageDisplay = $event"
+            @update:page-display="builder.footerPageDisplay = $event as 'all' | 'first' | 'last'"
           />
 
           <!-- 3-panel layout -->

@@ -18,6 +18,7 @@ const FIELD_ICONS: Record<string, string> = {
   checkbox: 'pi pi-check-square',
   dynamic_table: 'pi pi-table',
   fixed_text: 'pi pi-file',
+  vertical_separator: 'pi pi-minus vertical-separator-icon',
 }
 
 const isSelected = computed(() => builder.selectedFieldId === props.field.id)
@@ -208,6 +209,15 @@ function stripHtml(html: string): string {
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- vertical_separator -->
+    <div
+      v-else-if="field.type === 'vertical_separator'"
+      class="flex items-stretch"
+      style="min-height: 60px;"
+    >
+      <div class="w-px bg-slate-300 rounded-full mx-auto" />
     </div>
 
     <!-- unknown -->

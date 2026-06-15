@@ -15,17 +15,18 @@ watch(() => props.column.fields, (val) => {
   localFields.value = [...val]
 }, { immediate: true, deep: true })
 
-function findRowId(): string | null {
+function findRowInfo(): { rowId: string; colIndex: number } | null {
   const allSections = [...(builder.sections as unknown as Section[]), ...(builder.headerSections as unknown as Section[]), ...(builder.footerSections as unknown as Section[])]
   for (const section of allSections) {
     for (const row of section.rows) {
-      if (row.columns.some((c: Column) => c.id === props.column.id)) {
-        return row.id
-      }
+      const colIndex = row.columns.findIndex((c: Column) => c.id === props.column.id)
+      if (colIndex !== -1) return { rowId: row.id, colIndex }
     }
   }
   return null
 }
+
+const findRowId = (): string | null => findRowInfo()?.rowId ?? null
 
 function syncToStore() {
   const allSections = [...(builder.sections as unknown as Section[]), ...(builder.headerSections as unknown as Section[]), ...(builder.footerSections as unknown as Section[])]
@@ -42,21 +43,21 @@ function syncToStore() {
 
 function onChange(evt: any) {
   if (evt.moved) {
-    const { oldIndex, newIndex } = evt.moved
-    const list = [...localFields.value]
-    list.splice(newIndex, 0, list.splice(oldIndex, 1)[0])
-    localFields.value = list
     syncToStore()
   }
   if (evt.added) {
     const { element, newIndex } = evt.added
     if (element && !element.id) {
       localFields.value.splice(newIndex, 1)
-      builder.addField(props.column.id, element.type, {
-        label: element.label,
-      })
+      if (element.type === 'vertical_separator') {
+        const info = findRowInfo()
+        if (info) builder.addSeparatorColumn(info.rowId, info.colIndex + 1)
+      } else {
+        builder.addField(props.column.id, element.type, {
+          label: element.label,
+        }, newIndex)
+      }
     } else if (element && element.id) {
-      localFields.value.splice(newIndex, 0, element)
       syncToStore()
     }
   }
@@ -64,11 +65,7 @@ function onChange(evt: any) {
 
 function onRemove(evt: any) {
   if (evt.element?.id) {
-    const idx = localFields.value.findIndex((f) => f.id === evt.element.id)
-    if (idx !== -1) {
-      localFields.value.splice(idx, 1)
-      syncToStore()
-    }
+    syncToStore()
   }
 }
 </script>
