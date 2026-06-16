@@ -154,11 +154,11 @@ onMounted(async () => {
 
     <div class="flex flex-1 min-w-0 overflow-hidden flex-col">
       <div class="flex flex-col gap-0 shrink-0 relative z-10 px-5 pt-5">
-        <Breadcrumb :items="breadcrumb" />
         <TopBarLayout
           :user="authStore.user"
           @logout="logout"
         />
+        <Breadcrumb :items="breadcrumb" />
       </div>
 
       <div class="flex-1 overflow-hidden p-5">

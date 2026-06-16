@@ -300,13 +300,13 @@ onMounted(async () => {
     <div class="flex flex-1 min-w-0 overflow-hidden">
       <main class="flex flex-1 min-w-0 flex-col overflow-y-auto p-5 gap-5">
         <div class="flex flex-col gap-0">
+          <TopBarLayout :user="authStore.user" @logout="logout" />
           <Breadcrumb
             :items="[
               { text: 'Dashboard', icon: 'pi pi-objects-column', to: '/' },
               { text: 'Pacientes', icon: 'pi pi-users' },
             ]"
           />
-          <TopBarLayout :user="authStore.user" @logout="logout" />
         </div>
 
         <div class="bg-white rounded-2xl shadow-sm p-6 flex flex-col">
@@ -361,7 +361,7 @@ onMounted(async () => {
           <div v-else-if="error" class="flex flex-col items-center justify-center py-12">
             <i class="pi pi-exclamation-triangle text-slate-300 text-5xl mb-4"></i>
             <p class="text-slate-500 text-center">
-              {{ error?.body?.message || "No se pudieron cargar los pacientes. No tienes permiso para ver esta sección." }}
+              {{ (error as Record<string, Record<string, string>>)?.body?.message || "No se pudieron cargar los pacientes. No tienes permiso para ver esta sección." }}
             </p>
             <button
               class="mt-4 px-4 py-2 rounded-xl text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"

@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { mount, flushPromises } from "@vue/test-utils";
 import { setActivePinia, createPinia } from "pinia";
-import { ref } from "vue";
 
 // ============================================================================
 // Mock vue-router
@@ -32,7 +31,7 @@ vi.mock(
 );
 
 // ============================================================================
-// Mock reports container — intercept PatientReportsTab's useReportList
+// Mock reports container — intercept useReportList's use case
 // ============================================================================
 
 vi.mock(
@@ -41,35 +40,6 @@ vi.mock(
     provideGetReportsUseCase: vi.fn(),
   }),
 );
-
-// ============================================================================
-// Vuetify stubs — behave enough to test tab switching via v-model
-// ============================================================================
-
-const VTabsStub = {
-  name: "VTabs",
-  props: { modelValue: [String, Number] },
-  emits: ["update:modelValue"],
-  template: '<div class="v-tabs-stub"><slot /></div>',
-};
-
-const VTabStub = {
-  name: "VTab",
-  props: { value: [String, Number] },
-  template: '<span class="v-tab-stub"><slot /></span>',
-};
-
-const VTabsWindowStub = {
-  name: "VTabsWindow",
-  props: { modelValue: [String, Number] },
-  template: '<div class="v-tabs-window-stub"><slot /></div>',
-};
-
-const VTabsWindowItemStub = {
-  name: "VTabsWindowItem",
-  props: { value: [String, Number] },
-  template: '<div class="v-tabs-window-item-stub"><slot /></div>',
-};
 
 // ============================================================================
 // Imports (after vi.mock hoisting)
@@ -87,7 +57,6 @@ import { provideGetReportsUseCase } from "@/modules/reports/application/containe
 function createWrapper() {
   const authStore = useAuthStore();
 
-  // Hydrate auth before mount so fetchUser resolves immediately
   authStore.user = {
     id: 1,
     name: "Doctor",
@@ -102,15 +71,19 @@ function createWrapper() {
         AppSidebar: true,
         TopBarLayout: true,
         Breadcrumb: true,
-        "v-tabs": VTabsStub,
-        "v-tab": VTabStub,
-        "v-tabs-window": VTabsWindowStub,
-        "v-tabs-window-item": VTabsWindowItemStub,
         transition: false,
         "transition-group": false,
       },
     },
   });
+}
+
+function switchToReportsTab(wrapper: any): void {
+  const tabBtns = wrapper.findAll("button");
+  const reportsBtn = tabBtns.find((b: any) =>
+    b.text().includes("Informes clínicos"),
+  );
+  if (reportsBtn) reportsBtn.trigger("click");
 }
 
 // ============================================================================
@@ -167,21 +140,18 @@ describe("PatientDetailPage", () => {
     const wrapper = createWrapper();
     await flushPromises();
 
-    // Access the component's internal activeTab ref
     expect((wrapper.vm as any).activeTab).toBe(0);
   });
 
-  it("switches active tab when update:modelValue is emitted", async () => {
+  it("switches active tab when clicking the tab button", async () => {
     const wrapper = createWrapper();
     await flushPromises();
 
     expect((wrapper.vm as any).activeTab).toBe(0);
 
-    // Simulate clicking second tab by emitting on v-tabs
-    const vTabs = wrapper.findComponent({ name: "VTabs" });
-    await vTabs.vm.$emit("update:modelValue", "1");
+    switchToReportsTab(wrapper);
 
-    expect((wrapper.vm as any).activeTab).toBe("1");
+    expect((wrapper.vm as any).activeTab).toBe(1);
   });
 
   // --- Nuevo informe link ---
@@ -190,20 +160,22 @@ describe("PatientDetailPage", () => {
     const wrapper = createWrapper();
     await flushPromises();
 
-    // Patient is loaded, so the full content renders
+    switchToReportsTab(wrapper);
+    await flushPromises();
+
     expect(wrapper.text()).toContain("+ Nuevo informe");
   });
 
   it('"Nuevo informe" button calls router.push with correct route', async () => {
-    // Provide a resolved reports mock so the empty state renders "Nuevo informe"
     const wrapper = createWrapper();
     await flushPromises();
+    switchToReportsTab(wrapper);
+    await flushPromises();
 
-    // Find the "Nuevo informe" button and click it
-    const newReportBtn = wrapper.findAll("button").filter((b) =>
+    const allBtns = wrapper.findAll("button");
+    const newReportBtn = allBtns.filter((b: any) =>
       b.text().includes("Nuevo informe"),
     );
-    // PatientReportsTab has one "Nuevo informe" button
     expect(newReportBtn.length).toBeGreaterThanOrEqual(1);
 
     await newReportBtn[0].trigger("click");
@@ -217,7 +189,6 @@ describe("PatientDetailPage", () => {
   // --- Loading state ---
 
   it("shows loading skeleton when patientLoading is true", async () => {
-    // Keep the fetch pending so patientLoading stays true
     let resolveFetch: any;
     const pendingPromise = new Promise((r) => {
       resolveFetch = r;
@@ -226,19 +197,14 @@ describe("PatientDetailPage", () => {
     (provideGetPatientUseCase as any).mockReturnValue({ execute });
 
     const wrapper = createWrapper();
-    // Flush promises so authStore.fetchUser resolves but fetchPatientById stays pending
     await flushPromises();
 
-    // The skeleton uses animate-pulse class
     expect(wrapper.html()).toContain("animate-pulse");
-    // Should NOT show patient content
     expect(wrapper.text()).not.toContain("Ana García");
 
-    // Resolve the pending promise
     resolveFetch({ id: "42", first_name: "Ana", last_name: "García" });
     await flushPromises();
 
-    // Now patient content should show
     expect(wrapper.text()).toContain("Ana García");
   });
 

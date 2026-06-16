@@ -1,8 +1,5 @@
 import { createApp } from "vue";
 import { createPinia } from "pinia";
-import PrimeVue from "primevue/config";
-import Button from "primevue/button";
-import Paginator from "primevue/paginator";
 import vuetify from "./plugins/vuetify";
 
 import "@/assets/primeicons/primeicons.css";
@@ -45,10 +42,6 @@ import vHasPermission from "@/shared/directives/v-has-permission";
 
   app.use(createPinia());
   app.directive("has-permission", vHasPermission);
-  app.use(PrimeVue);
-  app.component("PButton", Button);
-  app.component("AppPaginator", Paginator);
-
   app.use(router);
   app.use(toastPlugin);
   app.use(vuetify);

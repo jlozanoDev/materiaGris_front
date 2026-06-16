@@ -59,6 +59,7 @@ async function handleSave(payload: Record<string, unknown>): Promise<void> {
   try {
     const id = route.params.id as string;
     await updatePatient(id, payload);
+    await fetchPatientById(id);
     show("Paciente actualizado correctamente", "success", 2500);
   } catch (err: unknown) {
     const msg =
@@ -82,6 +83,7 @@ function handleCancel(): void {
     <div class="flex flex-1 min-w-0 overflow-hidden">
       <main class="flex flex-1 min-w-0 flex-col overflow-y-auto p-5 gap-5">
         <div class="flex flex-col gap-0">
+          <TopBarLayout :user="authStore.user" @logout="logout" />
           <Breadcrumb
             :items="[
               {
@@ -100,7 +102,6 @@ function handleCancel(): void {
               },
             ]"
           />
-          <TopBarLayout :user="authStore.user" @logout="logout" />
         </div>
 
         <!-- Loading state -->
@@ -149,11 +150,12 @@ function handleCancel(): void {
         <!-- Patient detail content -->
         <div v-else-if="patient" class="bg-white rounded-2xl shadow-sm p-6">
           <!-- Patient header -->
-          <div class="mb-6">
-            <h1 class="text-xl font-bold text-slate-800">
-              {{ patient.first_name }} {{ patient.last_name }} <span v-if="patient.second_last_name"> {{ patient.second_last_name }}</span>
-            </h1>
-            <div class="flex flex-wrap gap-x-6 gap-y-1.5 mt-2 text-sm text-slate-500">
+          <div class="flex items-start justify-between mb-6">
+            <div>
+              <h1 class="text-xl font-bold text-slate-800">
+                {{ patient.first_name }} {{ patient.last_name }} <span v-if="patient.second_last_name"> {{ patient.second_last_name }}</span>
+              </h1>
+              <div class="flex flex-wrap gap-x-6 gap-y-1.5 mt-2 text-sm text-slate-500">
               <span class="flex items-center gap-1.5">
                 <i class="pi pi-hashtag text-indigo-400 text-xs"></i>
                 {{ patient.medical_record_number }}
@@ -185,7 +187,26 @@ function handleCancel(): void {
             </div>
           </div>
 
-          <!-- Custom Tabs -->
+          <!-- Active toggle -->
+          <div class="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              :aria-pressed="patient.is_active"
+              class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none"
+              :class="patient.is_active ? 'bg-indigo-600' : 'bg-slate-200'"
+              @click="patient.is_active = !patient.is_active"
+            >
+              <span class="sr-only">Activo</span>
+              <span
+                class="transform rounded-full bg-white h-5 w-5 shadow transition-transform"
+                :class="patient.is_active ? 'translate-x-5' : 'translate-x-0'"
+              ></span>
+            </button>
+            <label class="text-sm text-slate-600 select-none">Activo</label>
+          </div>
+        </div>
+
+        <!-- Custom Tabs -->
           <div class="border-b border-slate-200">
             <div class="flex gap-0">
               <button
