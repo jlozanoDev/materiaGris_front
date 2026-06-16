@@ -3,13 +3,13 @@ import { useAuthStore } from "@/core/store/auth";
 
 const routes: RouteRecordRaw[] = [
   { path: "/", name: "Dashboard", component: () => import("@/modules/dashboard/presentation/pages/DashboardPage.vue"), meta: { requiresAuth: true } },
-  { path: "/admin/users", name: "AdminUsers", component: () => import("@/modules/admin/users/presentation/pages/UsersPage.vue"), meta: { requiresAuth: true } },
-  { path: "/admin/roles", name: "AdminRoles", component: () => import("@/modules/admin/roles/presentation/pages/RolesPage.vue"), meta: { requiresAuth: true } },
+  { path: "/admin/users", name: "AdminUsers", component: () => import("@/modules/admin/users/presentation/pages/UsersPage.vue"), meta: { requiresAuth: true, permissions: ['admin.user.view', 'admin.users.view'] } },
+  { path: "/admin/roles", name: "AdminRoles", component: () => import("@/modules/admin/roles/presentation/pages/RolesPage.vue"), meta: { requiresAuth: true, permissions: ['admin.role.view', 'admin.roles.view'] } },
   {
     path: "/admin/permissions",
     name: "AdminPermissions",
     component: () => import("@/modules/admin/permissions/presentation/pages/PermissionsPage.vue"),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, permissions: ['admin.permission.view', 'admin.permissions.view'] },
   },
   {
     path: "/admin/report-templates",
@@ -53,7 +53,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import("@/modules/reports/presentation/pages/ReportFillPage.vue"),
     meta: { requiresAuth: true, permissions: 'report.create' },
   },
-  { path: "/patients", name: "Patients", component: () => import("@/modules/patients/presentation/pages/PatientsPage.vue"), meta: { requiresAuth: true } },
+  { path: "/patients", name: "Patients", component: () => import("@/modules/patients/presentation/pages/PatientsPage.vue"), meta: { requiresAuth: true, permissions: ['patient.view'] } },
   {
     path: "/patients/:id",
     name: "PatientDetail",

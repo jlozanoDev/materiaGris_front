@@ -82,7 +82,7 @@ watch(
       <form
         id="patient-form"
         class="space-y-4"
-        @submit.prevent="emit('save', { ...localForm.value })"
+        @submit.prevent="emit('save', { ...localForm })"
       >
         <!-- Identificación -->
         <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">

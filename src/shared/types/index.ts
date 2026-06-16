@@ -25,6 +25,18 @@ export interface Patient {
   city: string;
   insurance_id?: string;
   is_active?: boolean;
+  email?: string;
+  phone?: string;
+  mobile?: string;
+  contact_name?: string;
+  contact_phone?: string;
+  address_line1?: string;
+  address_line2?: string;
+  neighborhood?: string;
+  postal_code?: string;
+  state?: string;
+  country?: string;
+  last_visit_at?: string;
 }
 
 // Admin

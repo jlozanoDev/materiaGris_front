@@ -1,11 +1,17 @@
 import { API_BASE } from "@/core/config/env";
 import type { FetchClientOptions, ApiError } from "@/shared/types";
+import { useToast } from "@/shared/composables/useToast";
 
 let onUnauthorizedCallback: (() => void) | null = null;
+let onForbiddenCallback: (() => void) | null = null;
 let tokenGetter: (() => string | null) | null = null;
 
 export function setUnauthorizedHandler(cb: () => void): void {
   onUnauthorizedCallback = cb;
+}
+
+export function setForbiddenHandler(cb: () => void): void {
+  onForbiddenCallback = cb;
 }
 
 export function setTokenGetter(fn: () => string | null): void {
@@ -67,6 +73,16 @@ export async function fetchClient(path: string, options: FetchClientOptions = {}
       window.location.href = "/login";
     }
     return Promise.reject({ status: 401, body } satisfies ApiError);
+  }
+
+  if (response.status === 403) {
+    const { show } = useToast();
+    const msg = body?.message || "No tienes permisos para realizar esta acción";
+    show(msg, "error", 4000);
+    if (typeof onForbiddenCallback === "function") {
+      onForbiddenCallback();
+    }
+    return Promise.reject({ status: 403, body } satisfies ApiError);
   }
 
   if (!response.ok) return Promise.reject({ status: response.status, body } satisfies ApiError);

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import AppSidebar from "@/shared/components/AppSidebar.vue";
 import TopBarLayout from "@/shared/components/TopBarLayout.vue";
@@ -21,6 +21,20 @@ const { show } = useToast();
 
 const activeTab = ref(0);
 const saving = ref(false);
+
+function calculateAge(dob: string): number {
+  if (!dob) return 0;
+  const birth = new Date(dob);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+  return age;
+}
+
+const age = computed(() =>
+  patient.value ? calculateAge(patient.value.date_of_birth) : 0,
+);
 
 onMounted(async () => {
   await authStore.fetchUser();
@@ -125,14 +139,38 @@ function handleCancel(): void {
           <!-- Patient header -->
           <div class="mb-6">
             <h1 class="text-xl font-bold text-slate-800">
-              {{ patient.first_name }} {{ patient.last_name }}
+              {{ patient.first_name }} {{ patient.last_name }}<span v-if="patient.second_last_name"> {{ patient.second_last_name }}</span>
             </h1>
-            <p class="text-sm text-slate-400 mt-1">
-              {{ patient.medical_record_number }}
-              <span v-if="patient.national_id">
-                — {{ patient.national_id }}
+            <div class="flex flex-wrap gap-x-6 gap-y-1.5 mt-2 text-sm text-slate-500">
+              <span class="flex items-center gap-1.5">
+                <i class="pi pi-hashtag text-indigo-400 text-xs"></i>
+                {{ patient.medical_record_number }}
               </span>
-            </p>
+              <span v-if="patient.national_id" class="flex items-center gap-1.5">
+                <i class="pi pi-id-card text-indigo-400 text-xs"></i>
+                {{ patient.national_id }}
+              </span>
+              <span v-if="patient.date_of_birth" class="flex items-center gap-1.5">
+                <i class="pi pi-calendar text-indigo-400 text-xs"></i>
+                {{ patient.date_of_birth }} ({{ age }} años)
+              </span>
+              <span v-if="patient.gender" class="flex items-center gap-1.5">
+                <i class="pi pi-user text-indigo-400 text-xs"></i>
+                {{ { M: 'Masculino', F: 'Femenino', other: 'Otro' }[patient.gender] || patient.gender }}
+              </span>
+              <span v-if="patient.phone" class="flex items-center gap-1.5">
+                <i class="pi pi-phone text-indigo-400 text-xs"></i>
+                {{ patient.phone }}
+              </span>
+              <span v-if="patient.email" class="flex items-center gap-1.5">
+                <i class="pi pi-envelope text-indigo-400 text-xs"></i>
+                {{ patient.email }}
+              </span>
+              <span v-if="patient.city" class="flex items-center gap-1.5">
+                <i class="pi pi-map-marker text-indigo-400 text-xs"></i>
+                {{ patient.city }}
+              </span>
+            </div>
           </div>
 
           <!-- Vuetify Tabs -->

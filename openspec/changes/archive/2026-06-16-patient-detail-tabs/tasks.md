@@ -57,9 +57,9 @@ Chain strategy: pending
 
 ## Phase 4: Tests
 
-- [ ] 4.1 Unit test `GetPatientUseCase` — inject mock `PatientRepository`, verify `getById(id)` called, verify return value
-- [ ] 4.2 Unit test `fetchPatientById` composable — mock `provideGetPatientUseCase`, verify `patient` ref populated on success and `patientLoading` transitions
-- [ ] 4.3 Integration test `PatientDetailPage` — mount with stubbed router + useCase, verify both tabs render, tab switching works, "Nuevo informe" link points to correct route
+- [x] 4.1 Unit test `GetPatientUseCase` — inject mock `PatientRepository`, verify `getById(id)` called, verify return value
+- [x] 4.2 Unit test `fetchPatientById` composable — mock `provideGetPatientUseCase`, verify `patient` ref populated on success and `patientLoading` transitions
+- [x] 4.3 Integration test `PatientDetailPage` — mount with stubbed router + useCase, verify both tabs render, tab switching works, "Nuevo informe" link points to correct route
 
 ## Risks
 

@@ -86,6 +86,7 @@ const { logout } = useLogout();
 const {
   patients: _patients,
   loading,
+  error,
   fetchPatients: fetchPatientsUseCase,
   createPatient,
   updatePatient,
@@ -355,6 +356,19 @@ onMounted(async () => {
                 <div class="h-8 w-8 bg-slate-200 rounded-2xl ml-auto animate-pulse" />
               </div>
             </div>
+          </div>
+
+          <div v-else-if="error" class="flex flex-col items-center justify-center py-12">
+            <i class="pi pi-exclamation-triangle text-slate-300 text-5xl mb-4"></i>
+            <p class="text-slate-500 text-center">
+              {{ error?.body?.message || "No se pudieron cargar los pacientes. No tienes permiso para ver esta sección." }}
+            </p>
+            <button
+              class="mt-4 px-4 py-2 rounded-xl text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+              @click="fetchPatients()"
+            >
+              Reintentar
+            </button>
           </div>
 
           <div v-else>

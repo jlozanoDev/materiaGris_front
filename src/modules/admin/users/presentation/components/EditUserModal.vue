@@ -378,7 +378,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed, onMounted } from "vue";
+import { ref, watch, computed } from "vue";
 import Modal from "@/shared/components/Modal.vue";
 import { fetchClient } from "@/core/api/httpClient";
 
@@ -521,11 +521,6 @@ const availableRoles = computed<UserRole[]>(() => {
 
 const isNewUser = computed<boolean>(() => props.isNew);
 const showPermissions = ref(false);
-
-onMounted(() => {
-  fetchRoles();
-  fetchPermissions();
-});
 
 watch(() => props.show, (val) => {
   if (val) {
