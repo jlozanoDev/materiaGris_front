@@ -46,9 +46,9 @@ Chain strategy: pending
 
 ## Phase 2: UI Components
 
-- [ ] 2.1 Extract `PatientGeneralDataTab.vue` from `PatientsPage.vue` lines 609–919 into `src/modules/patients/presentation/components/PatientGeneralDataTab.vue` — copy-paste-as-is: Modal body → component template, props: `patient: PatientFormData`, `saving: boolean`, emits: `save`. Preserve all validation, CustomSelect, collapsible sections, active-toggle
-- [ ] 2.2 Create `src/modules/patients/presentation/components/PatientReportsTab.vue` — props: `patientId`, uses `useReportList().fetchReports({ patient_id: patientId })`, renders report list with status badges, empty state "No hay informes clínicos", "Nuevo informe" link → `/pacientes/:patientId/informe/nuevo`
-- [ ] 2.3 Create `src/modules/patients/presentation/pages/PatientDetailPage.vue` — imports AppSidebar, Breadcrumb, TopBarLayout, `v-tabs`/`v-tabs-window`, `PatientGeneralDataTab`, `PatientReportsTab`. Calls `fetchPatientById(id)` on mount. Props-down patient data to tabs. Handles loading (skeleton), error ("Paciente no encontrado"), and save event → `updatePatient`
+- [x] 2.1 Extract `PatientGeneralDataTab.vue` from `PatientsPage.vue` lines 609–919 into `src/modules/patients/presentation/components/PatientGeneralDataTab.vue` — copy-paste-as-is: Modal body → component template, props: `patient: PatientFormData`, `saving: boolean`, emits: `save`. Preserve all validation, CustomSelect, collapsible sections, active-toggle
+- [x] 2.2 Create `src/modules/patients/presentation/components/PatientReportsTab.vue` — props: `patientId`, uses `useReportList().fetchReports({ patient_id: patientId })`, renders report list with status badges, empty state "No hay informes clínicos", "Nuevo informe" link → `/pacientes/:patientId/informe/nuevo`
+- [x] 2.3 Create `src/modules/patients/presentation/pages/PatientDetailPage.vue` — imports AppSidebar, Breadcrumb, TopBarLayout, `v-tabs`/`v-tabs-window`, `PatientGeneralDataTab`, `PatientReportsTab`. Calls `fetchPatientById(id)` on mount. Props-down patient data to tabs. Handles loading (skeleton), error ("Paciente no encontrado"), and save event → `updatePatient`
 
 ## Phase 3: Wiring
 
