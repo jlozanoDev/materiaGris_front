@@ -2,7 +2,7 @@
   <div class="flex min-h-screen bg-gray-50">
     <AppSidebar />
     <div class="flex-1 p-6">
-      <TopBar />
+      <TopBarLayout :user="authStore.user" @logout="logout" />
       <Breadcrumb :items="breadcrumbItems" />
 
       <div class="mt-6">
@@ -57,15 +57,17 @@
 import { computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import AppSidebar from "@/shared/components/AppSidebar.vue";
-import TopBar from "@/shared/components/TopBar.vue";
+import TopBarLayout from "@/shared/components/TopBarLayout.vue";
 import Breadcrumb from "@/shared/components/Breadcrumb.vue";
 import DynamicFormRenderer from "@/modules/reports/presentation/components/DynamicFormRenderer.vue";
 import { useReportForm } from "@/modules/reports/presentation/composables/useReportForm";
 import { useAuthStore } from "@/core/store/auth";
+import { useLogout } from "@/shared/composables/useLogout";
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
+const { logout } = useLogout();
 
 const { report, loadReport, downloadPdf } = useReportForm();
 

@@ -2,7 +2,7 @@
 import { onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import AppSidebar from "@/shared/components/AppSidebar.vue";
-import TopBar from "@/shared/components/TopBar.vue";
+import TopBarLayout from "@/shared/components/TopBarLayout.vue";
 import Breadcrumb from "@/shared/components/Breadcrumb.vue";
 import UiVuetifyDataTable from "@/shared/components/UiVuetifyDataTable.vue";
 import { useAuthStore } from "@/core/store/auth";
@@ -110,7 +110,7 @@ onMounted(async () => {
       <main class="flex flex-1 min-w-0 flex-col p-5 gap-5 min-h-0">
         <div class="flex flex-col gap-0 shrink-0 relative z-10">
           <Breadcrumb :items="breadcrumb" />
-          <TopBar
+          <TopBarLayout
             :user="authStore.user"
             @logout="logout"
           />

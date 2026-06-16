@@ -8,7 +8,7 @@ import SectionPanel from '../components/SectionPanel.vue'
 import FieldPropertiesPanel from '../components/FieldPropertiesPanel.vue'
 import HeaderFooterEditor from '../components/HeaderFooterEditor.vue'
 import AppSidebar from '@/shared/components/AppSidebar.vue'
-import TopBar from '@/shared/components/TopBar.vue'
+import TopBarLayout from '@/shared/components/TopBarLayout.vue'
 import Breadcrumb from '@/shared/components/Breadcrumb.vue'
 import { useAuthStore } from '@/core/store/auth'
 import { useLogout } from '@/shared/composables/useLogout'
@@ -155,7 +155,7 @@ onMounted(async () => {
     <div class="flex flex-1 min-w-0 overflow-hidden flex-col">
       <div class="flex flex-col gap-0 shrink-0 relative z-10 px-5 pt-5">
         <Breadcrumb :items="breadcrumb" />
-        <TopBar
+        <TopBarLayout
           :user="authStore.user"
           @logout="logout"
         />

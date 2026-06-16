@@ -2,7 +2,7 @@
   <div class="flex min-h-screen bg-gray-50">
     <AppSidebar />
     <div class="flex-1 p-6">
-      <TopBar />
+      <TopBarLayout :user="authStore.user" @logout="logout" />
       <Breadcrumb :items="breadcrumbItems" />
 
       <div class="mt-6">
@@ -133,12 +133,16 @@
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import AppSidebar from "@/shared/components/AppSidebar.vue";
-import TopBar from "@/shared/components/TopBar.vue";
+import TopBarLayout from "@/shared/components/TopBarLayout.vue";
+import { useAuthStore } from "@/core/store/auth";
+import { useLogout } from "@/shared/composables/useLogout";
 import Breadcrumb from "@/shared/components/Breadcrumb.vue";
 import CustomSelect from "@/shared/components/CustomSelect.vue";
 import { useReportList } from "@/modules/reports/presentation/composables/useReportList";
 
 const router = useRouter();
+const authStore = useAuthStore();
+const { logout } = useLogout();
 const { reports, loading, error, fetchReports } = useReportList();
 
 const breadcrumbItems = [{ text: "Informes" }];
@@ -211,6 +215,7 @@ function viewReport(id: string | number): void {
 }
 
 onMounted(() => {
+  authStore.fetchUser();
   fetchReports();
 });
 </script>

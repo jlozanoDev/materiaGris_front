@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, computed } from "vue";
 import AppSidebar from "@/shared/components/AppSidebar.vue";
-import TopBar from "@/shared/components/TopBar.vue";
+import TopBarLayout from "@/shared/components/TopBarLayout.vue";
 import Breadcrumb from "@/shared/components/Breadcrumb.vue";
 import UiVuetifyDataTable from "@/shared/components/UiVuetifyDataTable.vue";
 import Modal from "@/shared/components/Modal.vue";
@@ -331,7 +331,7 @@ onMounted(async () => {
               { text: 'Pacientes', icon: 'pi pi-users' },
             ]"
           />
-          <TopBar :user="authStore.user" @logout="logout" />
+          <TopBarLayout :user="authStore.user" @logout="logout" />
         </div>
 
         <div class="bg-white rounded-2xl shadow-sm p-6 flex flex-col">

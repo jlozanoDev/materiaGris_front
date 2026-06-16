@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from "vue";
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useLogout } from "@/shared/composables/useLogout";
 import { useAuthStore } from "@/core/store/auth";
@@ -12,6 +12,21 @@ const route = useRoute();
 const active = ref<number>(0);
 const items: SidebarIcon[] = ["grid", "patients", "settings"];
 const { logout, loading } = useLogout();
+
+const hasAnySettingsPermission = computed(() =>
+  authStore.hasPermissions(
+    [
+      "admin.user.view",
+      "admin.users.view",
+      "admin.role.view",
+      "admin.roles.view",
+      "admin.permission.view",
+      "admin.permissions.view",
+      "admin.reporttemplate.view",
+    ],
+    "any"
+  )
+);
 
 const menuOpen = ref<boolean>(false);
 const settingsWrapRef = ref<HTMLElement | null>(null);
@@ -116,7 +131,7 @@ watch(
       </button>
 
       <!-- Settings: fuera del v-for para que settingsWrapRef sea un solo nodo DOM -->
-      <div ref="settingsWrapRef" class="relative">
+      <div v-if="hasAnySettingsPermission" ref="settingsWrapRef" class="relative">
         <button
           :title="getTitle('settings')"
           :aria-label="getTitle('settings')"
