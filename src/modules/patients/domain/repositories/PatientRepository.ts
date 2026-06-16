@@ -16,6 +16,7 @@ export interface PatientSearchFilters {
 
 export interface PatientRepository {
   search(filters: PatientSearchFilters): Promise<Patient[]>;
+  getById(id: number | string): Promise<Patient>;
   create(payload: Record<string, unknown>): Promise<Patient>;
   update(id: number | string, payload: Record<string, unknown>): Promise<Patient>;
 }

@@ -25,6 +25,36 @@ export default class ApiPatientRepository implements PatientRepository {
     return Array.isArray(res) ? res : res?.data || [];
   }
 
+  async getById(id: number | string): Promise<any> {
+    // STUB — remove when GET /patients/:id is implemented in backend
+    console.warn("[STUB] GET /patients/:id — endpoint not yet implemented");
+    return {
+      id,
+      medical_record_number: `HC-${String(id).padStart(5, "0")}`,
+      national_id: "",
+      insurance_id: null,
+      first_name: "",
+      last_name: "",
+      second_last_name: null,
+      gender: "",
+      date_of_birth: "",
+      last_visit_at: null,
+      email: null,
+      phone: null,
+      mobile: null,
+      contact_name: null,
+      contact_phone: null,
+      address_line1: null,
+      address_line2: null,
+      city: "",
+      state: null,
+      postal_code: null,
+      neighborhood: null,
+      country: null,
+      is_active: true,
+    };
+  }
+
   async create(payload: Record<string, unknown>): Promise<any> {
     const body = { ...payload };
     Object.keys(body).forEach((k) => {
