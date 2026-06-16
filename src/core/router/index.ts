@@ -54,6 +54,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true, permissions: 'report.create' },
   },
   { path: "/patients", name: "Patients", component: () => import("@/modules/patients/presentation/pages/PatientsPage.vue"), meta: { requiresAuth: true } },
+  {
+    path: "/patients/:id",
+    name: "PatientDetail",
+    component: () => import("@/modules/patients/presentation/pages/PatientDetailPage.vue"),
+    meta: { requiresAuth: true },
+  },
   { path: "/login", name: "Login", component: () => import("@/modules/auth/presentation/pages/LoginView.vue") },
   { path: "/welcome", name: "Landing", component: () => import("@/modules/landing/presentation/pages/LandingPage.vue") },
   { path: "/aviso-legal", name: "LegalNotice", component: () => import("@/modules/landing/presentation/pages/LegalNoticePage.vue") },

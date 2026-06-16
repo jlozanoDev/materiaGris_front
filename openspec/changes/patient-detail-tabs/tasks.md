@@ -52,8 +52,8 @@ Chain strategy: pending
 
 ## Phase 3: Wiring
 
-- [ ] 3.1 Add `/patients/:id` route to `src/core/router/index.ts` — name: `PatientDetail`, lazy-load `PatientDetailPage.vue`, `meta: { requiresAuth: true }`
-- [ ] 3.2 Change `editPatient()` in `src/modules/patients/presentation/pages/PatientsPage.vue` — replace `editing.value = true` + form population with `router.push({ name: 'PatientDetail', params: { id: data.id } })`. Remove unused `editing` modal logic only if no other modal uses it
+- [x] 3.1 Add `/patients/:id` route to `src/core/router/index.ts` — name: `PatientDetail`, lazy-load `PatientDetailPage.vue`, `meta: { requiresAuth: true }`
+- [x] 3.2 Change `editPatient()` in `src/modules/patients/presentation/pages/PatientsPage.vue` — replace `editing.value = true` + form population with `router.push({ name: 'PatientDetail', params: { id: data.id } })`. Remove unused `editing` modal logic only if no other modal uses it
 
 ## Phase 4: Tests
 

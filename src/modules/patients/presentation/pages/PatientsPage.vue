@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, computed } from "vue";
+import { useRouter } from "vue-router";
 import AppSidebar from "@/shared/components/AppSidebar.vue";
 import TopBarLayout from "@/shared/components/TopBarLayout.vue";
 import Breadcrumb from "@/shared/components/Breadcrumb.vue";
@@ -104,6 +105,7 @@ watch(globalFilter, (val: string) => {
 const rows = ref<number>(10);
 
 const { show } = useToast();
+const router = useRouter();
 
 const columns: DataTableColumn[] = [
   { key: "medical_record_number", field: "medical_record_number", label: "NHC", sortable: true },
@@ -278,36 +280,8 @@ function fetchPatients(): void {
 }
 
 function editPatient(p: any): void {
-  const pr = p as Record<string, unknown>;
   const patient = p as Patient;
-  editing.value = true;
-  contactOpen.value = false;
-  addressOpen.value = false;
-  form.value = {
-    id: patient.id,
-    medical_record_number: patient.medical_record_number || "",
-    national_id: patient.national_id || "",
-    first_name: patient.first_name || "",
-    last_name: patient.last_name || "",
-    second_last_name: patient.second_last_name || "",
-    gender: patient.gender || "",
-    date_of_birth: patient.date_of_birth || "",
-    last_visit_at: (pr.last_visit_at as string) || "",
-    city: patient.city || "",
-    is_active: !!patient.is_active,
-    insurance_id: patient.insurance_id != null ? String(patient.insurance_id) : "",
-    email: (pr.email as string) || "",
-    phone: (pr.phone as string) || "",
-    mobile: (pr.mobile as string) || "",
-    contact_name: (pr.contact_name as string) || "",
-    contact_phone: (pr.contact_phone as string) || "",
-    address_line1: (pr.address_line1 as string) || "",
-    address_line2: (pr.address_line2 as string) || "",
-    neighborhood: (pr.neighborhood as string) || "",
-    postal_code: (pr.postal_code as string) || "",
-    state: (pr.state as string) || "",
-    country: (pr.country as string) || "",
-  };
+  router.push({ name: "PatientDetail", params: { id: patient.id } });
 }
 
 // --- Lifecycle ---
