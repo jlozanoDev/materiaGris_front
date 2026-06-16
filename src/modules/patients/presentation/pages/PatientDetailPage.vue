@@ -20,7 +20,19 @@ const { patient, patientLoading, error, fetchPatientById, updatePatient } =
 const { show } = useToast();
 
 const activeTab = ref(0);
+const tabs = [
+  { value: 0, label: "Datos generales", icon: "pi pi-address-book" },
+  { value: 1, label: "Informes clínicos", icon: "pi pi-file" },
+];
 const saving = ref(false);
+
+function formatDate(iso: string): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const day = String(d.getUTCDate()).padStart(2, "0");
+  const month = String(d.getUTCMonth() + 1).padStart(2, "0");
+  return `${day}/${month}/${d.getUTCFullYear()}`;
+}
 
 function calculateAge(dob: string): number {
   if (!dob) return 0;
@@ -139,7 +151,7 @@ function handleCancel(): void {
           <!-- Patient header -->
           <div class="mb-6">
             <h1 class="text-xl font-bold text-slate-800">
-              {{ patient.first_name }} {{ patient.last_name }}<span v-if="patient.second_last_name"> {{ patient.second_last_name }}</span>
+              {{ patient.first_name }} {{ patient.last_name }} <span v-if="patient.second_last_name"> {{ patient.second_last_name }}</span>
             </h1>
             <div class="flex flex-wrap gap-x-6 gap-y-1.5 mt-2 text-sm text-slate-500">
               <span class="flex items-center gap-1.5">
@@ -152,7 +164,7 @@ function handleCancel(): void {
               </span>
               <span v-if="patient.date_of_birth" class="flex items-center gap-1.5">
                 <i class="pi pi-calendar text-indigo-400 text-xs"></i>
-                {{ patient.date_of_birth }} ({{ age }} años)
+                {{ formatDate(patient.date_of_birth) }} ({{ age }} años)
               </span>
               <span v-if="patient.gender" class="flex items-center gap-1.5">
                 <i class="pi pi-user text-indigo-400 text-xs"></i>
@@ -173,26 +185,41 @@ function handleCancel(): void {
             </div>
           </div>
 
-          <!-- Vuetify Tabs -->
-          <v-tabs v-model="activeTab" color="indigo">
-            <v-tab value="0">Datos generales</v-tab>
-            <v-tab value="1">Informes clínicos</v-tab>
-          </v-tabs>
+          <!-- Custom Tabs -->
+          <div class="border-b border-slate-200">
+            <div class="flex gap-0">
+              <button
+                v-for="t in tabs"
+                :key="t.value"
+                class="px-5 py-3 text-sm font-medium transition-colors relative"
+                :class="activeTab === t.value ? 'text-indigo-600' : 'text-slate-400 hover:text-slate-600'"
+                @click="activeTab = t.value"
+              >
+                <i :class="t.icon" class="mr-1.5 text-xs" />
+                {{ t.label }}
+                <span
+                  v-if="activeTab === t.value"
+                  class="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-full"
+                />
+              </button>
+            </div>
+          </div>
 
-          <v-tabs-window v-model="activeTab" class="mt-4">
-            <v-tabs-window-item value="0">
-              <PatientGeneralDataTab
-                :patient="patient as any"
-                :saving="saving"
-                @save="handleSave"
-                @cancel="handleCancel"
-              />
-            </v-tabs-window-item>
-
-            <v-tabs-window-item value="1">
-              <PatientReportsTab :patient-id="route.params.id as string" />
-            </v-tabs-window-item>
-          </v-tabs-window>
+          <div class="mt-4">
+            <PatientGeneralDataTab
+              v-if="activeTab === 0"
+              :key="0"
+              :patient="patient as any"
+              :saving="saving"
+              @save="handleSave"
+              @cancel="handleCancel"
+            />
+            <PatientReportsTab
+              v-if="activeTab === 1"
+              :key="1"
+              :patient-id="route.params.id as string"
+            />
+          </div>
         </div>
       </main>
     </div>

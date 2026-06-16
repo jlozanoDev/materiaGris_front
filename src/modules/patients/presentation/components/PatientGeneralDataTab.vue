@@ -58,7 +58,6 @@ watch(
   <div>
     <!-- Header: title + active toggle -->
     <div class="flex items-center justify-between mb-4 w-full">
-      <h3 class="text-lg font-semibold text-slate-800">Editar paciente</h3>
       <div class="flex items-center gap-3 ml-auto">
         <button
           type="button"
