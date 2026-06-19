@@ -1,4 +1,4 @@
-import type { PatientReport } from "@/shared/types";
+import type { PatientReport, ReportTemplate } from "@/shared/types";
 
 export interface ReportRepository {
   initReport(patientId: string | number, templateId: string | number): Promise<PatientReport>;
@@ -8,4 +8,5 @@ export interface ReportRepository {
   sign(id: string | number, signature: string): Promise<PatientReport>;
   close(id: string | number): Promise<PatientReport>;
   downloadPdf(id: string | number): Promise<Blob>;
+  getActiveTemplates(): Promise<ReportTemplate[]>;
 }

@@ -1,4 +1,5 @@
 import type { ReportRepository } from "@/modules/reports/domain/repositories/ReportRepository";
+import type { ReportTemplate } from "@/shared/types";
 import { fetchClient } from "@/core/api/httpClient";
 
 export default class ApiReportRepository implements ReportRepository {
@@ -74,6 +75,14 @@ export default class ApiReportRepository implements ReportRepository {
       });
     } catch (err) {
       throw new Error("Error al cerrar el informe");
+    }
+  }
+
+  async getActiveTemplates(): Promise<ReportTemplate[]> {
+    try {
+      return await fetchClient("/templates/active", { method: "GET" });
+    } catch {
+      throw new Error("Error al obtener las plantillas activas");
     }
   }
 

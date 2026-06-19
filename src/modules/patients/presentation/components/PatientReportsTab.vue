@@ -1,18 +1,28 @@
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useReportList } from "@/modules/reports/presentation/composables/useReportList";
-import type { ReportStatus } from "@/shared/types";
+import { useTemplateList } from "@/modules/reports/presentation/composables/useTemplateList";
+import { useAuthStore } from "@/core/store/auth";
+import TemplatePickerModal from "@/modules/reports/presentation/components/TemplatePickerModal.vue";
+import type { ReportStatus, ReportTemplate } from "@/shared/types";
 
 const props = defineProps<{
   patientId: string | number;
 }>();
 
 const router = useRouter();
+const authStore = useAuthStore();
 const { reports, loading, error, fetchReports } = useReportList();
+const { templates, fetchActive: fetchTemplates } = useTemplateList();
+
+const showModal = ref(false);
+const canCreate = computed(() => authStore.hasPermission("report.create"));
+const templatesAvailable = computed(() => templates.value.length > 0);
 
 onMounted(() => {
   fetchReports({ patient_id: props.patientId });
+  fetchTemplates();
 });
 
 function statusBadgeClass(status: ReportStatus): string {
@@ -42,7 +52,24 @@ function statusLabel(status: ReportStatus): string {
 }
 
 function goToNewReport(): void {
-  router.push({ name: "ReportCreate", params: { id: props.patientId } });
+  showModal.value = true;
+}
+
+function handleSelectTemplate(template: ReportTemplate): void {
+  showModal.value = false;
+  router.push({
+    name: "ReportCreate",
+    params: { id: props.patientId },
+    query: { templateId: template.id },
+  });
+}
+
+function handleCloseModal(): void {
+  showModal.value = false;
+}
+
+function handleViewReport(reportId: string): void {
+  router.push({ name: "ReportView", params: { id: reportId } });
 }
 
 function formatDate(dateStr?: string): string {
@@ -94,7 +121,10 @@ function formatDate(dateStr?: string): string {
         No hay informes clínicos para este paciente
       </p>
       <button
-        class="px-4 py-2 rounded-2xl text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+        v-if="canCreate"
+        :disabled="!templatesAvailable"
+        class="px-4 py-2 rounded-2xl text-sm font-medium text-white"
+        :class="templatesAvailable ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-indigo-300 cursor-not-allowed'"
         @click="goToNewReport"
       >
         + Nuevo informe
@@ -105,7 +135,10 @@ function formatDate(dateStr?: string): string {
     <div v-else class="space-y-2">
       <div class="flex justify-end mb-3">
         <button
-          class="px-4 py-2 rounded-2xl text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+          v-if="canCreate"
+          :disabled="!templatesAvailable"
+          class="px-4 py-2 rounded-2xl text-sm font-medium text-white"
+          :class="templatesAvailable ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-indigo-300 cursor-not-allowed'"
           @click="goToNewReport"
         >
           + Nuevo informe
@@ -115,7 +148,8 @@ function formatDate(dateStr?: string): string {
       <div
         v-for="report in reports"
         :key="report.id"
-        class="flex items-center justify-between p-4 bg-white rounded-xl border border-slate-100 hover:border-indigo-100 transition"
+        class="flex items-center justify-between p-4 bg-white rounded-xl border border-slate-100 hover:border-indigo-100 transition cursor-pointer"
+        @click="handleViewReport(report.id)"
       >
         <div class="flex flex-col gap-1">
           <span class="text-sm font-medium text-slate-800">
@@ -133,5 +167,13 @@ function formatDate(dateStr?: string): string {
         </span>
       </div>
     </div>
+
+    <!-- Template picker modal -->
+    <TemplatePickerModal
+      :show="showModal"
+      :patient-id="props.patientId"
+      @select="handleSelectTemplate"
+      @close="handleCloseModal"
+    />
   </div>
 </template>

@@ -13,9 +13,20 @@
 
         <template v-else>
           <div class="flex items-center justify-between mb-6">
-            <h1 class="text-2xl font-bold text-gray-900">
-              {{ report.status === "draft" ? "Completar Informe" : "Informe" }}
-            </h1>
+            <div class="flex items-center gap-4">
+              <button
+                v-if="isCreateFlow"
+                type="button"
+                class="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
+                @click="handleBack"
+              >
+                <i class="pi pi-arrow-left text-xs"></i>
+                Volver
+              </button>
+              <h1 class="text-2xl font-bold text-gray-900">
+                {{ report.status === "draft" ? "Completar Informe" : "Informe" }}
+              </h1>
+            </div>
 
             <div class="flex gap-3">
               <!-- Guardar borrador -->
@@ -91,7 +102,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import AppSidebar from "@/shared/components/AppSidebar.vue";
 import TopBarLayout from "@/shared/components/TopBarLayout.vue";
 import Breadcrumb from "@/shared/components/Breadcrumb.vue";
@@ -101,6 +112,7 @@ import { useAuthStore } from "@/core/store/auth";
 import { useLogout } from "@/shared/composables/useLogout";
 
 const route = useRoute();
+const router = useRouter();
 const authStore = useAuthStore();
 const { logout } = useLogout();
 
@@ -122,6 +134,14 @@ const breadcrumbItems = computed(() => [
   { text: "Informes", to: "/informes" },
   { text: report.value ? `Informe #${report.value.id}` : "Nuevo" },
 ]);
+
+// Route helpers
+const isCreateFlow = computed(() => route.name === "ReportCreate");
+
+function handleBack(): void {
+  const patientId = route.params.id as string;
+  router.push(`/patients/${patientId}?tab=reports`);
+}
 
 // Permissions
 const canEdit = computed(() => authStore.hasPermission("report.edit"));
@@ -171,14 +191,17 @@ async function handleDownloadPdf(): Promise<void> {
 }
 
 onMounted(async () => {
-  const id = route.params.id as string;
-  const patientId = route.query.patientId as string;
-  const templateId = route.query.templateId as string;
-
-  if (id) {
-    await loadReport(id);
-  } else if (patientId && templateId) {
-    await init(patientId, templateId);
+  if (route.name === "ReportCreate") {
+    const patientId = route.params.id as string;
+    const templateId = route.query.templateId as string;
+    if (patientId && templateId) {
+      await init(patientId, templateId);
+    }
+  } else {
+    const id = route.params.id as string;
+    if (id) {
+      await loadReport(id);
+    }
   }
 });
 </script>

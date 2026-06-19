@@ -6,6 +6,7 @@ import SaveReportDraftUseCase from "@/modules/reports/domain/use-cases/SaveRepor
 import SignReportUseCase from "@/modules/reports/domain/use-cases/SignReportUseCase";
 import CloseReportUseCase from "@/modules/reports/domain/use-cases/CloseReportUseCase";
 import DownloadReportPdfUseCase from "@/modules/reports/domain/use-cases/DownloadReportPdfUseCase";
+import GetActiveTemplatesUseCase from "@/modules/reports/domain/use-cases/GetActiveTemplatesUseCase";
 
 export function provideInitReportUseCase(): InitReportUseCase {
   const repo = new ApiReportRepository();
@@ -40,4 +41,9 @@ export function provideCloseReportUseCase(): CloseReportUseCase {
 export function provideDownloadReportPdfUseCase(): DownloadReportPdfUseCase {
   const repo = new ApiReportRepository();
   return new DownloadReportPdfUseCase(repo);
+}
+
+export function provideGetActiveTemplatesUseCase(): GetActiveTemplatesUseCase {
+  const repo = new ApiReportRepository();
+  return new GetActiveTemplatesUseCase(repo);
 }

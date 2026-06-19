@@ -52,6 +52,12 @@ onMounted(async () => {
   await authStore.fetchUser();
   const id = route.params.id as string;
   await fetchPatientById(id);
+
+  // Restore active tab from query param
+  const tab = route.query.tab as string;
+  if (tab === "reports") {
+    activeTab.value = 1;
+  }
 });
 
 async function handleSave(payload: Record<string, unknown>): Promise<void> {

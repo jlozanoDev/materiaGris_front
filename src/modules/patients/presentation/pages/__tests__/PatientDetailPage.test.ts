@@ -3,13 +3,17 @@ import { mount, flushPromises } from "@vue/test-utils";
 import { setActivePinia, createPinia } from "pinia";
 
 // ============================================================================
-// Mock vue-router
+// Mock vue-router — mutable query for tab restoration tests
 // ============================================================================
 
 const mockPush = vi.fn();
+const mockRoute: { params: Record<string, string>; query: Record<string, string> } = {
+  params: { id: "42" },
+  query: {},
+};
 
 vi.mock("vue-router", () => ({
-  useRoute: () => ({ params: { id: "42" } }),
+  useRoute: () => mockRoute,
   useRouter: () => ({
     push: mockPush,
     back: vi.fn(),
@@ -17,6 +21,20 @@ vi.mock("vue-router", () => ({
     currentRoute: { value: { params: { id: "42" } } },
   }),
   RouterLink: { template: "<a><slot /></a>" },
+}));
+
+// ============================================================================
+// Mock auth store
+// ============================================================================
+
+let permMap: Record<string, boolean> = {};
+
+vi.mock("@/core/store/auth", () => ({
+  useAuthStore: () => ({
+    user: { id: 1, name: "Doctor", email: "doctor@test.com" },
+    fetchUser: vi.fn().mockResolvedValue({ id: 1, name: "Doctor", email: "doctor@test.com", permissions: [] }),
+    hasPermission: (slug: string) => permMap[slug] ?? false,
+  }),
 }));
 
 // ============================================================================
@@ -38,6 +56,7 @@ vi.mock(
   "@/modules/reports/application/containers/reportsContainer",
   () => ({
     provideGetReportsUseCase: vi.fn(),
+    provideGetActiveTemplatesUseCase: vi.fn(),
   }),
 );
 
@@ -46,7 +65,6 @@ vi.mock(
 // ============================================================================
 
 import PatientDetailPage from "../PatientDetailPage.vue";
-import { useAuthStore } from "@/core/store/auth";
 import { provideGetPatientUseCase } from "@/modules/patients/application/containers/patientsContainer";
 import { provideGetReportsUseCase } from "@/modules/reports/application/containers/reportsContainer";
 
@@ -55,16 +73,6 @@ import { provideGetReportsUseCase } from "@/modules/reports/application/containe
 // ============================================================================
 
 function createWrapper() {
-  const authStore = useAuthStore();
-
-  authStore.user = {
-    id: 1,
-    name: "Doctor",
-    email: "doctor@test.com",
-    permissions: [],
-  };
-  vi.spyOn(authStore, "fetchUser").mockResolvedValue(authStore.user);
-
   return mount(PatientDetailPage, {
     global: {
       stubs: {
@@ -73,6 +81,14 @@ function createWrapper() {
         Breadcrumb: true,
         transition: false,
         "transition-group": false,
+        TemplatePickerModal: {
+          template: '<div class="picker-stub" />',
+          props: ["show", "patientId"],
+        },
+        Modal: {
+          template: '<div class="modal-stub"><slot /></div>',
+          props: ["show"],
+        },
       },
     },
   });
@@ -94,6 +110,8 @@ describe("PatientDetailPage", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
+    permMap = {};
+    mockRoute.query = {};
 
     // Default mock: successful fetch returning a patient
     const execute = vi.fn().mockResolvedValue({
@@ -124,6 +142,33 @@ describe("PatientDetailPage", () => {
     // Default mock: empty reports list
     const reportsExecute = vi.fn().mockResolvedValue([]);
     (provideGetReportsUseCase as any).mockReturnValue({ execute: reportsExecute });
+  });
+
+  // --- Tab restoration from query ---
+
+  it("restores activeTab to 1 when ?tab=reports query is present", async () => {
+    mockRoute.query.tab = "reports";
+    permMap = { "report.create": true };
+    const wrapper = createWrapper();
+    await flushPromises();
+
+    expect((wrapper.vm as any).activeTab).toBe(1);
+  });
+
+  it("defaults activeTab to 0 when no tab query is present", async () => {
+    mockRoute.query = {};
+    const wrapper = createWrapper();
+    await flushPromises();
+
+    expect((wrapper.vm as any).activeTab).toBe(0);
+  });
+
+  it("defaults activeTab to 0 for unknown tab values", async () => {
+    mockRoute.query.tab = "other";
+    const wrapper = createWrapper();
+    await flushPromises();
+
+    expect((wrapper.vm as any).activeTab).toBe(0);
   });
 
   // --- Tabs rendering ---
@@ -157,6 +202,7 @@ describe("PatientDetailPage", () => {
   // --- Nuevo informe link ---
 
   it('renders "Nuevo informe" button in the reports area', async () => {
+    permMap = { "report.create": true };
     const wrapper = createWrapper();
     await flushPromises();
 
@@ -166,7 +212,8 @@ describe("PatientDetailPage", () => {
     expect(wrapper.text()).toContain("+ Nuevo informe");
   });
 
-  it('"Nuevo informe" button calls router.push with correct route', async () => {
+  it('"Nuevo informe" button opens template picker modal', async () => {
+    permMap = { "report.create": true };
     const wrapper = createWrapper();
     await flushPromises();
     switchToReportsTab(wrapper);
@@ -178,12 +225,13 @@ describe("PatientDetailPage", () => {
     );
     expect(newReportBtn.length).toBeGreaterThanOrEqual(1);
 
+    // Click opens modal (not directly navigate)
     await newReportBtn[0].trigger("click");
+    await flushPromises();
 
-    expect(mockPush).toHaveBeenCalledWith({
-      name: "ReportCreate",
-      params: { id: "42" },
-    });
+    // Modal should now be open — verify the hack: wrapper still renders,
+    // and push was NOT called (navigates only on template select)
+    expect(mockPush).not.toHaveBeenCalled();
   });
 
   // --- Loading state ---

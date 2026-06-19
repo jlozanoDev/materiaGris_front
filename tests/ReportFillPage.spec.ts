@@ -48,7 +48,7 @@ vi.mock("@/modules/reports/presentation/composables/useReportForm", () => ({
 
 // ── Router mock ───────────────────────────────────────────────────────────────
 const mockPush = vi.fn();
-const mockRoute = { params: { id: "r1" }, query: { patientId: "10", templateId: "5" } };
+const mockRoute: Record<string, any> = { params: { id: "r1" }, query: { patientId: "10", templateId: "5" }, name: "" };
 vi.mock("vue-router", () => ({
   useRouter: () => ({ push: mockPush }),
   useRoute: () => mockRoute,
@@ -65,17 +65,53 @@ beforeEach(() => {
   mockIsSaving.value = false;
   mockSignatureValue.value = null;
   mockTypedSignatureValue.value = "";
+  mockRoute.params = { id: "r1" };
+  mockRoute.query = {};
+  mockRoute.name = "";
 });
 
 describe("ReportFillPage", () => {
-  it("calls init in create mode (query params present)", async () => {
-    permMap = { "report.create": true, "report.edit": true };
-    mockRoute.params = {};
-    mockRoute.query = { patientId: "10", templateId: "5" };
-    mockReport.value = { id: "r1", status: "draft", user_id: 1, template_structure_snapshot: { sections: [] } };
+  // ── Route disambiguation ──────────────────────────────────────────────────
+  it("calls init when route.name === 'ReportCreate'", async () => {
+    permMap = { "report.create": true };
+    mockRoute.params = { id: "42" };
+    mockRoute.query = { templateId: "7" };
+    mockRoute.name = "ReportCreate";
+    mockReport.value = { id: "r1", status: "draft", userId: 1, templateStructureSnapshot: { sections: [] } };
 
     mount(ReportFillPage, {
-      global: { stubs: ["AppSidebar", "TopBar", "Breadcrumb", "DynamicFormRenderer"] },
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb", "DynamicFormRenderer"] },
+    });
+
+    await flushPromises();
+    expect(mockInit).toHaveBeenCalledWith("42", "7");
+    expect(mockLoadReport).not.toHaveBeenCalled();
+  });
+
+  it("calls loadReport when route.name is not ReportCreate", async () => {
+    permMap = { "report.edit": true };
+    mockRoute.params = { id: "15" };
+    mockRoute.name = "ReportEdit";
+    mockReport.value = { id: "15", status: "draft", userId: 1, templateStructureSnapshot: { sections: [] } };
+
+    mount(ReportFillPage, {
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb", "DynamicFormRenderer"] },
+    });
+
+    await flushPromises();
+    expect(mockLoadReport).toHaveBeenCalledWith("15");
+    expect(mockInit).not.toHaveBeenCalled();
+  });
+
+  it("calls init in create mode with params.id and query.templateId", async () => {
+    permMap = { "report.create": true, "report.edit": true };
+    mockRoute.params = { id: "10" };
+    mockRoute.query = { templateId: "5" };
+    mockRoute.name = "ReportCreate";
+    mockReport.value = { id: "r1", status: "draft", userId: 1, templateStructureSnapshot: { sections: [] } };
+
+    mount(ReportFillPage, {
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb", "DynamicFormRenderer"] },
     });
 
     await flushPromises();
@@ -86,23 +122,73 @@ describe("ReportFillPage", () => {
     permMap = { "report.edit": true };
     mockRoute.params = { id: "r1" };
     mockRoute.query = {};
-    mockReport.value = { id: "r1", status: "draft", user_id: 1, template_structure_snapshot: { sections: [] } };
+    mockRoute.name = "ReportEdit";
+    mockReport.value = { id: "r1", status: "draft", userId: 1, templateStructureSnapshot: { sections: [] } };
 
     mount(ReportFillPage, {
-      global: { stubs: ["AppSidebar", "TopBar", "Breadcrumb", "DynamicFormRenderer"] },
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb", "DynamicFormRenderer"] },
     });
 
     await flushPromises();
     expect(mockLoadReport).toHaveBeenCalledWith("r1");
   });
 
-  it("shows Guardar button when user has report.edit", async () => {
-    permMap = { "report.edit": true };
-    mockReport.value = { id: "r1", status: "draft", user_id: 1, template_structure_snapshot: { sections: [] } };
-    mockRoute.params = { id: "r1" };
+  // ── Back navigation ───────────────────────────────────────────────────────
+  it("shows Volver button in create flow", async () => {
+    permMap = { "report.create": true };
+    mockRoute.params = { id: "42" };
+    mockRoute.query = { templateId: "7" };
+    mockRoute.name = "ReportCreate";
+    mockReport.value = { id: "r1", status: "draft", userId: 1, templateStructureSnapshot: { sections: [] } };
 
     const wrapper = mount(ReportFillPage, {
-      global: { stubs: ["AppSidebar", "TopBar", "Breadcrumb", "DynamicFormRenderer"] },
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb", "DynamicFormRenderer"] },
+    });
+    await flushPromises();
+
+    expect(wrapper.text()).toContain("Volver");
+  });
+
+  it("navigates to patient detail with tab=reports on Volver click", async () => {
+    permMap = { "report.create": true };
+    mockRoute.params = { id: "42" };
+    mockRoute.query = { templateId: "7" };
+    mockRoute.name = "ReportCreate";
+    mockReport.value = { id: "r1", status: "draft", userId: 1, templateStructureSnapshot: { sections: [] } };
+
+    const wrapper = mount(ReportFillPage, {
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb", "DynamicFormRenderer"] },
+    });
+    await flushPromises();
+
+    const volverBtn = wrapper.find("button");
+    await volverBtn.trigger("click");
+
+    expect(mockPush).toHaveBeenCalledWith("/patients/42?tab=reports");
+  });
+
+  it("does not show Volver button in edit flow", async () => {
+    permMap = { "report.edit": true };
+    mockRoute.params = { id: "15" };
+    mockRoute.name = "ReportEdit";
+    mockReport.value = { id: "15", status: "draft", userId: 1, templateStructureSnapshot: { sections: [] } };
+
+    const wrapper = mount(ReportFillPage, {
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb", "DynamicFormRenderer"] },
+    });
+    await flushPromises();
+
+    expect(wrapper.text()).not.toContain("Volver");
+  });
+
+  it("shows Guardar button when user has report.edit", async () => {
+    permMap = { "report.edit": true };
+    mockReport.value = { id: "r1", status: "draft", userId: 1, templateStructureSnapshot: { sections: [] } };
+    mockRoute.params = { id: "r1" };
+    mockRoute.name = "ReportEdit";
+
+    const wrapper = mount(ReportFillPage, {
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb", "DynamicFormRenderer"] },
     });
     await flushPromises();
 
@@ -111,11 +197,12 @@ describe("ReportFillPage", () => {
 
   it("hides Guardar button when user lacks report.edit", async () => {
     permMap = {};
-    mockReport.value = { id: "r1", status: "draft", user_id: 1, template_structure_snapshot: { sections: [] } };
+    mockReport.value = { id: "r1", status: "draft", userId: 1, templateStructureSnapshot: { sections: [] } };
     mockRoute.params = { id: "r1" };
+    mockRoute.name = "ReportEdit";
 
     const wrapper = mount(ReportFillPage, {
-      global: { stubs: ["AppSidebar", "TopBar", "Breadcrumb", "DynamicFormRenderer"] },
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb", "DynamicFormRenderer"] },
     });
     await flushPromises();
 
@@ -124,11 +211,12 @@ describe("ReportFillPage", () => {
 
   it("shows Firmar button when user has report.sign", async () => {
     permMap = { "report.edit": true, "report.sign": true };
-    mockReport.value = { id: "r1", status: "draft", user_id: 1, template_structure_snapshot: { sections: [] } };
+    mockReport.value = { id: "r1", status: "draft", userId: 1, templateStructureSnapshot: { sections: [] } };
     mockRoute.params = { id: "r1" };
+    mockRoute.name = "ReportEdit";
 
     const wrapper = mount(ReportFillPage, {
-      global: { stubs: ["AppSidebar", "TopBar", "Breadcrumb", "DynamicFormRenderer"] },
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb", "DynamicFormRenderer"] },
     });
     await flushPromises();
 
@@ -137,11 +225,12 @@ describe("ReportFillPage", () => {
 
   it("hides Firmar button when user lacks report.sign", async () => {
     permMap = { "report.edit": true };
-    mockReport.value = { id: "r1", status: "draft", user_id: 1, template_structure_snapshot: { sections: [] } };
+    mockReport.value = { id: "r1", status: "draft", userId: 1, templateStructureSnapshot: { sections: [] } };
     mockRoute.params = { id: "r1" };
+    mockRoute.name = "ReportEdit";
 
     const wrapper = mount(ReportFillPage, {
-      global: { stubs: ["AppSidebar", "TopBar", "Breadcrumb", "DynamicFormRenderer"] },
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb", "DynamicFormRenderer"] },
     });
     await flushPromises();
 
@@ -150,11 +239,12 @@ describe("ReportFillPage", () => {
 
   it("shows Cerrar button when report is signed and user has report.close", async () => {
     permMap = { "report.edit": true, "report.close": true };
-    mockReport.value = { id: "r1", status: "signed", user_id: 1, template_structure_snapshot: { sections: [] } };
+    mockReport.value = { id: "r1", status: "signed", userId: 1, templateStructureSnapshot: { sections: [] } };
     mockRoute.params = { id: "r1" };
+    mockRoute.name = "ReportEdit";
 
     const wrapper = mount(ReportFillPage, {
-      global: { stubs: ["AppSidebar", "TopBar", "Breadcrumb", "DynamicFormRenderer"] },
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb", "DynamicFormRenderer"] },
     });
     await flushPromises();
 
@@ -163,11 +253,12 @@ describe("ReportFillPage", () => {
 
   it("hides Cerrar button for draft reports", async () => {
     permMap = { "report.edit": true, "report.close": true };
-    mockReport.value = { id: "r1", status: "draft", user_id: 1, template_structure_snapshot: { sections: [] } };
+    mockReport.value = { id: "r1", status: "draft", userId: 1, templateStructureSnapshot: { sections: [] } };
     mockRoute.params = { id: "r1" };
+    mockRoute.name = "ReportEdit";
 
     const wrapper = mount(ReportFillPage, {
-      global: { stubs: ["AppSidebar", "TopBar", "Breadcrumb", "DynamicFormRenderer"] },
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb", "DynamicFormRenderer"] },
     });
     await flushPromises();
 
@@ -176,11 +267,12 @@ describe("ReportFillPage", () => {
 
   it("shows Descargar PDF when report is signed and user has report.download-pdf", async () => {
     permMap = { "report.download-pdf": true };
-    mockReport.value = { id: "r1", status: "signed", user_id: 1, template_structure_snapshot: { sections: [] } };
+    mockReport.value = { id: "r1", status: "signed", userId: 1, templateStructureSnapshot: { sections: [] } };
     mockRoute.params = { id: "r1" };
+    mockRoute.name = "ReportEdit";
 
     const wrapper = mount(ReportFillPage, {
-      global: { stubs: ["AppSidebar", "TopBar", "Breadcrumb", "DynamicFormRenderer"] },
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb", "DynamicFormRenderer"] },
     });
     await flushPromises();
 
@@ -189,11 +281,12 @@ describe("ReportFillPage", () => {
 
   it("hides Descargar PDF for draft reports", async () => {
     permMap = { "report.edit": true, "report.download-pdf": true };
-    mockReport.value = { id: "r1", status: "draft", user_id: 1, template_structure_snapshot: { sections: [] } };
+    mockReport.value = { id: "r1", status: "draft", userId: 1, templateStructureSnapshot: { sections: [] } };
     mockRoute.params = { id: "r1" };
+    mockRoute.name = "ReportEdit";
 
     const wrapper = mount(ReportFillPage, {
-      global: { stubs: ["AppSidebar", "TopBar", "Breadcrumb", "DynamicFormRenderer"] },
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb", "DynamicFormRenderer"] },
     });
     await flushPromises();
 
@@ -204,15 +297,15 @@ describe("ReportFillPage", () => {
   describe("draft → sign → close lifecycle", () => {
     it("calls sign when user confirms sign dialog", async () => {
       permMap = { "report.edit": true, "report.sign": true };
-      mockReport.value = { id: "r1", status: "draft", user_id: 1, template_structure_snapshot: { sections: [] } };
+      mockReport.value = { id: "r1", status: "draft", userId: 1, templateStructureSnapshot: { sections: [] } };
       mockRoute.params = { id: "r1" };
+      mockRoute.name = "ReportEdit";
       mockSign.mockResolvedValue(undefined);
 
-      // Mock confirm to return true
       vi.spyOn(window, "confirm").mockReturnValue(true);
 
       const wrapper = mount(ReportFillPage, {
-        global: { stubs: ["AppSidebar", "TopBar", "Breadcrumb", "DynamicFormRenderer"] },
+        global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb", "DynamicFormRenderer"] },
       });
       await flushPromises();
 
@@ -227,13 +320,14 @@ describe("ReportFillPage", () => {
 
     it("does not sign when user cancels confirm", async () => {
       permMap = { "report.edit": true, "report.sign": true };
-      mockReport.value = { id: "r1", status: "draft", user_id: 1, template_structure_snapshot: { sections: [] } };
+      mockReport.value = { id: "r1", status: "draft", userId: 1, templateStructureSnapshot: { sections: [] } };
       mockRoute.params = { id: "r1" };
+      mockRoute.name = "ReportEdit";
 
       vi.spyOn(window, "confirm").mockReturnValue(false);
 
       const wrapper = mount(ReportFillPage, {
-        global: { stubs: ["AppSidebar", "TopBar", "Breadcrumb", "DynamicFormRenderer"] },
+        global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb", "DynamicFormRenderer"] },
       });
       await flushPromises();
 
@@ -248,14 +342,15 @@ describe("ReportFillPage", () => {
 
     it("calls close when user confirms close dialog on signed report", async () => {
       permMap = { "report.edit": true, "report.close": true };
-      mockReport.value = { id: "r1", status: "signed", user_id: 1, template_structure_snapshot: { sections: [] } };
+      mockReport.value = { id: "r1", status: "signed", userId: 1, templateStructureSnapshot: { sections: [] } };
       mockRoute.params = { id: "r1" };
+      mockRoute.name = "ReportEdit";
       mockClose.mockResolvedValue(undefined);
 
       vi.spyOn(window, "confirm").mockReturnValue(true);
 
       const wrapper = mount(ReportFillPage, {
-        global: { stubs: ["AppSidebar", "TopBar", "Breadcrumb", "DynamicFormRenderer"] },
+        global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb", "DynamicFormRenderer"] },
       });
       await flushPromises();
 
@@ -275,27 +370,29 @@ describe("ReportFillPage", () => {
         "report.close": true,
         "report.download-pdf": true,
       };
-      mockReport.value = { id: "r1", status: "draft", user_id: 1, template_structure_snapshot: { sections: [] } };
+      mockReport.value = { id: "r1", status: "draft", userId: 1, templateStructureSnapshot: { sections: [] } };
       mockRoute.params = { id: "r1" };
+      mockRoute.name = "ReportEdit";
 
       const wrapper = mount(ReportFillPage, {
-        global: { stubs: ["AppSidebar", "TopBar", "Breadcrumb", "DynamicFormRenderer"] },
+        global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb", "DynamicFormRenderer"] },
       });
       await flushPromises();
 
       expect(wrapper.text()).toContain("Guardar");
       expect(wrapper.text()).toContain("Firmar");
-      expect(wrapper.text()).not.toContain("Cerrar"); // Cerrar only for signed
-      expect(wrapper.text()).not.toContain("Descargar PDF"); // PDF only for signed/closed
+      expect(wrapper.text()).not.toContain("Cerrar");
+      expect(wrapper.text()).not.toContain("Descargar PDF");
     });
 
     it("hides all action buttons when user has only report.view", async () => {
       permMap = { "report.view": true };
-      mockReport.value = { id: "r1", status: "draft", user_id: 1, template_structure_snapshot: { sections: [] } };
+      mockReport.value = { id: "r1", status: "draft", userId: 1, templateStructureSnapshot: { sections: [] } };
       mockRoute.params = { id: "r1" };
+      mockRoute.name = "ReportEdit";
 
       const wrapper = mount(ReportFillPage, {
-        global: { stubs: ["AppSidebar", "TopBar", "Breadcrumb", "DynamicFormRenderer"] },
+        global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb", "DynamicFormRenderer"] },
       });
       await flushPromises();
 
