@@ -69,7 +69,11 @@ function handleCloseModal(): void {
 }
 
 function handleViewReport(reportId: string): void {
-  router.push({ name: "ReportView", params: { id: reportId } });
+  router.push({
+    name: "ReportView",
+    params: { id: reportId },
+    query: { from: "patient", patientId: String(props.patientId) },
+  });
 }
 
 function formatDate(dateStr?: string): string {

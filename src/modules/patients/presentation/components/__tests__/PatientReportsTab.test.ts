@@ -146,6 +146,7 @@ describe("PatientReportsTab", () => {
     expect(mockPush).toHaveBeenCalledWith({
       name: "ReportView",
       params: { id: "r1" },
+      query: { from: "patient", patientId: "42" },
     });
   });
 

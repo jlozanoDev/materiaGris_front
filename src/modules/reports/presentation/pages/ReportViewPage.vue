@@ -87,6 +87,13 @@ async function handleDownloadPdf(): Promise<void> {
 }
 
 function goBack(): void {
+  if (route.query.from === "patient") {
+    const patientId = route.query.patientId as string;
+    if (patientId) {
+      router.push(`/patients/${patientId}?tab=reports`);
+      return;
+    }
+  }
   router.push({ name: "ReportList" });
 }
 

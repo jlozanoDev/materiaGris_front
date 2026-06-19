@@ -20,7 +20,7 @@ export function useTemplateList(): UseTemplateListReturn {
     try {
       const useCase = provideGetActiveTemplatesUseCase();
       const response = await useCase.execute();
-      templates.value = Array.isArray(response) ? response : [];
+      templates.value = Array.isArray(response) ? response : (response.data ?? []);
     } catch (e) {
       console.error("[useTemplateList] fetchActive error:", e);
       error.value = e;

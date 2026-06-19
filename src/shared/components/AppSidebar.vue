@@ -4,13 +4,13 @@ import { useRouter, useRoute } from "vue-router";
 import { useLogout } from "@/shared/composables/useLogout";
 import { useAuthStore } from "@/core/store/auth";
 
-type SidebarIcon = "grid" | "patients" | "settings";
+type SidebarIcon = "grid" | "patients" | "reports" | "settings";
 
 const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
 const active = ref<number>(0);
-const items: SidebarIcon[] = ["grid", "patients", "settings"];
+const items: SidebarIcon[] = ["grid", "patients", "reports", "settings"];
 const { logout, loading } = useLogout();
 
 const hasAnySettingsPermission = computed(() =>
@@ -44,6 +44,7 @@ function handleItemClick(i: number, icon: SidebarIcon, _event?: Event): void {
   const routes: Record<string, { name: string }> = {
     grid: { name: "Dashboard" },
     patients: { name: "Patients" },
+    reports: { name: "ReportList" },
   };
 
   const path = routes[icon];
@@ -60,6 +61,7 @@ function getIconForPath(p: string): SidebarIcon | null {
   if (!p) return null;
   if (p === "/" || p === "") return "grid";
   if (p.startsWith("/patients")) return "patients";
+  if (p.startsWith("/informes")) return "reports";
   if (p.startsWith("/admin")) return "settings";
   return null;
 }
@@ -67,6 +69,7 @@ function getIconForPath(p: string): SidebarIcon | null {
 const titlesMap: Record<SidebarIcon, string> = {
   grid: "Inicio",
   patients: "Pacientes",
+  reports: "Informes",
   settings: "Ajustes",
 };
 
@@ -117,7 +120,7 @@ watch(
       <button
         v-for="icon in items.filter((ic) => ic !== 'settings')"
         :key="icon"
-        v-has-permission="icon === 'patients' ? 'patient.view' : null"
+        v-has-permission="icon === 'patients' ? 'patient.view' : icon === 'reports' ? 'report.view' : null"
         :title="getTitle(icon)"
         :aria-label="getTitle(icon)"
         :class="[
@@ -128,6 +131,7 @@ watch(
       >
         <i v-if="icon === 'grid'" class="pi pi-th-large text-current text-lg"></i>
         <i v-else-if="icon === 'patients'" class="pi pi-users text-current text-lg"></i>
+        <i v-else-if="icon === 'reports'" class="pi pi-file text-current text-lg"></i>
       </button>
 
       <!-- Settings: fuera del v-for para que settingsWrapRef sea un solo nodo DOM -->

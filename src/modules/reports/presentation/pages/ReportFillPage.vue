@@ -139,8 +139,13 @@ const breadcrumbItems = computed(() => [
 const isCreateFlow = computed(() => route.name === "ReportCreate");
 
 function handleBack(): void {
-  const patientId = route.params.id as string;
-  router.push(`/patients/${patientId}?tab=reports`);
+  if (route.name === "ReportCreate") {
+    const patientId = route.params.id as string;
+    router.push(`/patients/${patientId}?tab=reports`);
+  } else {
+    const reportId = route.params.id as string;
+    router.push({ name: "ReportView", params: { id: reportId } });
+  }
 }
 
 // Permissions
