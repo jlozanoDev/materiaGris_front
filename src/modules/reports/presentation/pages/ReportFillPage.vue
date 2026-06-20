@@ -146,7 +146,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import AppSidebar from "@/shared/components/AppSidebar.vue";
 import TopBarLayout from "@/shared/components/TopBarLayout.vue";
@@ -155,12 +155,16 @@ import DynamicFormRenderer from "@/modules/reports/presentation/components/Dynam
 import { useReportForm } from "@/modules/reports/presentation/composables/useReportForm";
 import { useAuthStore } from "@/core/store/auth";
 import { useLogout } from "@/shared/composables/useLogout";
+import { provideGetPatientUseCase } from "@/modules/patients/application/containers/patientsContainer";
 import { SystemVariableRegistry } from "@/shared/types/SystemVariableRegistry";
+import type { Patient } from "@/shared/types";
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const { logout } = useLogout();
+
+const patientData = ref<Patient | null>(null);
 
 const {
   report,
@@ -191,34 +195,71 @@ function handleBack(): void {
   }
 }
 
+function calcAge(dob?: string): string {
+  if (!dob) return "";
+  const birth = new Date(dob);
+  const now = new Date();
+  let age = now.getFullYear() - birth.getFullYear();
+  const m = now.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
+  return String(age);
+}
+
 // Variable resolver — chains SystemVariableRegistry + legacy flat keys
 const variableResolver = computed<((text: string) => string) | undefined>(() => {
   if (!report.value) return undefined;
 
   const registry = new SystemVariableRegistry();
+  const today = new Date();
+  const todayStr = today.toLocaleDateString("es-ES");
+  const longDateStr = today.toLocaleDateString("es-ES", {
+    weekday: "long", year: "numeric", month: "long", day: "numeric"
+  });
 
-  // Register common report variables
-  // patient info
-  if (report.value.patient_name) {
-    registry.register("paciente", "nombre", "Nombre del paciente", undefined, () => report.value?.patient_name ?? "");
-  }
-  // author info
-  const authorName = report.value.author_name;
+  // ── Fecha ───────────────────────────────────────────────────────────
+  registry.register("fecha", "hoy", "Fecha actual", undefined, () => todayStr);
+  registry.register("fecha", "actual", "Fecha actual", undefined, () => todayStr);
+  registry.register("fecha", "formato_largo", "Fecha larga", undefined, () => longDateStr);
+
+  // ── Paciente ────────────────────────────────────────────────────────
+  const p = patientData.value;
+  const fullName = p
+    ? `${p.first_name || ""} ${p.last_name || ""} ${p.second_last_name || ""}`.trim()
+    : (report.value.patient_name ?? "");
+  if (fullName) registry.register("paciente", "nombre", "Nombre", undefined, () => fullName);
+  if (p?.medical_record_number) registry.register("paciente", "nro_historia", "Nro Historia", undefined, () => String(p.medical_record_number));
+  if (p?.national_id) registry.register("paciente", "identificacion", "Identificación", undefined, () => String(p.national_id));
+  if (p?.gender) registry.register("paciente", "sexo", "Sexo", undefined, () => String(p.gender));
+  if (p?.date_of_birth) registry.register("paciente", "edad", "Edad", undefined, () => calcAge(p.date_of_birth));
+  if (p?.date_of_birth) registry.register("paciente", "fecha_nacimiento", "Fecha nacimiento", undefined, () => String(p.date_of_birth));
+  if (p?.city) registry.register("paciente", "ciudad", "Ciudad", undefined, () => String(p.city));
+  if (p?.phone) registry.register("paciente", "telefono", "Teléfono", undefined, () => String(p.phone));
+  if (p?.email) registry.register("paciente", "email", "Email", undefined, () => String(p.email));
+  if (p?.address_line1) registry.register("paciente", "direccion", "Dirección", undefined, () => String(p.address_line1));
+
+  // ── Clínica ─────────────────────────────────────────────────────────
+  registry.register("clinica", "nombre", "Clínica", undefined, () => "Materia Gris"); // TODO: backend
+
+  // ── Médico / Usuario ────────────────────────────────────────────────
+  const u = authStore.user;
+  const authorName = report.value.author_name ?? u?.name ?? "";
   if (authorName) {
-    registry.register("usuario", "nombre_completo", "Usuario", undefined, () => authorName);
+    registry.register("medico", "nombre", "Médico", undefined, () => String(authorName));
+    registry.register("usuario", "nombre", "Usuario", undefined, () => String(authorName));
+    registry.register("usuario", "nombre_completo", "Usuario", undefined, () => String(authorName));
   }
+  if (u?.email) registry.register("medico", "matricula", "Matrícula", undefined, () => String(u.email));
 
-  // Legacy flat variable fallback
+  // ── Legacy flat variable fallback ───────────────────────────────────
   const legacyMap: Record<string, string> = {
-    patient_name: report.value.patient_name ?? "",
+    patient_name: report.value.patient_name ?? fullName,
     author_name: report.value.author_name ?? "",
-    date: new Date().toLocaleDateString("es-ES"),
+    date: todayStr,
+    fecha: todayStr,
   };
 
   return (text: string): string => {
-    // Step 1: SystemVariableRegistry resolves {category.key} patterns
     const systemResolved = registry.interpolate(text);
-    // Step 2: Legacy fallback for remaining flat variables
     return systemResolved.replace(/\{([^}]+)\}/g, (_match, key: string) => {
       const val = legacyMap[key.trim()];
       return val ?? _match;
@@ -289,17 +330,31 @@ async function handleDownloadPdf(): Promise<void> {
   }
 }
 
+async function loadPatientData(patientId: string | number): Promise<void> {
+  try {
+    const useCase = provideGetPatientUseCase();
+    const patient = await useCase.execute(patientId);
+    patientData.value = patient;
+  } catch (e: any) {
+    console.error("[ReportFillPage] loadPatientData error:", e);
+  }
+}
+
 onMounted(async () => {
   if (route.name === "ReportCreate") {
     const patientId = route.params.id as string;
     const templateId = route.query.templateId as string;
     if (patientId && templateId) {
       await init(patientId, templateId);
+      await loadPatientData(patientId);
     }
   } else {
     const id = route.params.id as string;
     if (id) {
       await loadReport(id);
+      if (report.value?.patientId) {
+        await loadPatientData(report.value.patientId);
+      }
     }
   }
 });

@@ -123,15 +123,19 @@
         <label
           v-for="opt in field.options || []"
           :key="opt.value"
-          class="dynamic-field__option"
+          class="dynamic-field__radio-option"
         >
           <input
             type="radio"
             :value="opt.value"
             :checked="modelValue === opt.value"
+            class="sr-only"
             @change="emitValue(opt.value)"
           />
-          <span>{{ opt.label }}</span>
+          <span class="dynamic-field__radio-circle" :class="{ 'dynamic-field__radio-circle--checked': modelValue === opt.value }">
+            <span v-if="modelValue === opt.value" class="dynamic-field__radio-dot" />
+          </span>
+          <span class="dynamic-field__option-label">{{ opt.label }}</span>
         </label>
       </div>
 
@@ -157,15 +161,21 @@
         <label
           v-for="opt in field.options || []"
           :key="opt.value"
-          class="dynamic-field__option"
+          class="dynamic-field__checkbox-option"
         >
           <input
             type="checkbox"
             :value="opt.value"
             :checked="isChecked(opt.value)"
+            class="sr-only"
             @change="toggleCheckbox(opt.value, ($event.target as HTMLInputElement).checked)"
           />
-          <span>{{ opt.label }}</span>
+          <span class="dynamic-field__checkbox-box" :class="{ 'dynamic-field__checkbox-box--checked': isChecked(opt.value) }">
+            <svg v-if="isChecked(opt.value)" class="dynamic-field__checkbox-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </span>
+          <span class="dynamic-field__option-label">{{ opt.label }}</span>
         </label>
       </div>
 
@@ -305,13 +315,47 @@ function optionLabels(val: unknown): string {
 }
 
 .dynamic-field__options {
-  @apply space-y-1;
+  @apply space-y-1.5;
 }
-.dynamic-field__option {
-  @apply flex items-center gap-2 text-sm cursor-pointer;
+
+/* ── Radio ─────────────────────────────────────── */
+.dynamic-field__radio-option {
+  @apply flex items-center gap-2.5 text-sm cursor-pointer select-none;
 }
-.dynamic-field__option input {
-  @apply h-4 w-4;
+.dynamic-field__radio-circle {
+  @apply inline-flex items-center justify-center h-5 w-5 rounded-full border-2 shrink-0 transition-colors;
+  border-color: #d1d5db;
+  background: #fff;
+}
+.dynamic-field__radio-circle--checked {
+  border-color: #7c3aed;
+  background: #fff;
+}
+.dynamic-field__radio-dot {
+  @apply inline-block h-2.5 w-2.5 rounded-full;
+  background-color: #7c3aed;
+}
+
+/* ── Checkbox ──────────────────────────────────── */
+.dynamic-field__checkbox-option {
+  @apply flex items-center gap-2.5 text-sm cursor-pointer select-none;
+}
+.dynamic-field__checkbox-box {
+  @apply inline-flex items-center justify-center h-5 w-5 rounded-md border-2 shrink-0 transition-colors;
+  border-color: #d1d5db;
+  background: #fff;
+}
+.dynamic-field__checkbox-box--checked {
+  border-color: #7c3aed;
+  background-color: #7c3aed;
+}
+.dynamic-field__checkbox-check {
+  @apply h-3.5 w-3.5 text-white;
+}
+
+.dynamic-field__option-label {
+  @apply text-sm;
+  color: #1f2937;
 }
 .dynamic-field__readonly {
   @apply block text-sm text-gray-700 py-1;

@@ -148,6 +148,20 @@ function isCellReadOnly(col: TableColumnDef): boolean {
   return isCalculated(col) || props.disabled
 }
 
+/** Recompute and store calculated column values across all rows */
+function recomputeRows(sourceRows: Record<string, any>[]): Record<string, any>[] {
+  const calcCols = props.columns.filter(isCalculated)
+  if (calcCols.length === 0) return sourceRows
+
+  return sourceRows.map((row, idx) => {
+    const updated = { ...row }
+    for (const col of calcCols) {
+      updated[col.key] = evaluateFormula(col.formula, sourceRows.slice(0, idx + 1))
+    }
+    return updated
+  })
+}
+
 function createEmptyRow(): Record<string, any> {
   const row: Record<string, any> = {}
   for (const col of props.columns) {
@@ -158,13 +172,14 @@ function createEmptyRow(): Record<string, any> {
 
 function addRow(): void {
   if (props.disabled) return
-  const newRows = [...props.modelValue, createEmptyRow()]
+  const newRows = recomputeRows([...props.modelValue, createEmptyRow()])
   emit('update:modelValue', newRows)
 }
 
 function removeRow(idx: number): void {
   if (props.disabled) return
-  const newRows = props.modelValue.filter((_, i) => i !== idx)
+  const filtered = props.modelValue.filter((_, i) => i !== idx)
+  const newRows = recomputeRows(filtered)
   emit('update:modelValue', newRows)
 }
 
@@ -175,7 +190,7 @@ function updateCell(rowIdx: number, colKey: string, value: any): void {
     }
     return row
   })
-  emit('update:modelValue', newRows)
+  emit('update:modelValue', recomputeRows(newRows))
 }
 
 /** Get calculated value for a cell */

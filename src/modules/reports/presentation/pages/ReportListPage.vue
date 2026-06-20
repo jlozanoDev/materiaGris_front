@@ -134,6 +134,15 @@
                         >
                           <i class="pi pi-eye text-xs" />
                         </button>
+                        <button
+                          v-if="canEdit && report.status === 'draft'"
+                          type="button"
+                          class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-[#fef2f2] border border-[#fee2e2] text-[#dc2626] hover:bg-[#dc2626] hover:text-white hover:border-[#dc2626] hover:shadow-sm transition-all duration-150"
+                          title="Eliminar"
+                          @click="handleDelete(report.id)"
+                        >
+                          <i class="pi pi-trash text-xs" />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -187,7 +196,7 @@ import { useReportList } from "@/modules/reports/presentation/composables/useRep
 const router = useRouter();
 const authStore = useAuthStore();
 const { logout } = useLogout();
-const { reports, loading, error, fetchReports } = useReportList();
+const { reports, loading, error, fetchReports, deleteReport } = useReportList();
 
 const filterStatus = ref("");
 const filterPatient = ref("");
@@ -246,6 +255,9 @@ function formatDate(dateStr?: string): string {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
     });
   } catch {
     return "-";
@@ -260,6 +272,12 @@ const canEdit = computed(() => authStore.hasPermission("report.edit"));
 
 function editReport(id: string | number): void {
   router.push({ name: "ReportEdit", params: { id: String(id) } });
+}
+
+function handleDelete(id: string | number): void {
+  if (confirm("¿Eliminar este informe? Esta acción no se puede deshacer.")) {
+    deleteReport(id);
+  }
 }
 
 onMounted(() => {

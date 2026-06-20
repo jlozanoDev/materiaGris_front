@@ -115,6 +115,14 @@ export default class ApiReportRepository implements ReportRepository {
     }
   }
 
+  async delete(id: string | number): Promise<void> {
+    try {
+      await fetchClient(`/reports/${id}`, { method: "DELETE" });
+    } catch (err) {
+      throw new Error("Error al eliminar el informe");
+    }
+  }
+
   async downloadPdf(id: string | number): Promise<Blob> {
     try {
       return await fetchClient(`/reports/${id}/pdf`, {

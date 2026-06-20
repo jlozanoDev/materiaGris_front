@@ -328,6 +328,7 @@ describe('DynamicFormRenderer', () => {
             columns: [
               {
                 id: 'bc1',
+                label: '',
                 fields: [
                   { id: 'bf1', type: 'fixed_text', label: 'Body Fixed', key: 'body_fixed', text_content: '{hospital} Body', required: false } as any,
                 ],
@@ -349,6 +350,7 @@ describe('DynamicFormRenderer', () => {
             columns: [
               {
                 id: 'hc1',
+                label: '',
                 fields: [
                   { id: 'hf1', type: 'fixed_text', label: 'Header Fixed', key: 'hdr_fixed', text_content: '{hospital} Header', required: false } as any,
                 ],
@@ -370,6 +372,7 @@ describe('DynamicFormRenderer', () => {
             columns: [
               {
                 id: 'fc1',
+                label: '',
                 fields: [
                   { id: 'ff1', type: 'fixed_text', label: 'Footer Fixed', key: 'ftr_fixed', text_content: '{hospital} Footer', required: false } as any,
                 ],
