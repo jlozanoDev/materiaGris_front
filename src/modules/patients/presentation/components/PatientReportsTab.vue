@@ -95,6 +95,12 @@ function handleCloseModal(): void {
   showModal.value = false;
 }
 
+function clearFilters(): void {
+  filterSearch.value = "";
+  filterStatus.value = "";
+  currentPage.value = 1;
+}
+
 function viewReport(reportId: string): void {
   router.push({
     name: "ReportView",
@@ -229,8 +235,24 @@ const paginatedReports = computed(() => {
         </button>
       </div>
 
+      <!-- Empty after filter -->
+      <div
+        v-if="filteredReports.length === 0 && (filterSearch || filterStatus)"
+        class="flex flex-col items-center justify-center py-12"
+      >
+        <i class="pi pi-filter-slash text-slate-300 text-3xl mb-3"></i>
+        <p class="text-slate-500 text-sm mb-2">No hay resultados para los filtros seleccionados</p>
+        <button
+          type="button"
+          class="px-4 py-2 rounded-2xl text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+          @click="clearFilters"
+        >
+          Limpiar filtros
+        </button>
+      </div>
+
       <!-- Table -->
-      <div class="overflow-x-auto">
+      <div v-else class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead class="bg-slate-50">
             <tr>

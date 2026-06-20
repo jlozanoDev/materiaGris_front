@@ -10,7 +10,7 @@
             :items="[
               { text: 'Dashboard', icon: 'pi pi-objects-column', to: '/' },
               { text: 'Informes', icon: 'pi pi-file', to: '/reports' },
-              { text: report ? `Informe #${report.id}` : 'Nuevo', icon: 'pi pi-file' },
+              { text: breadcrumbText, icon: 'pi pi-file' },
             ]"
           />
         </div>
@@ -153,6 +153,7 @@ import TopBarLayout from "@/shared/components/TopBarLayout.vue";
 import Breadcrumb from "@/shared/components/Breadcrumb.vue";
 import DynamicFormRenderer from "@/modules/reports/presentation/components/DynamicFormRenderer.vue";
 import { useReportForm } from "@/modules/reports/presentation/composables/useReportForm";
+import { useTemplateList } from "@/modules/reports/presentation/composables/useTemplateList";
 import { useAuthStore } from "@/core/store/auth";
 import { useLogout } from "@/shared/composables/useLogout";
 import { provideGetPatientUseCase } from "@/modules/patients/application/containers/patientsContainer";
@@ -267,6 +268,50 @@ const variableResolver = computed<((text: string) => string) | undefined>(() => 
   };
 });
 
+function formatDateShort(dateStr?: string): string {
+  if (!dateStr) return "";
+  try {
+    return new Date(dateStr).toLocaleDateString("es-ES", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  } catch {
+    return "";
+  }
+}
+
+const fullPatientName = computed(() => {
+  if (patientData.value) {
+    return `${patientData.value.first_name || ""} ${patientData.value.last_name || ""} ${patientData.value.second_last_name || ""}`.trim();
+  }
+  return report.value?.patient_name ?? "";
+});
+
+const { templates, fetchActive: fetchTemplates } = useTemplateList();
+
+const templateName = computed(() => {
+  if (report.value?.template_name) return report.value.template_name;
+  const tid = report.value?.templateId;
+  if (tid) {
+    const found = templates.value.find((t) => String(t.id) === String(tid));
+    if (found?.name) return found.name;
+  }
+  return "";
+});
+
+const breadcrumbText = computed(() => {
+  if (!report.value) return "Nuevo";
+  const template = templateName.value;
+  const name = fullPatientName.value;
+  const date = formatDateShort(report.value.createdAt);
+  const patientStr = name && date ? `${name} - ${date}` : (name || date || "");
+  if (template && patientStr) return `${template} (${patientStr})`;
+  if (template) return template;
+  if (patientStr) return patientStr;
+  return "Nuevo";
+});
+
 // Retry after error
 function retry(): void {
   if (route.name === "ReportCreate") {
@@ -341,6 +386,7 @@ async function loadPatientData(patientId: string | number): Promise<void> {
 }
 
 onMounted(async () => {
+  fetchTemplates();
   if (route.name === "ReportCreate") {
     const patientId = route.params.id as string;
     const templateId = route.query.templateId as string;

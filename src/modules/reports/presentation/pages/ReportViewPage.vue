@@ -10,7 +10,7 @@
             :items="[
               { text: 'Dashboard', icon: 'pi pi-objects-column', to: '/' },
               { text: 'Informes', icon: 'pi pi-file', to: '/reports' },
-              { text: report ? `Informe #${report.id}` : 'Ver', icon: 'pi pi-file' },
+              { text: breadcrumbText, icon: 'pi pi-file' },
             ]"
           />
         </div>
@@ -118,6 +118,31 @@ async function handleDownloadPdf(): Promise<void> {
     alert(e.message || "Error al generar el PDF");
   }
 }
+
+function formatDateShort(dateStr?: string): string {
+  if (!dateStr) return "";
+  try {
+    return new Date(dateStr).toLocaleDateString("es-ES", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  } catch {
+    return "";
+  }
+}
+
+const breadcrumbText = computed(() => {
+  if (!report.value) return "Ver";
+  const template = report.value.template_name ?? "";
+  const name = report.value.patient_name ?? "";
+  const date = formatDateShort(report.value.createdAt);
+  const patientStr = name && date ? `${name} - ${date}` : (name || date || "");
+  if (template && patientStr) return `${template} (${patientStr})`;
+  if (template) return template;
+  if (patientStr) return patientStr;
+  return "Ver";
+});
 
 function goBack(): void {
   if (route.query.from === "patient") {
