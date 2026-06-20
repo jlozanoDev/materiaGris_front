@@ -1,6 +1,24 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
-import { ref } from "vue";
+import { ref, defineComponent, h } from "vue";
+
+/**
+ * Stub for Modal — renders both default and footer slots inline
+ * so tests can interact with modal buttons without teleport shenanigans.
+ */
+const ModalStub = defineComponent({
+  props: ["show", "title", "size", "closeOnBackdrop"],
+  emits: ["close"],
+  setup(props, { slots, emit }) {
+    return () => {
+      if (!props.show) return null;
+      return h("div", { class: "modal-stub" }, [
+        h("div", { class: "modal-stub-body" }, slots.default?.()),
+        h("div", { class: "modal-stub-footer" }, slots.footer?.()),
+      ]);
+    };
+  },
+});
 
 // ── Auth mock ─────────────────────────────────────────────────────────────────
 let permMap: Record<string, boolean> = {};
@@ -295,72 +313,98 @@ describe("ReportFillPage", () => {
 
   // ── Integration: draft → sign → close flow ─────────────────────────────────
   describe("draft → sign → close lifecycle", () => {
-    it("calls sign when user confirms sign dialog", async () => {
+    function mountWithModalStub() {
+      return mount(ReportFillPage, {
+        global: {
+          stubs: {
+            AppSidebar: true,
+            TopBarLayout: true,
+            Breadcrumb: true,
+            DynamicFormRenderer: true,
+            Modal: ModalStub,
+          },
+        },
+      });
+    }
+
+    it("calls sign when user confirms sign modal", async () => {
       permMap = { "report.edit": true, "report.sign": true };
       mockReport.value = { id: "r1", status: "draft", userId: 1, templateStructureSnapshot: { sections: [] } };
       mockRoute.params = { id: "r1" };
       mockRoute.name = "ReportEdit";
       mockSign.mockResolvedValue(undefined);
 
-      vi.spyOn(window, "confirm").mockReturnValue(true);
-
-      const wrapper = mount(ReportFillPage, {
-        global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb", "DynamicFormRenderer"] },
-      });
+      const wrapper = mountWithModalStub();
       await flushPromises();
 
-      const buttons = wrapper.findAll("button");
-      const signBtn = buttons.find((b) => b.text().includes("Firmar"));
-      if (signBtn) {
-        await signBtn.trigger("click");
+      // Open sign modal
+      const firmarInformeBtn = wrapper.findAll("button").find((b) => b.text().includes("Firmar informe"));
+      if (firmarInformeBtn) {
+        await firmarInformeBtn.trigger("click");
         await flushPromises();
-        expect(mockSign).toHaveBeenCalled();
       }
+
+      // Click "Firmar" inside the modal
+      const confirmBtn = wrapper.findAll("button").find((b) => b.text() === "Firmar");
+      if (confirmBtn) {
+        await confirmBtn.trigger("click");
+        await flushPromises();
+      }
+
+      expect(mockSign).toHaveBeenCalled();
     });
 
-    it("does not sign when user cancels confirm", async () => {
+    it("does not sign when user cancels sign modal", async () => {
       permMap = { "report.edit": true, "report.sign": true };
       mockReport.value = { id: "r1", status: "draft", userId: 1, templateStructureSnapshot: { sections: [] } };
       mockRoute.params = { id: "r1" };
       mockRoute.name = "ReportEdit";
 
-      vi.spyOn(window, "confirm").mockReturnValue(false);
-
-      const wrapper = mount(ReportFillPage, {
-        global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb", "DynamicFormRenderer"] },
-      });
+      const wrapper = mountWithModalStub();
       await flushPromises();
 
-      const buttons = wrapper.findAll("button");
-      const signBtn = buttons.find((b) => b.text().includes("Firmar"));
-      if (signBtn) {
-        await signBtn.trigger("click");
+      // Open sign modal
+      const firmarInformeBtn = wrapper.findAll("button").find((b) => b.text().includes("Firmar informe"));
+      if (firmarInformeBtn) {
+        await firmarInformeBtn.trigger("click");
         await flushPromises();
-        expect(mockSign).not.toHaveBeenCalled();
       }
+
+      // Click "Cancelar" inside the modal
+      const cancelBtn = wrapper.findAll("button").find((b) => b.text() === "Cancelar");
+      if (cancelBtn) {
+        await cancelBtn.trigger("click");
+        await flushPromises();
+      }
+
+      expect(mockSign).not.toHaveBeenCalled();
     });
 
-    it("calls close when user confirms close dialog on signed report", async () => {
+    it("calls close when user confirms close modal on signed report", async () => {
       permMap = { "report.edit": true, "report.close": true };
       mockReport.value = { id: "r1", status: "signed", userId: 1, templateStructureSnapshot: { sections: [] } };
       mockRoute.params = { id: "r1" };
       mockRoute.name = "ReportEdit";
       mockClose.mockResolvedValue(undefined);
 
-      vi.spyOn(window, "confirm").mockReturnValue(true);
-
-      const wrapper = mount(ReportFillPage, {
-        global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb", "DynamicFormRenderer"] },
-      });
+      const wrapper = mountWithModalStub();
       await flushPromises();
 
-      const buttons = wrapper.findAll("button");
-      const closeBtn = buttons.find((b) => b.text().includes("Cerrar"));
-      if (closeBtn) {
-        await closeBtn.trigger("click");
+      // Open close modal
+      const cerrarBtn = wrapper.findAll("button").find((b) => b.text().includes("Cerrar informe"));
+      if (cerrarBtn) {
+        await cerrarBtn.trigger("click");
         await flushPromises();
-        expect(mockClose).toHaveBeenCalled();
       }
+
+      // Click "Cerrar" inside the modal
+      const confirmBtn = wrapper.findAll("button").find((b) => b.text() === "Cerrar");
+      if (confirmBtn) {
+        await confirmBtn.trigger("click");
+        await flushPromises();
+      }
+
+      expect(mockClose).toHaveBeenCalled();
     });
 
     it("shows all buttons when user has all permissions on draft", async () => {

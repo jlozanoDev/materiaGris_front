@@ -24,6 +24,7 @@ export interface UseReportFormReturn {
   init: (patientId: string | number, templateId: string | number) => Promise<void>;
   loadReport: (id: string | number) => Promise<void>;
   setValue: (key: string, value: any) => void;
+  validateFormFields: () => Record<string, string>;
   validateForSignature: () => Record<string, string>;
   saveDraft: () => Promise<void>;
   sign: () => Promise<void>;
@@ -89,15 +90,18 @@ export function useReportForm(): UseReportFormReturn {
 
   // ── setValue ───────────────────────────────────────────────────────────────
   function setValue(key: string, value: any): void {
-    values.value = { ...values.value, [key]: value };
-    dirtyFields.value = new Set([...dirtyFields.value, key]);
-    errors.value = { ...errors.value };
-    delete errors.value[key];
-    triggerAutoSave();
+    values.value = { ...values.value, [key]: value }
+    dirtyFields.value = new Set([...dirtyFields.value, key])
+    errors.value = { ...errors.value }
+    delete errors.value[key]
+    // Keep signature refs in sync for sign/validate
+    if (key === '_signature') signatureValue.value = value
+    if (key === '_typed') typedSignatureValue.value = value
+    triggerAutoSave()
   }
 
-  // ── validateForSignature ───────────────────────────────────────────────────
-  function validateForSignature(): Record<string, string> {
+  // ── validateFormFields ─────────────────────────────────────────────────────
+  function validateFormFields(): Record<string, string> {
     const errs: Record<string, string> = {};
     const snapshot = report.value?.templateStructureSnapshot;
     if (snapshot?.sections) {
@@ -115,6 +119,13 @@ export function useReportForm(): UseReportFormReturn {
         }
       }
     }
+    errors.value = errs;
+    return errs;
+  }
+
+  // ── validateForSignature ───────────────────────────────────────────────────
+  function validateForSignature(): Record<string, string> {
+    const errs = validateFormFields();
     // Signature required: canvas OR typed
     if (!signatureValue.value && !typedSignatureValue.value) {
       errs["_signature"] = "La firma es obligatoria para firmar el informe";
@@ -203,6 +214,7 @@ export function useReportForm(): UseReportFormReturn {
     init,
     loadReport,
     setValue,
+    validateFormFields,
     validateForSignature,
     saveDraft,
     sign,

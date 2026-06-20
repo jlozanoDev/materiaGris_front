@@ -37,7 +37,7 @@ describe('SignaturePad', () => {
     const wrapper = mount(SignaturePad, {
       props: { modelValue: null, disabled: false },
     })
-    expect(wrapper.text()).toContain('Firme dentro del recuadro')
+    expect(wrapper.text()).toContain('Firme aquí')
   })
 
   it('shows clear button when not disabled and signature exists', () => {

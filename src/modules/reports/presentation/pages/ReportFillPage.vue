@@ -138,11 +138,108 @@
               @update:model-value="handleUpdate"
               @auto-save="handleSave"
             />
+
+            <!-- Signature display (read-only) -->
+            <div
+              v-if="report.status !== 'draft' && (signatureValue || typedSignatureValue)"
+              class="mt-8 border-t border-slate-200 pt-8"
+            >
+              <h3 class="text-base font-semibold text-slate-800 mb-4">Firma del profesional</h3>
+              <SignaturePad
+                :model-value="signatureValue"
+                :disabled="true"
+              />
+            </div>
           </div>
         </template>
       </main>
     </div>
   </div>
+
+  <!-- Sign confirmation modal -->
+  <Modal
+    :show="showSignModal"
+    title="Firmar informe"
+    size="lg"
+    :close-on-backdrop="false"
+    @close="cancelSign"
+  >
+    <p class="text-[#6b6b7b] text-sm mb-4">
+      Dibuje su firma o escriba su nombre completo para firmar el informe.
+    </p>
+
+    <SignaturePad
+      :model-value="signatureValue"
+      :disabled="false"
+      @update:model-value="onSignatureUpdate"
+      @update:typed-signature="onTypedSignatureUpdate"
+    />
+
+    <div
+      v-if="signError"
+      class="mt-4 rounded-xl bg-red-50 p-3"
+    >
+      <p class="text-sm text-red-700">{{ signError }}</p>
+    </div>
+
+    <template #footer>
+      <div class="flex justify-end gap-3">
+        <button
+          class="btn btn-outline btn-sm"
+          :disabled="isSigning"
+          @click="cancelSign"
+        >
+          Cancelar
+        </button>
+        <button
+          class="btn bg-green-600 hover:bg-green-700 text-white btn-sm"
+          :disabled="isSigning"
+          @click="confirmSign"
+        >
+          {{ isSigning ? "Firmando..." : "Firmar" }}
+        </button>
+      </div>
+    </template>
+  </Modal>
+
+  <!-- Close confirmation modal -->
+  <Modal
+    :show="showCloseModal"
+    title="Cerrar informe"
+    size="sm"
+    :close-on-backdrop="false"
+    @close="cancelClose"
+  >
+    <p class="text-[#6b6b7b] text-sm">
+      ¿Confirmar cierre del informe?
+    </p>
+
+    <div
+      v-if="closeError"
+      class="mt-3 rounded-xl bg-red-50 p-3"
+    >
+      <p class="text-sm text-red-700">{{ closeError }}</p>
+    </div>
+
+    <template #footer>
+      <div class="flex justify-end gap-3">
+        <button
+          class="btn btn-outline btn-sm"
+          :disabled="isClosing"
+          @click="cancelClose"
+        >
+          Cancelar
+        </button>
+        <button
+          class="btn bg-slate-600 hover:bg-slate-700 text-white btn-sm"
+          :disabled="isClosing"
+          @click="confirmClose"
+        >
+          {{ isClosing ? "Cerrando..." : "Cerrar" }}
+        </button>
+      </div>
+    </template>
+  </Modal>
 </template>
 
 <script setup lang="ts">
@@ -152,6 +249,8 @@ import AppSidebar from "@/shared/components/AppSidebar.vue";
 import TopBarLayout from "@/shared/components/TopBarLayout.vue";
 import Breadcrumb from "@/shared/components/Breadcrumb.vue";
 import DynamicFormRenderer from "@/modules/reports/presentation/components/DynamicFormRenderer.vue";
+import SignaturePad from "@/modules/reports/presentation/components/SignaturePad.vue";
+import Modal from "@/shared/components/Modal.vue";
 import { useReportForm } from "@/modules/reports/presentation/composables/useReportForm";
 import { useTemplateList } from "@/modules/reports/presentation/composables/useTemplateList";
 import { useAuthStore } from "@/core/store/auth";
@@ -167,6 +266,14 @@ const { logout } = useLogout();
 
 const patientData = ref<Patient | null>(null);
 
+// Modals
+const showSignModal = ref(false);
+const showCloseModal = ref(false);
+const signError = ref("");
+const closeError = ref("");
+const isSigning = ref(false);
+const isClosing = ref(false);
+
 const {
   report,
   values,
@@ -177,6 +284,7 @@ const {
   init,
   loadReport,
   setValue,
+  validateFormFields,
   saveDraft,
   sign,
   close,
@@ -341,6 +449,14 @@ function handleUpdate(newValues: Record<string, any>): void {
   });
 }
 
+function onSignatureUpdate(val: string | null): void {
+  setValue("_signature", val);
+}
+
+function onTypedSignatureUpdate(val: string): void {
+  setValue("_typed", val);
+}
+
 async function handleSave(): Promise<void> {
   try {
     await saveDraft();
@@ -350,28 +466,63 @@ async function handleSave(): Promise<void> {
 }
 
 async function handleSign(): Promise<void> {
-  if (!confirm("¿Confirmar firma? No podrá editar después.")) return;
+  signError.value = "";
+  // Validate form fields before opening signature modal
+  const fieldErrors = validateFormFields();
+  if (Object.keys(fieldErrors).length > 0) {
+    return; // Errors are already set in `errors` ref; stay on page
+  }
+  showSignModal.value = true;
+}
+
+async function confirmSign(): Promise<void> {
+  isSigning.value = true;
+  signError.value = "";
   try {
     await sign();
+    showSignModal.value = false;
   } catch (e: any) {
-    alert(e.message || "Error al firmar el informe");
+    signError.value = e.message || "Error al firmar el informe";
+  } finally {
+    isSigning.value = false;
   }
 }
 
+function cancelSign(): void {
+  if (isSigning.value) return;
+  showSignModal.value = false;
+  signError.value = "";
+}
+
 async function handleClose(): Promise<void> {
-  if (!confirm("¿Confirmar cierre del informe?")) return;
+  closeError.value = "";
+  showCloseModal.value = true;
+}
+
+async function confirmClose(): Promise<void> {
+  isClosing.value = true;
+  closeError.value = "";
   try {
     await close();
+    showCloseModal.value = false;
   } catch (e: any) {
-    alert(e.message || "Error al cerrar el informe");
+    closeError.value = e.message || "Error al cerrar el informe";
+  } finally {
+    isClosing.value = false;
   }
+}
+
+function cancelClose(): void {
+  if (isClosing.value) return;
+  showCloseModal.value = false;
+  closeError.value = "";
 }
 
 async function handleDownloadPdf(): Promise<void> {
   try {
     await downloadPdf();
   } catch (e: any) {
-    alert(e.message || "Error al generar el PDF");
+    console.error("[ReportFillPage] download error:", e);
   }
 }
 

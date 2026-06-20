@@ -179,6 +179,22 @@ export function createDefaultFieldTypeRegistry(): FieldTypeRegistry {
     allowedProperties: ['id', 'type', 'label', 'key'],
   }
 
+  const signatureMeta: FieldTypeMeta = {
+    type: 'signature',
+    label: 'Firma',
+    icon: 'pi pi-pencil',
+    group: 'special',
+    description: 'Campo de firma manuscrita o mecanografiada',
+    defaultFactory: () => ({
+      id: crypto.randomUUID(),
+      type: 'signature',
+      label: 'Firma',
+      key: '_signature',
+      required: true,
+    }),
+    allowedProperties: ['id', 'type', 'label', 'key', 'required'],
+  }
+
   registry.register(textMeta)
   registry.register(textareaMeta)
   registry.register(numberMeta)
@@ -191,6 +207,7 @@ export function createDefaultFieldTypeRegistry(): FieldTypeRegistry {
   registry.register(dynamicTableMeta)
   registry.register(verticalSeparatorMeta)
   registry.register(horizontalSeparatorMeta)
+  registry.register(signatureMeta)
 
   return registry
 }

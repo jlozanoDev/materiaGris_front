@@ -26,9 +26,39 @@
             </h1>
           </div>
 
-          <!-- Loading -->
-          <div v-if="loading" class="text-center py-12 text-gray-500">
-            Cargando informes...
+          <!-- Loading skeleton -->
+          <div v-if="loading" class="flex flex-col">
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-slate-50">
+                  <tr>
+                    <th class="px-4 py-3 text-left font-medium text-slate-600">Paciente</th>
+                    <th class="px-4 py-3 text-left font-medium text-slate-600">Autor</th>
+                    <th class="px-4 py-3 text-left font-medium text-slate-600">Plantilla</th>
+                    <th class="px-4 py-3 text-left font-medium text-slate-600">Estado</th>
+                    <th class="px-4 py-3 text-left font-medium text-slate-600">Creado</th>
+                    <th class="px-4 py-3 text-left font-medium text-slate-600">Última mod.</th>
+                    <th class="px-4 py-3"></th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  <tr v-for="i in 6" :key="i" class="animate-pulse">
+                    <td class="px-4 py-3"><div class="h-4 bg-slate-200 rounded w-32"></div></td>
+                    <td class="px-4 py-3"><div class="h-4 bg-slate-200 rounded w-28"></div></td>
+                    <td class="px-4 py-3"><div class="h-4 bg-slate-200 rounded w-36"></div></td>
+                    <td class="px-4 py-3"><div class="h-5 bg-slate-200 rounded-full w-16"></div></td>
+                    <td class="px-4 py-3"><div class="h-4 bg-slate-200 rounded w-24"></div></td>
+                    <td class="px-4 py-3"><div class="h-4 bg-slate-200 rounded w-24"></div></td>
+                    <td class="px-4 py-3">
+                      <div class="flex items-center justify-end gap-2">
+                        <div class="h-9 w-9 bg-slate-200 rounded-full"></div>
+                        <div class="h-9 w-9 bg-slate-200 rounded-full"></div>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
 
           <!-- Error -->
@@ -168,28 +198,59 @@
 
             <!-- Pagination -->
             <div
-              v-if="reports.length > 0 && totalPages > 1"
-              class="flex items-center justify-between mt-4 pt-4 border-t border-slate-100"
+              v-if="reports.length > 0"
+              class="flex flex-wrap items-center justify-between gap-3 mt-4 pt-4 border-t border-slate-100 text-sm text-slate-600"
             >
-              <span class="text-sm text-slate-500">
-                Página {{ currentPage }} de {{ totalPages }}
-              </span>
-              <div class="flex gap-2">
+              <div>
+                Mostrando {{ startIndex }} – {{ endIndex }} de {{ reports.length }}
+              </div>
+              <nav v-if="totalPages > 1" class="flex items-center gap-1" aria-label="Paginación">
                 <button
+                  class="btn btn-sm btn-ghost"
                   :disabled="currentPage <= 1"
-                  class="rounded-2xl border border-slate-200 px-3 py-1 text-sm disabled:opacity-50 hover:bg-slate-50"
+                  aria-label="Primera página"
+                  @click="currentPage = 1"
+                >
+                  «
+                </button>
+                <button
+                  class="btn btn-sm btn-ghost"
+                  :disabled="currentPage <= 1"
+                  aria-label="Página anterior"
                   @click="currentPage--"
                 >
-                  Anterior
+                  ‹
                 </button>
+
                 <button
+                  v-for="page in visiblePages"
+                  :key="page"
+                  type="button"
+                  :class="['btn btn-sm', page === currentPage ? 'btn-primary' : 'btn-ghost border border-slate-200 hover:bg-slate-100']"
+                  :aria-current="page === currentPage ? 'page' : undefined"
+                  :aria-label="'Ir a la página ' + page"
+                  @click="currentPage = page"
+                >
+                  {{ page }}
+                </button>
+
+                <button
+                  class="btn btn-sm btn-ghost"
                   :disabled="currentPage >= totalPages"
-                  class="rounded-2xl border border-slate-200 px-3 py-1 text-sm disabled:opacity-50 hover:bg-slate-50"
+                  aria-label="Página siguiente"
                   @click="currentPage++"
                 >
-                  Siguiente
+                  ›
                 </button>
-              </div>
+                <button
+                  class="btn btn-sm btn-ghost"
+                  :disabled="currentPage >= totalPages"
+                  aria-label="Última página"
+                  @click="currentPage = totalPages"
+                >
+                  »
+                </button>
+              </nav>
             </div>
           </template>
         </div>
@@ -248,7 +309,7 @@ const { reports, loading, error, fetchReports, deleteReport } = useReportList();
 const filterStatus = ref("");
 const filterPatient = ref("");
 const currentPage = ref(1);
-const perPage = 20;
+const perPage = 5;
 const showDeleteModal = ref(false);
 const reportToDelete = ref<string | number | null>(null);
 
@@ -283,6 +344,21 @@ const totalPages = computed(() => Math.ceil(filteredReports.value.length / perPa
 const paginatedReports = computed(() => {
   const start = (currentPage.value - 1) * perPage;
   return filteredReports.value.slice(start, start + perPage);
+});
+
+const startIndex = computed(() => (currentPage.value - 1) * perPage + 1);
+const endIndex = computed(() => Math.min(currentPage.value * perPage, filteredReports.value.length));
+
+const visiblePages = computed(() => {
+  const total = totalPages.value;
+  const current = currentPage.value;
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const pages = new Set<number>([1, total, current]);
+  for (let d = 1; d <= 2; d++) {
+    if (current - d >= 1) pages.add(current - d);
+    if (current + d <= total) pages.add(current + d);
+  }
+  return Array.from(pages).sort((a, b) => a - b);
 });
 
 function statusLabel(status: string): string {

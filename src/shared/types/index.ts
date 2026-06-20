@@ -127,6 +127,7 @@ export type FieldType =
   | 'fixed_text'
   | 'vertical_separator'
   | 'horizontal_separator'
+  | 'signature'
 
 export interface FieldOption {
   label: string
@@ -219,8 +220,12 @@ export interface HorizontalSeparatorField extends FieldBase {
   type: 'horizontal_separator'
 }
 
+export interface SignatureField extends FieldBase {
+  type: 'signature'
+}
+
 /** Discriminated union of all field config variants */
-export type FieldConfig = TextField | NumberField | DateField | SelectionField | FixedTextField | DynamicTableField | VerticalSeparatorField | HorizontalSeparatorField
+export type FieldConfig = TextField | NumberField | DateField | SelectionField | FixedTextField | DynamicTableField | VerticalSeparatorField | HorizontalSeparatorField | SignatureField
 
 export interface Column {
   id: string
