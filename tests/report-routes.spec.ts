@@ -38,22 +38,22 @@ describe('Report Route Definitions', () => {
     expect(r.meta.permissions).toBe('admin.reporttemplate.update')
   })
 
-  it('defines /informes route with report.view permission', () => {
-    const r = allRoutes.find((rt: any) => rt.path === '/informes')
+  it('defines /reports route with report.view permission', () => {
+    const r = allRoutes.find((rt: any) => rt.path === '/reports')
     expect(r).toBeDefined()
     expect(r.meta.requiresAuth).toBe(true)
     expect(r.meta.permissions).toBe('report.view')
   })
 
-  it('defines /informes/:id route with report.view permission', () => {
-    const r = allRoutes.find((rt: any) => rt.path === '/informes/:id')
+  it('defines /reports/:id route with report.view permission', () => {
+    const r = allRoutes.find((rt: any) => rt.path === '/reports/:id')
     expect(r).toBeDefined()
     expect(r.meta.requiresAuth).toBe(true)
     expect(r.meta.permissions).toBe('report.view')
   })
 
-  it('defines /informes/:id/editar route with report.edit permission (array)', () => {
-    const r = allRoutes.find((rt: any) => rt.path === '/informes/:id/editar')
+  it('defines /reports/:id/editar route with report.edit permission (array)', () => {
+    const r = allRoutes.find((rt: any) => rt.path === '/reports/:id/editar')
     expect(r).toBeDefined()
     expect(r.meta.requiresAuth).toBe(true)
     expect(r.meta.permissions).toEqual(['report.edit'])

@@ -674,6 +674,11 @@ export function useTemplateBuilder(): UseTemplateBuilderReturn {
         structure,
       }
 
+      // Client-side validation
+      if (!payload.name || !payload.name.trim()) {
+        throw new Error("El nombre de la plantilla es obligatorio")
+      }
+
       let result
       if (templateId.value > 0) {
         const useCase = provideUpdateReportTemplateUseCase()

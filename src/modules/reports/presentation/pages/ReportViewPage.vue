@@ -1,54 +1,91 @@
 <template>
-  <div class="flex min-h-screen bg-gray-50">
+  <div class="flex h-screen overflow-hidden bg-[#EEF2FF]">
     <AppSidebar />
-    <div class="flex-1 p-6">
-      <TopBarLayout :user="authStore.user" @logout="logout" />
-      <Breadcrumb :items="breadcrumbItems" />
 
-      <div class="mt-6">
+    <div class="flex flex-1 min-w-0 overflow-hidden">
+      <main class="flex flex-1 min-w-0 flex-col overflow-y-auto p-5 gap-5">
+        <div class="flex flex-col gap-0">
+          <TopBarLayout :user="authStore.user" @logout="logout" />
+          <Breadcrumb
+            :items="[
+              { text: 'Dashboard', icon: 'pi pi-objects-column', to: '/' },
+              { text: 'Informes', icon: 'pi pi-file', to: '/reports' },
+              { text: report ? `Informe #${report.id}` : 'Ver', icon: 'pi pi-file' },
+            ]"
+          />
+        </div>
+
         <!-- Loading -->
-        <div v-if="!report" class="text-center py-12 text-gray-500">
-          Cargando informe...
+        <div
+          v-if="!report"
+          class="bg-white rounded-2xl shadow-sm p-6 flex flex-col gap-4"
+        >
+          <div class="h-8 w-48 bg-slate-200 rounded-md animate-pulse" />
+          <div class="space-y-3 mt-2">
+            <div
+              v-for="i in 4"
+              :key="i"
+              class="h-24 bg-slate-200 rounded-2xl animate-pulse"
+            />
+          </div>
         </div>
 
         <template v-else>
-          <div class="flex items-center justify-between mb-6">
-            <h1 class="text-2xl font-bold text-gray-900">Informe — Vista</h1>
+          <div class="bg-white rounded-2xl shadow-sm p-6">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-6">
+              <h1 class="text-xl font-bold text-slate-800">
+                Informe #{{ report.id }}
+              </h1>
 
-            <div class="flex gap-3">
-              <!-- Descargar PDF (solo si signed/closed + permiso) -->
-              <button
-                v-if="canDownloadPdf && (report.status === 'signed' || report.status === 'closed')"
-                type="button"
-                class="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                @click="handleDownloadPdf"
-              >
-                Descargar PDF
-              </button>
+              <div class="flex gap-3">
+                <!-- Editar (solo si draft + permiso) -->
+                <button
+                  v-if="canEdit && report.status === 'draft'"
+                  type="button"
+                  class="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                  @click="editReport"
+                >
+                  <i class="pi pi-pencil text-xs"></i>
+                  Editar
+                </button>
 
-              <!-- Volver -->
-              <button
-                type="button"
-                class="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                @click="goBack"
-              >
-                Volver al listado
-              </button>
+                <!-- Descargar PDF (solo si signed/closed + permiso) -->
+                <button
+                  v-if="canDownloadPdf && (report.status === 'signed' || report.status === 'closed')"
+                  type="button"
+                  class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                  @click="handleDownloadPdf"
+                >
+                  <i class="pi pi-download text-xs"></i>
+                  Descargar PDF
+                </button>
+
+                <!-- Volver -->
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                  @click="goBack"
+                >
+                  <i class="pi pi-arrow-left text-xs"></i>
+                  Volver
+                </button>
+              </div>
             </div>
-          </div>
 
-          <!-- Read-only form -->
-          <DynamicFormRenderer
-            v-if="report.templateStructureSnapshot"
-            :sections="report.templateStructureSnapshot.sections"
-            :header-sections="report.templateStructureSnapshot.header?.enabled ? report.templateStructureSnapshot.header.sections : undefined"
-            :footer-sections="report.templateStructureSnapshot.footer?.enabled ? report.templateStructureSnapshot.footer.sections : undefined"
-            :model-value="report.values || {}"
-            :is-editable="false"
-            @update:model-value="() => {}"
-          />
+            <!-- Read-only form -->
+            <DynamicFormRenderer
+              v-if="report.templateStructureSnapshot"
+              :sections="report.templateStructureSnapshot.sections"
+              :header-sections="report.templateStructureSnapshot.header?.enabled ? report.templateStructureSnapshot.header.sections : undefined"
+              :footer-sections="report.templateStructureSnapshot.footer?.enabled ? report.templateStructureSnapshot.footer.sections : undefined"
+              :model-value="report.values || {}"
+              :is-editable="false"
+              @update:model-value="() => {}"
+            />
+          </div>
         </template>
-      </div>
+      </main>
     </div>
   </div>
 </template>
@@ -71,12 +108,8 @@ const { logout } = useLogout();
 
 const { report, loadReport, downloadPdf } = useReportForm();
 
-const breadcrumbItems = computed(() => [
-  { text: "Informes", to: "/informes" },
-  { text: report.value ? `Informe #${report.value.id}` : "Ver" },
-]);
-
 const canDownloadPdf = computed(() => authStore.hasPermission("report.download-pdf"));
+const canEdit = computed(() => authStore.hasPermission("report.edit"));
 
 async function handleDownloadPdf(): Promise<void> {
   try {
@@ -95,6 +128,10 @@ function goBack(): void {
     }
   }
   router.push({ name: "ReportList" });
+}
+
+function editReport(): void {
+  router.push({ name: "ReportEdit", params: { id: route.params.id } });
 }
 
 onMounted(async () => {

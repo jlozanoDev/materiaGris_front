@@ -159,4 +159,49 @@ describe("PatientReportsTab", () => {
 
     expect(wrapper.text()).toContain("No hay informes clínicos para este paciente");
   });
+
+  // ── Edit button ─────────────────────────────────────────────────
+  it('shows Editar button for draft reports when user has report.edit', async () => {
+    permMap = { "report.create": true, "report.edit": true };
+    mockReports.value = [
+      { id: "r1", status: "draft", template_name: "T1", createdAt: "2026-01-01" },
+    ];
+    const wrapper = createWrapper();
+    await flushPromises();
+
+    const editBtn = wrapper.findAll("button").find((b) => b.text() === "Editar");
+    expect(editBtn).toBeDefined();
+  });
+
+  it('hides Editar button for signed reports even with report.edit', async () => {
+    permMap = { "report.create": true, "report.edit": true };
+    mockReports.value = [
+      { id: "r1", status: "signed", template_name: "T1", createdAt: "2026-01-01" },
+    ];
+    const wrapper = createWrapper();
+    await flushPromises();
+
+    expect(wrapper.text()).not.toContain("Editar");
+  });
+
+  it('navigates to ReportEdit when Editar is clicked, not ReportView', async () => {
+    permMap = { "report.create": true, "report.edit": true };
+    mockReports.value = [
+      { id: "r1", status: "draft", template_name: "T1", createdAt: "2026-01-01" },
+    ];
+    const wrapper = createWrapper();
+    await flushPromises();
+
+    const editBtn = wrapper.findAll("button").find((b) => b.text() === "Editar");
+    expect(editBtn).toBeDefined();
+    await editBtn!.trigger("click");
+
+    expect(mockPush).toHaveBeenCalledWith({
+      name: "ReportEdit",
+      params: { id: "r1" },
+    });
+    expect(mockPush).not.toHaveBeenCalledWith(
+      expect.objectContaining({ name: "ReportView" }),
+    );
+  });
 });

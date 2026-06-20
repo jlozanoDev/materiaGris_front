@@ -21,6 +21,7 @@ function createMockRepo(): ReportRepository {
     sign: vi.fn(),
     close: vi.fn(),
     downloadPdf: vi.fn(),
+    getActiveTemplates: vi.fn(),
   };
 }
 

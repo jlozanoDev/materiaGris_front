@@ -94,7 +94,7 @@ onMounted(() => {
     <div class="flex flex-1 min-w-0 overflow-hidden">
       <main class="flex flex-1 min-w-0 flex-col p-5 gap-5 min-h-0">
         <div class="flex flex-col gap-1 shrink-0 relative z-10">
-          <Breadcrumb :items="breadcrumb" />
+          
           <TopBar
             :user="authStore.user"
             @open-edit="showEditModal = true"
@@ -102,6 +102,7 @@ onMounted(() => {
               @manage-addresses="showAddressesModal = true"
               @logout="logout"
           />
+          <Breadcrumb :items="breadcrumb" />
         </div>
         <div class="flex-1 overflow-y-auto min-h-0">
         <div class="flex gap-5">

@@ -42,7 +42,7 @@ describe("ReportViewPage", () => {
     mockReport.value = { id: "r1", status: "signed", user_id: 1, template_structure_snapshot: { sections: [] } };
 
     mount(ReportViewPage, {
-      global: { stubs: ["AppSidebar", "TopBar", "Breadcrumb", "DynamicFormRenderer"] },
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb", "DynamicFormRenderer"] },
     });
     await flushPromises();
 
@@ -54,7 +54,7 @@ describe("ReportViewPage", () => {
     mockReport.value = { id: "r1", status: "signed", user_id: 1, template_structure_snapshot: { sections: [] } };
 
     const wrapper = mount(ReportViewPage, {
-      global: { stubs: ["AppSidebar", "TopBar", "Breadcrumb", "DynamicFormRenderer"] },
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb", "DynamicFormRenderer"] },
     });
     await flushPromises();
 
@@ -66,7 +66,7 @@ describe("ReportViewPage", () => {
     mockReport.value = { id: "r1", status: "draft", user_id: 1, template_structure_snapshot: { sections: [] } };
 
     const wrapper = mount(ReportViewPage, {
-      global: { stubs: ["AppSidebar", "TopBar", "Breadcrumb", "DynamicFormRenderer"] },
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb", "DynamicFormRenderer"] },
     });
     await flushPromises();
 
@@ -78,7 +78,7 @@ describe("ReportViewPage", () => {
     mockReport.value = { id: "r1", status: "signed", user_id: 1, template_structure_snapshot: { sections: [] } };
 
     const wrapper = mount(ReportViewPage, {
-      global: { stubs: ["AppSidebar", "TopBar", "Breadcrumb", "DynamicFormRenderer"] },
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb", "DynamicFormRenderer"] },
     });
     await flushPromises();
 
@@ -90,10 +90,51 @@ describe("ReportViewPage", () => {
     mockReport.value = { id: "r1", status: "draft", user_id: 1, template_structure_snapshot: { sections: [] } };
 
     const wrapper = mount(ReportViewPage, {
-      global: { stubs: ["AppSidebar", "TopBar", "Breadcrumb", "DynamicFormRenderer"] },
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb", "DynamicFormRenderer"] },
     });
     await flushPromises();
 
     expect(wrapper.text()).toContain("Volver");
+  });
+
+  // ── Edit button ─────────────────────────────────────────────
+  it("shows Editar button for draft reports when user has report.edit", async () => {
+    permMap = { "report.view": true, "report.edit": true };
+    mockReport.value = { id: "r1", status: "draft", user_id: 1, templateStructureSnapshot: { sections: [] } };
+
+    const wrapper = mount(ReportViewPage, {
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb", "DynamicFormRenderer"] },
+    });
+    await flushPromises();
+
+    expect(wrapper.text()).toContain("Editar");
+  });
+
+  it("hides Editar button for signed reports even with report.edit", async () => {
+    permMap = { "report.view": true, "report.edit": true };
+    mockReport.value = { id: "r1", status: "signed", user_id: 1, templateStructureSnapshot: { sections: [] } };
+
+    const wrapper = mount(ReportViewPage, {
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb", "DynamicFormRenderer"] },
+    });
+    await flushPromises();
+
+    expect(wrapper.text()).not.toContain("Editar");
+  });
+
+  it("navigates to ReportEdit when Editar is clicked", async () => {
+    permMap = { "report.view": true, "report.edit": true };
+    mockReport.value = { id: "r1", status: "draft", user_id: 1, templateStructureSnapshot: { sections: [] } };
+
+    const wrapper = mount(ReportViewPage, {
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb", "DynamicFormRenderer"] },
+    });
+    await flushPromises();
+
+    const editBtn = wrapper.findAll("button").find((b) => b.text().includes("Editar"));
+    expect(editBtn).toBeDefined();
+    await editBtn!.trigger("click");
+
+    expect(mockPush).toHaveBeenCalledWith({ name: "ReportEdit", params: { id: "r1" } });
   });
 });

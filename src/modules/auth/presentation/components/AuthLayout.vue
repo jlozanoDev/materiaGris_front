@@ -71,13 +71,13 @@ useParticleNetwork(canvasRef)
       style="background: #0f0a1e; color: #9690a8;"
     >
       <span>&copy; 2026 MaterIA Gris</span>
-      <RouterLink to="/aviso-legal" class="transition-colors duration-150 hover:text-white" style="color: #9690a8;">
+      <RouterLink to="/legal-notice" class="transition-colors duration-150 hover:text-white" style="color: #9690a8;">
         Aviso legal
       </RouterLink>
-      <RouterLink to="/privacidad" class="transition-colors duration-150 hover:text-white" style="color: #9690a8;">
+      <RouterLink to="/privacy" class="transition-colors duration-150 hover:text-white" style="color: #9690a8;">
         Privacidad
       </RouterLink>
-      <RouterLink to="/terminos" class="transition-colors duration-150 hover:text-white" style="color: #9690a8;">
+      <RouterLink to="/terms" class="transition-colors duration-150 hover:text-white" style="color: #9690a8;">
         T&eacute;rminos
       </RouterLink>
     </footer>

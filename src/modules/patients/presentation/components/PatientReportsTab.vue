@@ -18,6 +18,7 @@ const { templates, fetchActive: fetchTemplates } = useTemplateList();
 
 const showModal = ref(false);
 const canCreate = computed(() => authStore.hasPermission("report.create"));
+const canEdit = computed(() => authStore.hasPermission("report.edit"));
 const templatesAvailable = computed(() => templates.value.length > 0);
 
 onMounted(() => {
@@ -74,6 +75,10 @@ function handleViewReport(reportId: string): void {
     params: { id: reportId },
     query: { from: "patient", patientId: String(props.patientId) },
   });
+}
+
+function handleEditReport(reportId: string): void {
+  router.push({ name: "ReportEdit", params: { id: reportId } });
 }
 
 function formatDate(dateStr?: string): string {
@@ -163,12 +168,22 @@ function formatDate(dateStr?: string): string {
             {{ formatDate(report.createdAt) }}
           </span>
         </div>
-        <span
-          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-          :class="statusBadgeClass(report.status)"
-        >
-          {{ statusLabel(report.status) }}
-        </span>
+        <div class="flex items-center gap-2">
+          <button
+            v-if="canEdit && report.status === 'draft'"
+            type="button"
+            class="text-indigo-600 hover:text-indigo-800 text-xs font-medium"
+            @click.stop="handleEditReport(report.id)"
+          >
+            Editar
+          </button>
+          <span
+            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+            :class="statusBadgeClass(report.status)"
+          >
+            {{ statusLabel(report.status) }}
+          </span>
+        </div>
       </div>
     </div>
 

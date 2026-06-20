@@ -36,6 +36,10 @@ export async function fetchClient(path: string, options: FetchClientOptions = {}
     opts.headers.Authorization = `Bearer ${token}`;
   }
 
+  if (!opts.headers["Accept"]) {
+    opts.headers["Accept"] = "application/json";
+  }
+
   if (!opts.headers["Content-Type"] && !(opts.body instanceof FormData)) {
     opts.headers["Content-Type"] = "application/json";
   }

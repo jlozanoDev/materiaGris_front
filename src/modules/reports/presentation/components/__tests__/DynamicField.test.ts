@@ -149,9 +149,68 @@ describe('DynamicField', () => {
   it('renders as disabled when disabled prop is true', () => {
     const field = createField({ type: 'text' })
     const wrapper = mount(DynamicField, {
-      props: { field, modelValue: '', disabled: true },
+      props: { field, modelValue: 'Hola', disabled: true },
     })
     const input = wrapper.find('input[type="text"]')
-    expect(input.attributes('disabled')).toBeDefined()
+    expect(input.exists()).toBe(false)
+    const span = wrapper.find('.dynamic-field__readonly')
+    expect(span.exists()).toBe(true)
+    expect(span.text()).toBe('Hola')
+  })
+
+  it('renders date field as formatted span when disabled', () => {
+    const field = createField({ type: 'date' })
+    const wrapper = mount(DynamicField, {
+      props: { field, modelValue: '2026-06-19', disabled: true },
+    })
+    expect(wrapper.find('input[type="date"]').exists()).toBe(false)
+    const span = wrapper.find('.dynamic-field__readonly')
+    expect(span.exists()).toBe(true)
+    expect(span.text()).toBe('19/06/2026')
+  })
+
+  it('renders select field as label span when disabled', () => {
+    const field = createField({
+      type: 'select',
+      options: [
+        { label: 'Masculino', value: 'm' },
+        { label: 'Femenino', value: 'f' },
+      ],
+    })
+    const wrapper = mount(DynamicField, {
+      props: { field, modelValue: 'm', disabled: true },
+    })
+    expect(wrapper.find('button[aria-haspopup="listbox"]').exists()).toBe(false)
+    const span = wrapper.find('.dynamic-field__readonly')
+    expect(span.exists()).toBe(true)
+    expect(span.text()).toBe('Masculino')
+  })
+
+  it('renders multi_select field as comma-separated labels when disabled', () => {
+    const field = createField({
+      type: 'multi_select',
+      options: [
+        { label: 'Opción A', value: 'a' },
+        { label: 'Opción B', value: 'b' },
+        { label: 'Opción C', value: 'c' },
+      ],
+    })
+    const wrapper = mount(DynamicField, {
+      props: { field, modelValue: ['a', 'c'], disabled: true },
+    })
+    expect(wrapper.find('select').exists()).toBe(false)
+    const span = wrapper.find('.dynamic-field__readonly')
+    expect(span.exists()).toBe(true)
+    expect(span.text()).toBe('Opción A, Opción C')
+  })
+
+  it('renders em-dash for empty value when disabled', () => {
+    const field = createField({ type: 'text' })
+    const wrapper = mount(DynamicField, {
+      props: { field, modelValue: '', disabled: true },
+    })
+    const span = wrapper.find('.dynamic-field__readonly')
+    expect(span.exists()).toBe(true)
+    expect(span.text()).toBe('—')
   })
 })

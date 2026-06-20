@@ -15,9 +15,9 @@ import logoSvg from '@/assets/logo-materiagris.svg'
         </div>
         <div class="flex gap-8" style="font-size: 13px;">
           <span>© 2026</span>
-          <RouterLink to="/aviso-legal" style="color: #9690a8; transition: color 0.15s;">Aviso legal</RouterLink>
-          <RouterLink to="/privacidad" style="color: #9690a8; transition: color 0.15s;">Privacidad</RouterLink>
-          <RouterLink to="/terminos" style="color: #9690a8; transition: color 0.15s;">Términos</RouterLink>
+          <RouterLink to="/legal-notice" style="color: #9690a8; transition: color 0.15s;">Aviso legal</RouterLink>
+          <RouterLink to="/privacy" style="color: #9690a8; transition: color 0.15s;">Privacidad</RouterLink>
+          <RouterLink to="/terms" style="color: #9690a8; transition: color 0.15s;">Términos</RouterLink>
         </div>
       </div>
     </div>

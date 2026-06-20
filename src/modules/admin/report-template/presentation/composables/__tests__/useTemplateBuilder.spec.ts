@@ -568,6 +568,7 @@ describe('useTemplateBuilder', () => {
     it('saveTemplate serializes header/footer when enabled', async () => {
       mockCreateUseCase.execute.mockResolvedValue({ id: 99 })
       const store = useTemplateBuilder()
+      store.templateName = 'Test'
       store.switchZone('header')
       store.addSection()
       store.headerEnabled = true

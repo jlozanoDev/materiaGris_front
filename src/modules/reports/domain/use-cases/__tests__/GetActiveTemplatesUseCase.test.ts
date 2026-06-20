@@ -14,8 +14,8 @@ describe("GetActiveTemplatesUseCase", () => {
 
   it("calls repository.getActiveTemplates and returns templates", async () => {
     const expected: ReportTemplate[] = [
-      { id: "1", name: "Informe Radiológico", description: "", isActive: true },
-      { id: "2", name: "Informe de Laboratorio", description: "", isActive: true },
+      { id: "1", name: "Informe Radiológico", description: "", isActive: true, structure: { sections: [] } },
+      { id: "2", name: "Informe de Laboratorio", description: "", isActive: true, structure: { sections: [] } },
     ];
     (repo.getActiveTemplates as any).mockResolvedValue(expected);
 

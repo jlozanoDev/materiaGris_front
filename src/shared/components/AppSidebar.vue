@@ -61,7 +61,7 @@ function getIconForPath(p: string): SidebarIcon | null {
   if (!p) return null;
   if (p === "/" || p === "") return "grid";
   if (p.startsWith("/patients")) return "patients";
-  if (p.startsWith("/informes")) return "reports";
+  if (p.startsWith("/reports")) return "reports";
   if (p.startsWith("/admin")) return "settings";
   return null;
 }

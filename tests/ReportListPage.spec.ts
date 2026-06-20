@@ -7,6 +7,7 @@ vi.mock("@/core/store/auth", () => ({
   useAuthStore: () => ({
     user: { id: 1, name: "Dr. Test" },
     hasPermission: (slug: string) => permMap[slug] ?? false,
+    fetchUser: vi.fn(),
   }),
 }));
 
@@ -45,7 +46,7 @@ describe("ReportListPage", () => {
     permMap = { "report.view": true };
 
     mount(ReportListPage, {
-      global: { stubs: ["AppSidebar", "TopBar", "Breadcrumb"] },
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb"] },
     });
     await flushPromises();
 
@@ -60,7 +61,7 @@ describe("ReportListPage", () => {
     ];
 
     const wrapper = mount(ReportListPage, {
-      global: { stubs: ["AppSidebar", "TopBar", "Breadcrumb"] },
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb"] },
     });
     await flushPromises();
 
@@ -73,7 +74,7 @@ describe("ReportListPage", () => {
     mockReports.value = [];
 
     const wrapper = mount(ReportListPage, {
-      global: { stubs: ["AppSidebar", "TopBar", "Breadcrumb"] },
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb"] },
     });
     await flushPromises();
 
@@ -86,7 +87,7 @@ describe("ReportListPage", () => {
     mockReports.value = [];
 
     const wrapper = mount(ReportListPage, {
-      global: { stubs: ["AppSidebar", "TopBar", "Breadcrumb"] },
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb"] },
     });
     await flushPromises();
 
@@ -101,7 +102,7 @@ describe("ReportListPage", () => {
     ];
 
     const wrapper = mount(ReportListPage, {
-      global: { stubs: ["AppSidebar", "TopBar", "Breadcrumb"] },
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb"] },
     });
     await flushPromises();
 
@@ -122,7 +123,7 @@ describe("ReportListPage", () => {
     ];
 
     const wrapper = mount(ReportListPage, {
-      global: { stubs: ["AppSidebar", "TopBar", "Breadcrumb"] },
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb"] },
     });
     await flushPromises();
 
@@ -136,9 +137,58 @@ describe("ReportListPage", () => {
     mockLoading.value = true;
 
     const wrapper = mount(ReportListPage, {
-      global: { stubs: ["AppSidebar", "TopBar", "Breadcrumb"] },
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb"] },
     });
 
     expect(wrapper.text()).toContain("Cargando");
+  });
+
+  // ── Edit button ─────────────────────────────────────────────
+  it("shows Editar button for draft reports when user has report.edit", async () => {
+    permMap = { "report.view": true, "report.edit": true };
+    mockReports.value = [
+      { id: "r1", patient_name: "Juan", author_name: "Dr. A", template_name: "T1", status: "draft", createdAt: "2026-06-01", updatedAt: "2026-06-02" },
+    ];
+
+    const wrapper = mount(ReportListPage, {
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb"] },
+    });
+    await flushPromises();
+
+    const editBtn = wrapper.findAll("button").find((b) => b.attributes("title") === "Editar");
+    expect(editBtn).toBeDefined();
+  });
+
+  it("hides Editar button for signed reports even with report.edit", async () => {
+    permMap = { "report.view": true, "report.edit": true };
+    mockReports.value = [
+      { id: "r1", patient_name: "Juan", author_name: "Dr. A", template_name: "T1", status: "signed", createdAt: "2026-06-01", updatedAt: "2026-06-02" },
+    ];
+
+    const wrapper = mount(ReportListPage, {
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb"] },
+    });
+    await flushPromises();
+
+    const editBtn = wrapper.findAll("button").find((b) => b.attributes("title") === "Editar");
+    expect(editBtn).toBeUndefined();
+  });
+
+  it("navigates to ReportEdit when Editar is clicked", async () => {
+    permMap = { "report.view": true, "report.edit": true };
+    mockReports.value = [
+      { id: "r1", patient_name: "Juan", author_name: "Dr. A", template_name: "T1", status: "draft", createdAt: "2026-06-01", updatedAt: "2026-06-02" },
+    ];
+
+    const wrapper = mount(ReportListPage, {
+      global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb"] },
+    });
+    await flushPromises();
+
+    const editBtn = wrapper.findAll("button").find((b) => b.attributes("title") === "Editar");
+    expect(editBtn).toBeDefined();
+    await editBtn!.trigger("click");
+
+    expect(mockPush).toHaveBeenCalledWith({ name: "ReportEdit", params: { id: "r1" } });
   });
 });

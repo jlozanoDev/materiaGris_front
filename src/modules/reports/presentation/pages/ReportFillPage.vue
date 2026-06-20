@@ -1,101 +1,127 @@
 <template>
-  <div class="flex min-h-screen bg-gray-50">
+  <div class="flex h-screen overflow-hidden bg-[#EEF2FF]">
     <AppSidebar />
-    <div class="flex-1 p-6">
-      <TopBarLayout :user="authStore.user" @logout="logout" />
-      <Breadcrumb :items="breadcrumbItems" />
 
-      <div class="mt-6">
+    <div class="flex flex-1 min-w-0 overflow-hidden">
+      <main class="flex flex-1 min-w-0 flex-col overflow-y-auto p-5 gap-5">
+        <div class="flex flex-col gap-0">
+          <TopBarLayout :user="authStore.user" @logout="logout" />
+          <Breadcrumb
+            :items="[
+              { text: 'Dashboard', icon: 'pi pi-objects-column', to: '/' },
+              { text: 'Informes', icon: 'pi pi-file', to: '/reports' },
+              { text: report ? `Informe #${report.id}` : 'Nuevo', icon: 'pi pi-file' },
+            ]"
+          />
+        </div>
+
         <!-- Loading -->
-        <div v-if="!report" class="text-center py-12 text-gray-500">
-          Cargando informe...
+        <div
+          v-if="!report"
+          class="bg-white rounded-2xl shadow-sm p-6 flex flex-col gap-4"
+        >
+          <div class="h-8 w-48 bg-slate-200 rounded-md animate-pulse" />
+          <div class="space-y-3 mt-2">
+            <div
+              v-for="i in 4"
+              :key="i"
+              class="h-24 bg-slate-200 rounded-2xl animate-pulse"
+            />
+          </div>
         </div>
 
         <template v-else>
-          <div class="flex items-center justify-between mb-6">
-            <div class="flex items-center gap-4">
-              <button
-                v-if="isCreateFlow"
-                type="button"
-                class="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
-                @click="handleBack"
-              >
-                <i class="pi pi-arrow-left text-xs"></i>
-                Volver
-              </button>
-              <h1 class="text-2xl font-bold text-gray-900">
-                {{ report.status === "draft" ? "Completar Informe" : "Informe" }}
-              </h1>
+          <div class="bg-white rounded-2xl shadow-sm p-6">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-6">
+              <div class="flex items-center gap-4">
+                <button
+                  v-if="isCreateFlow"
+                  type="button"
+                  class="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
+                  @click="handleBack"
+                >
+                  <i class="pi pi-arrow-left text-xs"></i>
+                  Volver
+                </button>
+                <h1 class="text-xl font-bold text-slate-800">
+                  {{ report.status === "draft" ? "Completar Informe" : "Informe" }}
+                </h1>
+              </div>
+
+              <div class="flex gap-3">
+                <!-- Guardar borrador -->
+                <button
+                  v-if="canEdit"
+                  type="button"
+                  class="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                  :disabled="isSaving"
+                  @click="handleSave"
+                >
+                  <i class="pi pi-save text-xs"></i>
+                  {{ isSaving ? "Guardando..." : "Guardar borrador" }}
+                </button>
+
+                <!-- Firmar -->
+                <button
+                  v-if="canSign && report.status === 'draft'"
+                  type="button"
+                  class="inline-flex items-center gap-2 rounded-2xl bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+                  @click="handleSign"
+                >
+                  <i class="pi pi-check text-xs"></i>
+                  Firmar informe
+                </button>
+
+                <!-- Cerrar -->
+                <button
+                  v-if="canClose && report.status === 'signed'"
+                  type="button"
+                  class="inline-flex items-center gap-2 rounded-2xl bg-slate-600 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+                  @click="handleClose"
+                >
+                  <i class="pi pi-lock text-xs"></i>
+                  Cerrar informe
+                </button>
+
+                <!-- Descargar PDF -->
+                <button
+                  v-if="canDownloadPdf && (report.status === 'signed' || report.status === 'closed')"
+                  type="button"
+                  class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                  @click="handleDownloadPdf"
+                >
+                  <i class="pi pi-download text-xs"></i>
+                  Descargar PDF
+                </button>
+              </div>
             </div>
 
-            <div class="flex gap-3">
-              <!-- Guardar borrador -->
-              <button
-                v-if="canEdit"
-                type="button"
-                class="inline-flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-                :disabled="isSaving"
-                @click="handleSave"
-              >
-                {{ isSaving ? "Guardando..." : "Guardar borrador" }}
-              </button>
-
-              <!-- Firmar -->
-              <button
-                v-if="canSign && report.status === 'draft'"
-                type="button"
-                class="inline-flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
-                @click="handleSign"
-              >
-                Firmar informe
-              </button>
-
-              <!-- Cerrar -->
-              <button
-                v-if="canClose && report.status === 'signed'"
-                type="button"
-                class="inline-flex items-center gap-2 rounded-md bg-gray-600 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700"
-                @click="handleClose"
-              >
-                Cerrar informe
-              </button>
-
-              <!-- Descargar PDF -->
-              <button
-                v-if="canDownloadPdf && (report.status === 'signed' || report.status === 'closed')"
-                type="button"
-                class="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                @click="handleDownloadPdf"
-              >
-                Descargar PDF
-              </button>
+            <!-- Validation errors -->
+            <div
+              v-if="Object.keys(errors).length > 0"
+              class="mb-6 rounded-2xl bg-red-50 p-4"
+            >
+              <p class="text-sm font-medium text-red-800 mb-2">Complete los campos obligatorios:</p>
+              <ul class="list-disc list-inside text-sm text-red-700">
+                <li v-for="(msg, key) in errors" :key="key">{{ msg }}</li>
+              </ul>
             </div>
-          </div>
 
-          <!-- Validation errors -->
-          <div
-            v-if="Object.keys(errors).length > 0"
-            class="mb-6 rounded-md bg-red-50 p-4"
-          >
-            <p class="text-sm font-medium text-red-800 mb-2">Complete los campos obligatorios:</p>
-            <ul class="list-disc list-inside text-sm text-red-700">
-              <li v-for="(msg, key) in errors" :key="key">{{ msg }}</li>
-            </ul>
+            <!-- Dynamic form -->
+            <DynamicFormRenderer
+              v-if="report.templateStructureSnapshot"
+              :sections="report.templateStructureSnapshot.sections"
+              :header-sections="report.templateStructureSnapshot.header?.enabled ? report.templateStructureSnapshot.header.sections : undefined"
+              :footer-sections="report.templateStructureSnapshot.footer?.enabled ? report.templateStructureSnapshot.footer.sections : undefined"
+              :model-value="values"
+              :is-editable="canEdit"
+              @update:model-value="handleUpdate"
+              @auto-save="handleSave"
+            />
           </div>
-
-          <!-- Dynamic form -->
-          <DynamicFormRenderer
-            v-if="report.templateStructureSnapshot"
-            :sections="report.templateStructureSnapshot.sections"
-            :header-sections="report.templateStructureSnapshot.header?.enabled ? report.templateStructureSnapshot.header.sections : undefined"
-            :footer-sections="report.templateStructureSnapshot.footer?.enabled ? report.templateStructureSnapshot.footer.sections : undefined"
-            :model-value="values"
-            :is-editable="canEdit"
-            @update:model-value="handleUpdate"
-            @auto-save="handleSave"
-          />
         </template>
-      </div>
+      </main>
     </div>
   </div>
 </template>
@@ -129,11 +155,6 @@ const {
   close,
   downloadPdf,
 } = useReportForm();
-
-const breadcrumbItems = computed(() => [
-  { text: "Informes", to: "/informes" },
-  { text: report.value ? `Informe #${report.value.id}` : "Nuevo" },
-]);
 
 // Route helpers
 const isCreateFlow = computed(() => route.name === "ReportCreate");

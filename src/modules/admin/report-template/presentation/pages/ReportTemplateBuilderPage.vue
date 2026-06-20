@@ -57,7 +57,11 @@ async function handleSave() {
     saveSuccess.value = true
     setTimeout(() => { saveSuccess.value = false }, 2500)
   } catch (e: any) {
-    saveError.value = e?.message || 'Error al guardar la plantilla'
+    const msg = e?.message
+      || e?.body?.message
+      || (e?.body?.errors ? Object.values(e.body.errors).flat().join(', ') : null)
+      || 'Error al guardar la plantilla'
+    saveError.value = msg
     setTimeout(() => { saveError.value = '' }, 5000)
   }
 }
@@ -261,14 +265,20 @@ onMounted(async () => {
           <!-- General info -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 shrink-0">
             <div>
-              <label class="block text-sm font-medium text-[#6b6b7b] mb-1">Nombre de la plantilla</label>
+              <label class="block text-sm font-medium text-[#6b6b7b] mb-1">
+                Nombre de la plantilla
+                <span class="text-red-500 ml-0.5">*</span>
+              </label>
               <input
                 v-model="builder.templateName"
                 placeholder="Ej: Informe de Evaluación"
+                required
                 class="form-input"
+                :class="{ 'border-red-400 ring-1 ring-red-200': saveError && !builder.templateName.trim() }"
                 :disabled="!canSave"
                 aria-label="Nombre de la plantilla"
               />
+              <p v-if="saveError && !builder.templateName.trim()" class="text-red-500 text-xs mt-1">El nombre es obligatorio</p>
             </div>
             <div>
               <label class="block text-sm font-medium text-[#6b6b7b] mb-1">Descripción (opcional)</label>
