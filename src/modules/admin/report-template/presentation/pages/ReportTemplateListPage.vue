@@ -5,8 +5,10 @@ import AppSidebar from "@/shared/components/AppSidebar.vue";
 import TopBarLayout from "@/shared/components/TopBarLayout.vue";
 import Breadcrumb from "@/shared/components/Breadcrumb.vue";
 import UiVuetifyDataTable from "@/shared/components/UiVuetifyDataTable.vue";
+import Modal from "@/shared/components/Modal.vue";
 import { useAuthStore } from "@/core/store/auth";
 import { useLogout } from "@/shared/composables/useLogout";
+import { useToast } from "@/shared/composables/useToast";
 import { useReportTemplate } from "@/modules/admin/report-template/presentation/composables/useReportTemplate";
 import type { ReportTemplate } from "@/shared/types";
 
@@ -30,7 +32,11 @@ interface BreadcrumbItem {
 const authStore = useAuthStore();
 const router = useRouter();
 const { logout } = useLogout();
+const { show: showToast } = useToast();
 const { templates, loading, error, fetchTemplates, deleteTemplate } = useReportTemplate();
+
+const showDeleteModal = ref(false);
+const deletingId = ref<string | number | null>(null);
 
 const globalFilter = ref<string>("");
 const filters = ref<DataTableFilters>({
@@ -66,12 +72,28 @@ function navigateToEdit(id: string | number): void {
   router.push({ name: "AdminReportTemplateEdit", params: { id: String(id) } });
 }
 
-async function handleDelete(id: string | number): Promise<void> {
-  if (!confirm("¿Eliminar plantilla de informe?")) return;
+function promptDelete(id: string | number): void {
+  deletingId.value = id;
+  showDeleteModal.value = true;
+}
+
+function cancelDelete(): void {
+  showDeleteModal.value = false;
+  deletingId.value = null;
+}
+
+async function confirmDelete(): Promise<void> {
+  const id = deletingId.value;
+  if (id === null) return;
   try {
     await deleteTemplate(id);
+    showToast("Plantilla eliminada correctamente", "success");
+    fetchTemplates();
   } catch (e: any) {
-    alert(e?.message || "Error al eliminar plantilla");
+    showToast(e?.message || "Error al eliminar plantilla", "error", 5000);
+  } finally {
+    showDeleteModal.value = false;
+    deletingId.value = null;
   }
 }
 
@@ -254,7 +276,7 @@ onMounted(async () => {
                         data-action-btn
                         aria-label="Eliminar"
                         class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-red-50 border border-red-100 text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 hover:shadow-sm transition-all duration-150 relative group"
-                        @click="handleDelete(data?.id)"
+                        @click="promptDelete(data?.id)"
                       >
                         <i class="pi pi-trash text-xs" />
                         <span class="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-[#0b0817] text-white text-[11px] leading-none py-1.5 px-2.5 rounded-md opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-150 z-10 shadow-sm">Eliminar</span>
@@ -275,6 +297,36 @@ onMounted(async () => {
       </main>
     </div>
   </div>
+
+  <!-- Delete confirmation modal -->
+  <Modal
+    :show="showDeleteModal"
+    title="Eliminar plantilla"
+    size="sm"
+    :close-on-backdrop="false"
+    @close="cancelDelete"
+  >
+    <p class="text-[#6b6b7b] text-sm">
+      ¿Estás seguro de eliminar esta plantilla de informe? Esta acción no se puede deshacer.
+    </p>
+
+    <template #footer>
+      <div class="flex justify-end gap-3">
+        <button
+          class="btn btn-outline btn-sm"
+          @click="cancelDelete"
+        >
+          Cancelar
+        </button>
+        <button
+          class="btn bg-red-500 hover:bg-red-600 text-white btn-sm"
+          @click="confirmDelete"
+        >
+          Eliminar
+        </button>
+      </div>
+    </template>
+  </Modal>
 </template>
 
 <style scoped>

@@ -5,7 +5,11 @@ export default class ApiReportTemplateRepository implements ReportTemplateReposi
   async getAll(): Promise<any> {
     try {
       const res = await fetchClient("/admin/report-templates", { method: "GET" });
-      return Array.isArray(res) ? res : res?.data ?? [];
+      const items = Array.isArray(res) ? res : res?.data ?? [];
+      return items.map((item: any) => ({
+        ...item,
+        isActive: !!(item.isActive ?? item.is_active),
+      }));
     } catch (err) {
       throw new Error("Error al obtener plantillas de informe");
     }
