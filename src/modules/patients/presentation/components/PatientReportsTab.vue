@@ -6,6 +6,7 @@ import { useTemplateList } from "@/modules/reports/presentation/composables/useT
 import { useAuthStore } from "@/core/store/auth";
 import TemplatePickerModal from "@/modules/reports/presentation/components/TemplatePickerModal.vue";
 import CustomSelect from "@/shared/components/CustomSelect.vue";
+import Modal from "@/shared/components/Modal.vue";
 import type { ReportStatus, ReportTemplate } from "@/shared/types";
 
 const props = defineProps<{
@@ -26,6 +27,8 @@ const filterSearch = ref("");
 const filterStatus = ref("");
 const currentPage = ref(1);
 const perPage = 20;
+const showDeleteModal = ref(false);
+const reportToDelete = ref<string | number | null>(null);
 
 onMounted(() => {
   fetchReports({ patient_id: props.patientId });
@@ -104,10 +107,20 @@ function editReport(reportId: string): void {
   router.push({ name: "ReportEdit", params: { id: reportId } });
 }
 
-function handleDelete(id: string | number): void {
-  if (confirm("¿Eliminar este informe? Esta acción no se puede deshacer.")) {
-    deleteReport(id);
-  }
+function openDeleteModal(id: string | number): void {
+  reportToDelete.value = id;
+  showDeleteModal.value = true;
+}
+
+function cancelDelete(): void {
+  showDeleteModal.value = false;
+  reportToDelete.value = null;
+}
+
+async function confirmDelete(): Promise<void> {
+  if (reportToDelete.value == null) return;
+  await deleteReport(reportToDelete.value);
+  cancelDelete();
 }
 
 // Client-side search filter
@@ -268,7 +281,7 @@ const paginatedReports = computed(() => {
                     type="button"
                     class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-[#fef2f2] border border-[#fee2e2] text-[#dc2626] hover:bg-[#dc2626] hover:text-white hover:border-[#dc2626] hover:shadow-sm transition-all duration-150"
                     title="Eliminar"
-                    @click="handleDelete(report.id)"
+                          @click="openDeleteModal(report.id)"
                   >
                     <i class="pi pi-trash text-xs" />
                   </button>
@@ -305,6 +318,36 @@ const paginatedReports = computed(() => {
         </div>
       </div>
     </div>
+
+    <!-- Delete confirmation modal -->
+    <Modal
+      :show="showDeleteModal"
+      title="Eliminar informe"
+      size="sm"
+      :close-on-backdrop="false"
+      @close="cancelDelete"
+    >
+      <p class="text-[#6b6b7b] text-sm">
+        ¿Estás seguro de eliminar este informe? Esta acción no se puede deshacer.
+      </p>
+
+      <template #footer>
+        <div class="flex justify-end gap-3">
+          <button
+            class="btn btn-outline btn-sm"
+            @click="cancelDelete"
+          >
+            Cancelar
+          </button>
+          <button
+            class="btn bg-red-500 hover:bg-red-600 text-white btn-sm"
+            @click="confirmDelete"
+          >
+            Eliminar
+          </button>
+        </div>
+      </template>
+    </Modal>
 
     <!-- Template picker modal -->
     <TemplatePickerModal

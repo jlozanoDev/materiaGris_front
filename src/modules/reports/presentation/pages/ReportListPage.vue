@@ -49,9 +49,9 @@
             </button>
           </div>
 
-          <!-- Empty -->
+          <!-- Empty: no reports at all -->
           <div
-            v-else-if="reports.length === 0"
+            v-else-if="reports.length === 0 && !filterPatient && !filterStatus"
             class="flex flex-col items-center justify-center py-12"
           >
             <i class="pi pi-file text-slate-300 text-5xl mb-4"></i>
@@ -85,8 +85,24 @@
               />
             </div>
 
+            <!-- Empty after filter -->
+            <div
+              v-if="reports.length === 0 && (filterPatient || filterStatus)"
+              class="flex flex-col items-center justify-center py-12"
+            >
+              <i class="pi pi-filter-slash text-slate-300 text-5xl mb-4"></i>
+              <p class="text-slate-500 mb-2">No hay resultados para los filtros seleccionados</p>
+              <button
+                type="button"
+                class="mt-4 px-4 py-2 rounded-2xl text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                @click="clearFilters"
+              >
+                Limpiar filtros
+              </button>
+            </div>
+
             <!-- Table -->
-            <div class="overflow-x-auto">
+            <div v-else class="overflow-x-auto">
               <table class="w-full text-sm">
                 <thead class="bg-slate-50">
                   <tr>
@@ -139,7 +155,7 @@
                           type="button"
                           class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-[#fef2f2] border border-[#fee2e2] text-[#dc2626] hover:bg-[#dc2626] hover:text-white hover:border-[#dc2626] hover:shadow-sm transition-all duration-150"
                           title="Eliminar"
-                          @click="handleDelete(report.id)"
+                          @click="openDeleteModal(report.id)"
                         >
                           <i class="pi pi-trash text-xs" />
                         </button>
@@ -152,7 +168,7 @@
 
             <!-- Pagination -->
             <div
-              v-if="totalPages > 1"
+              v-if="reports.length > 0 && totalPages > 1"
               class="flex items-center justify-between mt-4 pt-4 border-t border-slate-100"
             >
               <span class="text-sm text-slate-500">
@@ -179,6 +195,36 @@
         </div>
       </main>
     </div>
+
+    <!-- Delete confirmation modal -->
+    <Modal
+      :show="showDeleteModal"
+      title="Eliminar informe"
+      size="sm"
+      :close-on-backdrop="false"
+      @close="cancelDelete"
+    >
+      <p class="text-[#6b6b7b] text-sm">
+        ¿Estás seguro de eliminar este informe? Esta acción no se puede deshacer.
+      </p>
+
+      <template #footer>
+        <div class="flex justify-end gap-3">
+          <button
+            class="btn btn-outline btn-sm"
+            @click="cancelDelete"
+          >
+            Cancelar
+          </button>
+          <button
+            class="btn bg-red-500 hover:bg-red-600 text-white btn-sm"
+            @click="confirmDelete"
+          >
+            Eliminar
+          </button>
+        </div>
+      </template>
+    </Modal>
   </div>
 </template>
 
@@ -191,6 +237,7 @@ import { useAuthStore } from "@/core/store/auth";
 import { useLogout } from "@/shared/composables/useLogout";
 import Breadcrumb from "@/shared/components/Breadcrumb.vue";
 import CustomSelect from "@/shared/components/CustomSelect.vue";
+import Modal from "@/shared/components/Modal.vue";
 import { useReportList } from "@/modules/reports/presentation/composables/useReportList";
 
 const router = useRouter();
@@ -202,6 +249,8 @@ const filterStatus = ref("");
 const filterPatient = ref("");
 const currentPage = ref(1);
 const perPage = 20;
+const showDeleteModal = ref(false);
+const reportToDelete = ref<string | number | null>(null);
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -218,6 +267,13 @@ function applyFilters(): void {
   if (filterPatient.value) filters.patient = filterPatient.value;
   currentPage.value = 1;
   fetchReports(filters);
+}
+
+function clearFilters(): void {
+  filterStatus.value = "";
+  filterPatient.value = "";
+  currentPage.value = 1;
+  fetchReports();
 }
 
 const filteredReports = computed(() => reports.value);
@@ -274,10 +330,20 @@ function editReport(id: string | number): void {
   router.push({ name: "ReportEdit", params: { id: String(id) } });
 }
 
-function handleDelete(id: string | number): void {
-  if (confirm("¿Eliminar este informe? Esta acción no se puede deshacer.")) {
-    deleteReport(id);
-  }
+function openDeleteModal(id: string | number): void {
+  reportToDelete.value = id;
+  showDeleteModal.value = true;
+}
+
+function cancelDelete(): void {
+  showDeleteModal.value = false;
+  reportToDelete.value = null;
+}
+
+async function confirmDelete(): Promise<void> {
+  if (reportToDelete.value == null) return;
+  await deleteReport(reportToDelete.value);
+  cancelDelete();
 }
 
 onMounted(() => {
