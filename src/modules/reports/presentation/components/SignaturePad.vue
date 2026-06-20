@@ -34,11 +34,11 @@
 
             <!-- Watermark -->
             <span v-if="!hasDrawn" class="signature-pad__watermark">
-              <svg class="signature-pad__watermark-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 17a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v3a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/>
-                <path d="M8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>
-                <circle cx="16" cy="8" r="2"/>
-                <path d="m5 17 4-6 3 4 3-5 4 7"/>
+              <svg class="signature-pad__watermark-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+                <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+                <path d="M2 2l7.586 7.586"/>
+                <circle cx="11" cy="11" r="2"/>
               </svg>
               Firme aquí
             </span>
@@ -108,8 +108,8 @@ const emit = defineEmits<{
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const canvasWrapperRef = ref<HTMLDivElement | null>(null)
-const canvasWidth = 400
-const canvasHeight = 160
+const canvasWidth = 600
+const canvasHeight = 220
 const hasDrawn = ref(false)
 const isDrawing = ref(false)
 
@@ -234,7 +234,7 @@ onMounted(() => {
   border: 2px dashed rgba(124, 58, 237, 0.15);
   background: #fafaff;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
-  max-width: 420px;
+  max-width: 620px;
 }
 .signature-pad__canvas-wrapper:hover {
   border-color: rgba(124, 58, 237, 0.3);

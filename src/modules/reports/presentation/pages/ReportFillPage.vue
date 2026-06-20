@@ -159,31 +159,96 @@
   <!-- Sign confirmation modal -->
   <Modal
     :show="showSignModal"
-    title="Firmar informe"
+    title="Firma digital del informe"
     size="lg"
     :close-on-backdrop="false"
+    icon-class="h-6 w-6 text-[#7c3aed]"
     @close="cancelSign"
   >
-    <p class="text-[#6b6b7b] text-sm mb-4">
-      Dibuje su firma o escriba su nombre completo para firmar el informe.
-    </p>
+    <template #icon>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+        <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+        <path d="M2 2l7.586 7.586"/>
+        <circle cx="11" cy="11" r="2"/>
+      </svg>
+    </template>
 
-    <SignaturePad
-      :model-value="signatureValue"
-      :disabled="false"
-      @update:model-value="onSignatureUpdate"
-      @update:typed-signature="onTypedSignatureUpdate"
-    />
+    <!-- Document Context -->
+    <div class="mb-6 rounded-xl border border-[rgba(124,58,237,0.08)] bg-[#fafaff] p-4">
+      <p class="text-xs font-semibold uppercase tracking-wider text-[#9690a8] mb-2">Documento a firmar</p>
+      <div class="flex items-center gap-3">
+        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="text-sm font-semibold text-[#0b0817] truncate">{{ templateName || 'Informe clínico' }}</p>
+          <p class="text-xs text-[#6b6b7b] truncate">{{ fullPatientName }} • {{ formatDateShort(report?.createdAt) }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="mb-4 flex items-center gap-2">
+      <div class="flex h-5 w-5 items-center justify-center rounded-full bg-[rgba(124,58,237,0.1)]">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <p class="text-sm text-[#6b6b7b]">
+        Dibuje su firma en el recuadro o escriba su nombre completo
+      </p>
+    </div>
+
+    <!-- Signature Pad -->
+    <div class="rounded-xl border border-[rgba(124,58,237,0.08)] bg-white p-4 shadow-sm">
+      <SignaturePad
+        :model-value="signatureValue"
+        :disabled="false"
+        @update:model-value="onSignatureUpdate"
+        @update:typed-signature="onTypedSignatureUpdate"
+      />
+    </div>
+
+    <!-- Status & Error -->
+    <div class="mt-4 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div
+          class="h-2 w-2 rounded-full transition-colors duration-200"
+          :class="hasSignature ? 'bg-green-500' : 'bg-gray-300'"
+        />
+        <span class="text-xs text-[#9690a8]">
+          {{ hasSignature ? 'Firma lista' : 'Firma pendiente' }}
+        </span>
+      </div>
+    </div>
 
     <div
       v-if="signError"
-      class="mt-4 rounded-xl bg-red-50 p-3"
+      class="mt-3 flex items-center gap-2 rounded-xl bg-red-50 px-3 py-2.5 border border-red-100"
     >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
       <p class="text-sm text-red-700">{{ signError }}</p>
     </div>
 
+    <!-- Legal disclaimer -->
+    <p class="mt-4 text-xs text-[#9690a8] leading-relaxed">
+      Al firmar, confirma que la información contenida en este informe es veraz y ha sido revisada por usted. 
+      Esta firma tiene validez legal conforme a la normativa vigente.
+    </p>
+
     <template #footer>
-      <div class="flex justify-end gap-3">
+      <div class="flex items-center justify-between w-full">
         <button
           class="btn btn-outline btn-sm"
           :disabled="isSigning"
@@ -191,12 +256,16 @@
         >
           Cancelar
         </button>
-        <button
-          class="btn bg-green-600 hover:bg-green-700 text-white btn-sm"
-          :disabled="isSigning"
-          @click="confirmSign"
-        >
-          {{ isSigning ? "Firmando..." : "Firmar" }}
+          <button
+            class="btn btn-primary btn-sm"
+            :disabled="isSigning || !hasSignature"
+            @click="confirmSign"
+          >
+          <svg v-if="!isSigning" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1.5">
+            <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+          </svg>
+          {{ isSigning ? "Firmando..." : "Confirmar firma" }}
         </button>
       </div>
     </template>
@@ -274,6 +343,11 @@ const closeError = ref("");
 const isSigning = ref(false);
 const isClosing = ref(false);
 
+// Computed property to check if signature is provided
+const hasSignature = computed(() => {
+  return !!signatureValue.value || !!typedSignatureValue.value;
+});
+
 const {
   report,
   values,
@@ -281,6 +355,8 @@ const {
   isSaving,
   isLoading,
   errorMessage,
+  signatureValue,
+  typedSignatureValue,
   init,
   loadReport,
   setValue,
