@@ -126,6 +126,45 @@ describe('DynamicField', () => {
     expect(wrapper.find('.fixed-text-renderer').exists()).toBe(true)
   })
 
+  it('forwards variableResolver to FixedTextRenderer for fixed_text type', () => {
+    const resolver = (t: string) => t.replace(/\{x\}/g, 'Y')
+    const field = createField({
+      type: 'fixed_text',
+      text_content: '{x} World',
+    } as any)
+    const wrapper = mount(DynamicField, {
+      props: { field, modelValue: null, disabled: false, variableResolver: resolver },
+    })
+    expect(wrapper.find('.fixed-text-renderer').exists()).toBe(true)
+    expect(wrapper.html()).toContain('Y World')
+    expect(wrapper.html()).not.toContain('{x}')
+  })
+
+  it('forwards variableResolver to FixedTextRenderer in disabled mode', () => {
+    const resolver = (t: string) => t.replace(/\{y\}/g, 'Z')
+    const field = createField({
+      type: 'fixed_text',
+      text_content: '{y} Disabled',
+    } as any)
+    const wrapper = mount(DynamicField, {
+      props: { field, modelValue: null, disabled: true, variableResolver: resolver },
+    })
+    expect(wrapper.find('.fixed-text-renderer').exists()).toBe(true)
+    expect(wrapper.html()).toContain('Z Disabled')
+    expect(wrapper.html()).not.toContain('{y}')
+  })
+
+  it('renders literal text when no variableResolver is provided', () => {
+    const field = createField({
+      type: 'fixed_text',
+      text_content: '{foo} literal',
+    } as any)
+    const wrapper = mount(DynamicField, {
+      props: { field, modelValue: null, disabled: false },
+    })
+    expect(wrapper.html()).toContain('{foo} literal')
+  })
+
   it('shows placeholder for unknown type', () => {
     const field = createField({ type: 'text' as any })
     // Force an unknown type by setting a type that's not handled

@@ -1,10 +1,6 @@
-# fixed-text-field Specification
+# Delta for fixed-text-field
 
-## Purpose
-
-Read-only text field in dynamic forms. Content supports system-variable interpolation with `{category.key}` syntax.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Texto Fijo MUST render as read-only with variable interpolation
 
@@ -31,13 +27,3 @@ The field SHALL accept `text_content` with optional `{category.key}` placeholder
 - AND `variableResolver` does NOT resolve `{foo.bar}`
 - WHEN form renders
 - THEN display shows "Dato: {foo.bar}" — no crash, no error toast
-
-### Requirement: Texto Fijo SHALL support styling options
-
-The field MAY receive `styling_options` (font weight, size, color, alignment). Default: regular weight, inherit size.
-
-#### Scenario: Custom styling applied
-
-- GIVEN `styling_options: {bold: true, color: "#c0392b"}`
-- WHEN form renders
-- THEN text displays bold and red

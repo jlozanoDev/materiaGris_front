@@ -313,4 +313,120 @@ describe('DynamicFormRenderer', () => {
       expect(enabledInputs.length).toBeGreaterThan(0)
     })
   })
+
+  describe('variableResolver prop', () => {
+    const resolver = (t: string) => t.replace(/\{hospital\}/g, 'Hospital Central')
+
+    const resolverSections: Section[] = [
+      {
+        id: 'body-sec',
+        label: 'Body',
+        display: 'default',
+        rows: [
+          {
+            id: 'br1',
+            columns: [
+              {
+                id: 'bc1',
+                fields: [
+                  { id: 'bf1', type: 'fixed_text', label: 'Body Fixed', key: 'body_fixed', text_content: '{hospital} Body', required: false } as any,
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ]
+
+    const resolverHeaderSections: Section[] = [
+      {
+        id: 'hdr-sec',
+        label: 'Header',
+        display: 'default',
+        rows: [
+          {
+            id: 'hr1',
+            columns: [
+              {
+                id: 'hc1',
+                fields: [
+                  { id: 'hf1', type: 'fixed_text', label: 'Header Fixed', key: 'hdr_fixed', text_content: '{hospital} Header', required: false } as any,
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ]
+
+    const resolverFooterSections: Section[] = [
+      {
+        id: 'ftr-sec',
+        label: 'Footer',
+        display: 'default',
+        rows: [
+          {
+            id: 'fr1',
+            columns: [
+              {
+                id: 'fc1',
+                fields: [
+                  { id: 'ff1', type: 'fixed_text', label: 'Footer Fixed', key: 'ftr_fixed', text_content: '{hospital} Footer', required: false } as any,
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ]
+
+    it('resolves variables in header zone fixed_text', () => {
+      const wrapper = mount(DynamicFormRenderer, {
+        props: {
+          sections: resolverSections,
+          headerSections: resolverHeaderSections,
+          modelValue: {},
+          isEditable: true,
+          variableResolver: resolver,
+        },
+      })
+      expect(wrapper.text()).toContain('Hospital Central Header')
+    })
+
+    it('resolves variables in body zone fixed_text', () => {
+      const wrapper = mount(DynamicFormRenderer, {
+        props: {
+          sections: resolverSections,
+          modelValue: {},
+          isEditable: true,
+          variableResolver: resolver,
+        },
+      })
+      expect(wrapper.text()).toContain('Hospital Central Body')
+    })
+
+    it('resolves variables in footer zone fixed_text', () => {
+      const wrapper = mount(DynamicFormRenderer, {
+        props: {
+          sections: resolverSections,
+          footerSections: resolverFooterSections,
+          modelValue: {},
+          isEditable: true,
+          variableResolver: resolver,
+        },
+      })
+      expect(wrapper.text()).toContain('Hospital Central Footer')
+    })
+
+    it('renders literal placeholder when no resolver is provided', () => {
+      const wrapper = mount(DynamicFormRenderer, {
+        props: {
+          sections: resolverSections,
+          modelValue: {},
+          isEditable: true,
+        },
+      })
+      expect(wrapper.text()).toContain('{hospital} Body')
+    })
+  })
 })

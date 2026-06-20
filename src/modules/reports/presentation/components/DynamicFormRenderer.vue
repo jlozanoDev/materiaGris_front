@@ -27,6 +27,7 @@
               :field="field"
               :model-value="getFieldValue(field.key)"
               :disabled="true"
+              :variable-resolver="variableResolver"
               @update:model-value="() => {}"
             />
           </div>
@@ -116,6 +117,7 @@
                 :field="field"
                 :model-value="getFieldValue(field.key)"
                 :disabled="!isEditable"
+                :variable-resolver="variableResolver"
                 @update:model-value="onFieldUpdate(field.key, $event)"
               />
             </div>
@@ -151,6 +153,7 @@
               :field="field"
               :model-value="getFieldValue(field.key)"
               :disabled="true"
+              :variable-resolver="variableResolver"
               @update:model-value="() => {}"
             />
           </div>
@@ -176,11 +179,13 @@ interface Props {
   footerSections?: Section[]
   modelValue: Record<string, any>
   isEditable: boolean
+  variableResolver?: (text: string) => string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   headerSections: undefined,
   footerSections: undefined,
+  variableResolver: undefined,
 })
 
 const emit = defineEmits<{

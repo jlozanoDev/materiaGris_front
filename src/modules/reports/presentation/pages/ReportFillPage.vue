@@ -17,7 +17,7 @@
 
         <!-- Loading -->
         <div
-          v-if="!report"
+          v-if="isLoading"
           class="bg-white rounded-2xl shadow-sm p-6 flex flex-col gap-4"
         >
           <div class="h-8 w-48 bg-slate-200 rounded-md animate-pulse" />
@@ -30,7 +30,25 @@
           </div>
         </div>
 
-        <template v-else>
+        <!-- Error -->
+        <div
+          v-else-if="errorMessage"
+          class="bg-white rounded-2xl shadow-sm p-6"
+        >
+          <div class="rounded-2xl bg-red-50 p-4">
+            <p class="text-sm font-medium text-red-800 mb-2">Error al cargar el informe</p>
+            <p class="text-sm text-red-700 mb-4">{{ errorMessage }}</p>
+            <button
+              type="button"
+              class="inline-flex items-center gap-2 rounded-2xl bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+              @click="retry"
+            >
+              Reintentar
+            </button>
+          </div>
+        </div>
+
+        <template v-else-if="report">
           <div class="bg-white rounded-2xl shadow-sm p-6">
             <!-- Header -->
             <div class="flex items-center justify-between mb-6">
@@ -116,6 +134,7 @@
               :footer-sections="report.templateStructureSnapshot.footer?.enabled ? report.templateStructureSnapshot.footer.sections : undefined"
               :model-value="values"
               :is-editable="canEdit"
+              :variable-resolver="variableResolver"
               @update:model-value="handleUpdate"
               @auto-save="handleSave"
             />
@@ -136,6 +155,7 @@ import DynamicFormRenderer from "@/modules/reports/presentation/components/Dynam
 import { useReportForm } from "@/modules/reports/presentation/composables/useReportForm";
 import { useAuthStore } from "@/core/store/auth";
 import { useLogout } from "@/shared/composables/useLogout";
+import { SystemVariableRegistry } from "@/shared/types/SystemVariableRegistry";
 
 const route = useRoute();
 const router = useRouter();
@@ -147,6 +167,8 @@ const {
   values,
   errors,
   isSaving,
+  isLoading,
+  errorMessage,
   init,
   loadReport,
   setValue,
@@ -166,6 +188,57 @@ function handleBack(): void {
   } else {
     const reportId = route.params.id as string;
     router.push({ name: "ReportView", params: { id: reportId } });
+  }
+}
+
+// Variable resolver — chains SystemVariableRegistry + legacy flat keys
+const variableResolver = computed<((text: string) => string) | undefined>(() => {
+  if (!report.value) return undefined;
+
+  const registry = new SystemVariableRegistry();
+
+  // Register common report variables
+  // patient info
+  if (report.value.patient_name) {
+    registry.register("paciente", "nombre", "Nombre del paciente", undefined, () => report.value?.patient_name ?? "");
+  }
+  // author info
+  const authorName = report.value.author_name;
+  if (authorName) {
+    registry.register("usuario", "nombre_completo", "Usuario", undefined, () => authorName);
+  }
+
+  // Legacy flat variable fallback
+  const legacyMap: Record<string, string> = {
+    patient_name: report.value.patient_name ?? "",
+    author_name: report.value.author_name ?? "",
+    date: new Date().toLocaleDateString("es-ES"),
+  };
+
+  return (text: string): string => {
+    // Step 1: SystemVariableRegistry resolves {category.key} patterns
+    const systemResolved = registry.interpolate(text);
+    // Step 2: Legacy fallback for remaining flat variables
+    return systemResolved.replace(/\{([^}]+)\}/g, (_match, key: string) => {
+      const val = legacyMap[key.trim()];
+      return val ?? _match;
+    });
+  };
+});
+
+// Retry after error
+function retry(): void {
+  if (route.name === "ReportCreate") {
+    const patientId = route.params.id as string;
+    const templateId = route.query.templateId as string;
+    if (patientId && templateId) {
+      init(patientId, templateId);
+    }
+  } else {
+    const id = route.params.id as string;
+    if (id) {
+      loadReport(id);
+    }
   }
 }
 

@@ -236,6 +236,87 @@ describe("useReportForm", () => {
     });
   });
 
+  // ── isLoading / errorMessage ────────────────────────────────────────────────
+  describe("error handling", () => {
+    it("toggles isLoading during successful init", async () => {
+      const report = { id: "r1", status: "draft", values: {} };
+      const execute = vi.fn().mockResolvedValue(report);
+      (provideInitReportUseCase as any).mockReturnValue({ execute });
+
+      const store = useReportForm();
+      expect(store.isLoading.value).toBe(false);
+
+      await store.init("10", "5");
+
+      expect(store.isLoading.value).toBe(false);
+      expect(store.report.value).toEqual(report);
+      expect(store.errorMessage.value).toBeNull();
+    });
+
+    it("toggles isLoading during successful loadReport", async () => {
+      const report = { id: "r1", status: "draft", values: { nombre: "Juan" } };
+      const execute = vi.fn().mockResolvedValue(report);
+      (provideGetReportUseCase as any).mockReturnValue({ execute });
+
+      const store = useReportForm();
+      expect(store.isLoading.value).toBe(false);
+
+      await store.loadReport("r1");
+
+      expect(store.isLoading.value).toBe(false);
+      expect(store.report.value).toEqual(report);
+      expect(store.errorMessage.value).toBeNull();
+    });
+
+    it("sets errorMessage and keeps report null on init failure", async () => {
+      (provideInitReportUseCase as any).mockReturnValue({
+        execute: vi.fn().mockRejectedValue(new Error("API error")),
+      });
+
+      const store = useReportForm();
+      // Should not throw — error is captured in errorMessage
+      await store.init("10", "5");
+
+      expect(store.report.value).toBeNull();
+      expect(store.isLoading.value).toBe(false);
+    });
+
+    it("sets errorMessage on loadReport failure", async () => {
+      (provideGetReportUseCase as any).mockReturnValue({
+        execute: vi.fn().mockRejectedValue(new Error("Not found")),
+      });
+
+      const store = useReportForm();
+      await store.loadReport("99");
+
+      expect(store.report.value).toBeNull();
+      expect(store.isLoading.value).toBe(false);
+    });
+
+    it("clears errorMessage on successful init after previous error", async () => {
+      // First call: fail
+      (provideInitReportUseCase as any).mockReturnValueOnce({
+        execute: vi.fn().mockRejectedValue(new Error("Fail")),
+      });
+      // Second call: succeed
+      const report = { id: "r1", status: "draft", values: {} };
+      (provideInitReportUseCase as any).mockReturnValueOnce({
+        execute: vi.fn().mockResolvedValue(report),
+      });
+
+      const store = useReportForm();
+
+      // First init fails
+      await store.init("10", "5");
+      expect(store.report.value).toBeNull();
+
+      // Second init succeeds
+      await store.init("10", "5");
+      expect(store.report.value).toEqual(report);
+      expect(store.errorMessage.value).toBeNull();
+    });
+  });
+
   // ── auto-save ──────────────────────────────────────────────────────────────
   describe("auto-save", () => {
     it("triggers saveDraft after 2s debounce on setValue", async () => {

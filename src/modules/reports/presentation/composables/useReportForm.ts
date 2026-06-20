@@ -16,6 +16,8 @@ export interface UseReportFormReturn {
   dirtyFields: Ref<Set<string>>;
   errors: Ref<Record<string, string>>;
   isSaving: Ref<boolean>;
+  isLoading: Ref<boolean>;
+  errorMessage: Ref<string | null>;
   autoSaveEnabled: Ref<boolean>;
   signatureValue: Ref<string | null>;
   typedSignatureValue: Ref<string>;
@@ -37,6 +39,8 @@ export function useReportForm(): UseReportFormReturn {
   const dirtyFields = ref<Set<string>>(new Set());
   const errors = ref<Record<string, string>>({});
   const isSaving = ref(false);
+  const isLoading = ref(false);
+  const errorMessage = ref<string | null>(null);
   const autoSaveEnabled = ref(true);
   const signatureValue = ref<string | null>(null);
   const typedSignatureValue = ref<string>("");
@@ -45,24 +49,42 @@ export function useReportForm(): UseReportFormReturn {
 
   // ── init ───────────────────────────────────────────────────────────────────
   async function init(patientId: string | number, templateId: string | number): Promise<void> {
-    const useCase = provideInitReportUseCase();
-    const result = await useCase.execute(patientId, templateId);
-    report.value = result;
-    values.value = result.values ?? {};
-    errors.value = {};
-    dirtyFields.value = new Set();
+    isLoading.value = true;
+    errorMessage.value = null;
+    try {
+      const useCase = provideInitReportUseCase();
+      const result = await useCase.execute(patientId, templateId);
+      report.value = result;
+      values.value = result.values ?? {};
+      errors.value = {};
+      dirtyFields.value = new Set();
+    } catch (err: any) {
+      report.value = null;
+      errorMessage.value = err?.message || "Error al iniciar el informe";
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   // ── loadReport ─────────────────────────────────────────────────────────────
   async function loadReport(id: string | number): Promise<void> {
-    const useCase = provideGetReportUseCase();
-    const result = await useCase.execute(id);
-    report.value = result;
-    values.value = result.values ?? {};
-    signatureValue.value = values.value._signature ?? null;
-    typedSignatureValue.value = values.value._typed ?? "";
-    errors.value = {};
-    dirtyFields.value = new Set();
+    isLoading.value = true;
+    errorMessage.value = null;
+    try {
+      const useCase = provideGetReportUseCase();
+      const result = await useCase.execute(id);
+      report.value = result;
+      values.value = result.values ?? {};
+      signatureValue.value = values.value._signature ?? null;
+      typedSignatureValue.value = values.value._typed ?? "";
+      errors.value = {};
+      dirtyFields.value = new Set();
+    } catch (err: any) {
+      report.value = null;
+      errorMessage.value = err?.message || "Error al obtener el informe";
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   // ── setValue ───────────────────────────────────────────────────────────────
@@ -173,6 +195,8 @@ export function useReportForm(): UseReportFormReturn {
     dirtyFields,
     errors,
     isSaving,
+    isLoading,
+    errorMessage,
     autoSaveEnabled,
     signatureValue,
     typedSignatureValue,

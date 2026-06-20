@@ -28,7 +28,7 @@
       </span>
 
       <!-- fixed_text, dynamic_table, separators — unchanged -->
-      <FixedTextRenderer v-else-if="field.type === 'fixed_text'" :field="field" />
+      <FixedTextRenderer v-else-if="field.type === 'fixed_text'" :field="field" :variable-resolver="variableResolver" />
       <DynamicTable
         v-else-if="field.type === 'dynamic_table'"
         :columns="field.columns || []"
@@ -173,6 +173,7 @@
       <FixedTextRenderer
         v-else-if="field.type === 'fixed_text'"
         :field="field"
+        :variable-resolver="variableResolver"
       />
 
       <!-- dynamic_table -->
@@ -220,6 +221,7 @@ interface Props {
   field: FieldConfig
   modelValue: unknown
   disabled: boolean
+  variableResolver?: (text: string) => string
 }
 
 const props = defineProps<Props>()

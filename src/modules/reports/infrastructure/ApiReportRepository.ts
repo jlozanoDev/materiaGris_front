@@ -3,15 +3,36 @@ import type { ReportTemplate } from "@/shared/types";
 import { fetchClient } from "@/core/api/httpClient";
 
 export default class ApiReportRepository implements ReportRepository {
+  /**
+   * Normalize snake_case API response keys to camelCase (PatientReport shape).
+   * Unknown keys pass through unchanged.
+   */
+  private normalizeReport(raw: Record<string, unknown>): Record<string, unknown> {
+    const KEY_MAP: Record<string, string> = {
+      template_structure_snapshot: "templateStructureSnapshot",
+      patient_id: "patientId",
+      template_id: "templateId",
+      user_id: "userId",
+      created_at: "createdAt",
+      updated_at: "updatedAt",
+    };
+    const result: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(raw)) {
+      result[KEY_MAP[k] ?? k] = v;
+    }
+    return result;
+  }
+
   async initReport(patientId: string | number, templateId: string | number): Promise<any> {
     try {
-      return await fetchClient("/reports", {
+      const raw = await fetchClient("/reports", {
         method: "POST",
         body: JSON.stringify({
           patient_id: patientId,
           template_id: templateId,
         }),
       });
+      return this.normalizeReport(raw);
     } catch (err: any) {
       if (err && err.status === 422) throw err;
       throw new Error("Error al iniciar el informe");
@@ -30,7 +51,11 @@ export default class ApiReportRepository implements ReportRepository {
       }
       const query = params.toString();
       const url = query ? `/reports?${query}` : "/reports";
-      return await fetchClient(url, { method: "GET" });
+      const raw = await fetchClient(url, { method: "GET" });
+      if (Array.isArray(raw)) {
+        return raw.map((item) => this.normalizeReport(item));
+      }
+      return raw;
     } catch (err) {
       throw new Error("Error al obtener informes");
     }
@@ -38,7 +63,8 @@ export default class ApiReportRepository implements ReportRepository {
 
   async getById(id: string | number): Promise<any> {
     try {
-      return await fetchClient(`/reports/${id}`, { method: "GET" });
+      const raw = await fetchClient(`/reports/${id}`, { method: "GET" });
+      return this.normalizeReport(raw);
     } catch (err) {
       throw new Error("Error al obtener el informe");
     }
@@ -46,10 +72,11 @@ export default class ApiReportRepository implements ReportRepository {
 
   async saveDraft(id: string | number, values: Record<string, unknown>): Promise<any> {
     try {
-      return await fetchClient(`/reports/${id}`, {
+      const raw = await fetchClient(`/reports/${id}`, {
         method: "PUT",
         body: JSON.stringify({ values }),
       });
+      return this.normalizeReport(raw);
     } catch (err: any) {
       if (err && err.status === 422) throw err;
       throw new Error("Error al guardar el borrador");
@@ -58,10 +85,11 @@ export default class ApiReportRepository implements ReportRepository {
 
   async sign(id: string | number, signature: string): Promise<any> {
     try {
-      return await fetchClient(`/reports/${id}/sign`, {
+      const raw = await fetchClient(`/reports/${id}/sign`, {
         method: "POST",
         body: JSON.stringify({ signature }),
       });
+      return this.normalizeReport(raw);
     } catch (err: any) {
       if (err && err.status === 422) throw err;
       throw new Error("Error al firmar el informe");
@@ -70,9 +98,10 @@ export default class ApiReportRepository implements ReportRepository {
 
   async close(id: string | number): Promise<any> {
     try {
-      return await fetchClient(`/reports/${id}/close`, {
+      const raw = await fetchClient(`/reports/${id}/close`, {
         method: "POST",
       });
+      return this.normalizeReport(raw);
     } catch (err) {
       throw new Error("Error al cerrar el informe");
     }
