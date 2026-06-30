@@ -15,6 +15,7 @@ vi.mock('@/core/store/auth', () => ({
     get user() { return mockAuthState.user },
     set user(v) { mockAuthState.user = v },
     fetchUser: mockFetchUser,
+    hasPermission: () => true,
   }),
 }))
 
@@ -36,6 +37,14 @@ vi.mock('@/modules/auth/infrastructure/LocalStorageGateway', () => ({
   },
 }))
 
+const mockExecute = vi.fn().mockResolvedValue({ visits: 0, newPatients: 0, returningPatients: 0 })
+vi.mock('@/modules/dashboard/application/containers/dashboardContainer', () => ({
+  provideGetDashboardStatsUseCase: vi.fn(() => ({ execute: mockExecute })),
+  provideGetRecentPatientsUseCase: vi.fn(() => ({ execute: vi.fn().mockResolvedValue([]) })),
+  provideGetPendingReportsUseCase: vi.fn(() => ({ execute: vi.fn().mockResolvedValue([]) })),
+  provideGetSystemMetricsUseCase: vi.fn(() => ({ execute: vi.fn().mockResolvedValue({ totalUsers: 0 }) })),
+}))
+
 /* ── Import component AFTER mocks are registered ───────── */
 import DashboardPage from '@/modules/dashboard/presentation/pages/DashboardPage.vue'
 
@@ -54,10 +63,11 @@ const CHILD_STUBS = {
   },
   HeroCard: {
     name: 'HeroCard',
-    template: '<section class="stub-herocard">{{ user?.name }}</section>',
-    props: ['user'],
+    template: '<section class="stub-herocard">{{ userName }}</section>',
+    props: ['userName', 'stats', 'loading', 'error'],
   },
   PatientList: { name: 'PatientList', template: '<ul class="stub-patientlist" />' },
+  PendingReportsWidget: { name: 'PendingReportsWidget', template: '<div class="stub-pending-reports" />' },
   ConsultationPanel: { name: 'ConsultationPanel', template: '<div class="stub-consultation" />' },
   RightPanel: { name: 'RightPanel', template: '<aside class="stub-rightpanel" />' },
   EditUserModal: {

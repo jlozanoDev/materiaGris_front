@@ -1,66 +1,22 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import type { PatientSummary } from "@/modules/dashboard/domain/entities/PatientSummary";
 
-interface Patient {
-  initials: string;
-  color: string;
-  name: string;
-  type: string;
-  typeColor: string;
-  time: string;
+interface Props {
+  patients?: PatientSummary[];
+  loading?: boolean;
 }
 
-const patients: Patient[] = [
-  {
-    initials: "DW",
-    color: "bg-teal-500",
-    name: "Denzel White",
-    type: "Informe",
-    typeColor: "text-teal-600",
-    time: "9:00",
-  },
-  {
-    initials: "SM",
-    color: "bg-pink-500",
-    name: "Stacy Mitchell",
-    type: "Visita semanal",
-    typeColor: "text-violet-600",
-    time: "9:15",
-  },
-  {
-    initials: "AD",
-    color: "bg-orange-400",
-    name: "Amy Dunham",
-    type: "Chequeo rutinario",
-    typeColor: "text-blue-600",
-    time: "9:30",
-  },
-  {
-    initials: "DJ",
-    color: "bg-slate-500",
-    name: "Demi Joan",
-    type: "Informe",
-    typeColor: "text-teal-600",
-    time: "9:50",
-  },
-  {
-    initials: "SM",
-    color: "bg-fuchsia-400",
-    name: "Susan Myers",
-    type: "Visita semanal",
-    typeColor: "text-violet-600",
-    time: "10:15",
-  },
-];
+withDefaults(defineProps<Props>(), {
+  patients: () => [],
+  loading: false,
+});
 
-const selected = ref<number>(0);
 const emit = defineEmits<{
-  select: [patient: Patient];
+  select: [id: string | number];
 }>();
 
-function select(i: number): void {
-  selected.value = i;
-  emit("select", patients[i]);
+function selectPatient(id: string | number): void {
+  emit("select", id);
 }
 </script>
 
@@ -88,32 +44,48 @@ function select(i: number): void {
       </button>
     </div>
 
-    <!-- List -->
-    <ul class="space-y-1">
+    <!-- Loading skeleton -->
+    <ul v-if="loading" class="space-y-1">
       <li
-        v-for="(p, i) in patients"
-        :key="i"
-        :class="[
-          'flex cursor-pointer items-center gap-3 rounded-2xl px-3 py-2.5 transition',
-          selected === i ? 'bg-[#7c3aed]/10' : 'hover:bg-[#7c3aed]/5',
-        ]"
-        :style="selected === i ? { borderLeft: '3px solid #7c3aed', paddingLeft: '9px' } : {}"
-        @click="select(i)"
+        v-for="n in 5"
+        :key="n"
+        class="flex items-center gap-3 rounded-2xl px-3 py-2.5"
+      >
+        <div class="h-9 w-9 flex-shrink-0 rounded-full bg-slate-200 animate-pulse" />
+        <div class="flex-1 space-y-1.5">
+          <div class="h-4 w-32 bg-slate-200 rounded animate-pulse" />
+          <div class="h-3 w-20 bg-slate-100 rounded animate-pulse" />
+        </div>
+        <div class="h-5 w-12 bg-slate-200 rounded-full animate-pulse" />
+      </li>
+    </ul>
+
+    <!-- Empty state -->
+    <div
+      v-else-if="patients.length === 0"
+      class="py-8 text-center text-sm text-slate-400"
+    >
+      No hay pacientes hoy
+    </div>
+
+    <!-- Data list -->
+    <ul v-else class="space-y-1">
+      <li
+        v-for="p in patients"
+        :key="p.id"
+        class="flex cursor-pointer items-center gap-3 rounded-2xl px-3 py-2.5 transition hover:bg-[#7c3aed]/5"
+        @click="selectPatient(p.id)"
       >
         <!-- Avatar -->
         <div
-          :class="[
-            'h-9 w-9 flex-shrink-0 rounded-full flex items-center justify-center text-white text-xs font-bold select-none',
-            p.color,
-          ]"
+          class="h-9 w-9 flex-shrink-0 rounded-full bg-violet-500 flex items-center justify-center text-white text-xs font-bold select-none"
         >
           {{ p.initials }}
         </div>
 
-        <!-- Name + type -->
+        <!-- Name -->
         <div class="flex-1 min-w-0">
           <p class="text-sm font-semibold text-slate-800 truncate">{{ p.name }}</p>
-          <p :class="['text-xs', p.typeColor]">{{ p.type }}</p>
         </div>
 
         <!-- Time badge -->
@@ -121,7 +93,7 @@ function select(i: number): void {
           class="rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap"
           style="background: rgba(124, 58, 237, 0.10); color: #7c3aed;"
         >
-          {{ p.time }}
+          {{ p.visitTime }}
         </span>
       </li>
     </ul>

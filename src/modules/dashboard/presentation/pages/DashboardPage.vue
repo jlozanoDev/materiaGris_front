@@ -5,6 +5,7 @@ import TopBar from "@/shared/components/TopBar.vue";
 import Breadcrumb from "@/shared/components/Breadcrumb.vue";
 import HeroCard from "@/modules/dashboard/presentation/components/HeroCard.vue";
 import PatientList from "@/modules/dashboard/presentation/components/PatientList.vue";
+import PendingReportsWidget from "@/modules/dashboard/presentation/components/PendingReportsWidget.vue";
 import ConsultationPanel from "@/modules/dashboard/presentation/components/ConsultationPanel.vue";
 import RightPanel from "@/modules/dashboard/presentation/components/RightPanel.vue";
 import EditUserModal from "@/modules/admin/users/presentation/components/EditUserModal.vue";
@@ -14,6 +15,7 @@ import AddressesModal from "@/shared/components/AddressesModal.vue";
 import { useAuthStore } from "@/core/store/auth";
 import { useLogout } from "@/shared/composables/useLogout";
 import LocalStorageGateway from "@/modules/auth/infrastructure/LocalStorageGateway";
+import { useDashboard } from "@/modules/dashboard/presentation/composables/useDashboard";
 
 interface Address {
   id: number;
@@ -28,6 +30,7 @@ interface Address {
 const authStore = useAuthStore();
 const { logout } = useLogout();
 const storage = new LocalStorageGateway();
+const dashboard = useDashboard();
 
 const showEditModal = ref<boolean>(false);
 const showChangePasswordModal = ref<boolean>(false);
@@ -84,6 +87,7 @@ const breadcrumb = [{ text: "Dashboard", icon: "pi pi-objects-column", to: "/" }
 
 onMounted(() => {
   authStore.fetchUser();
+  dashboard.fetchDashboard();
 });
 </script>
 
@@ -94,7 +98,7 @@ onMounted(() => {
     <div class="flex flex-1 min-w-0 overflow-hidden">
       <main class="flex flex-1 min-w-0 flex-col p-5 gap-5 min-h-0">
         <div class="flex flex-col gap-1 shrink-0 relative z-10">
-          
+
           <TopBar
             :user="authStore.user"
             @open-edit="showEditModal = true"
@@ -105,15 +109,55 @@ onMounted(() => {
           <Breadcrumb :items="breadcrumb" />
         </div>
         <div class="flex-1 overflow-y-auto min-h-0">
-        <div class="flex gap-5">
-          <HeroCard :user="authStore.user" class="flex-1" />
-          <div class="w-160">
-            <PatientList />
+
+        <!-- Error state -->
+        <div
+          v-if="dashboard.error.value"
+          class="mb-4 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700"
+        >
+          {{ dashboard.error.value instanceof Error ? dashboard.error.value.message : 'Error al cargar el dashboard' }}
+        </div>
+
+        <!-- Admin layout -->
+        <template v-if="dashboard.role.value === 'admin'">
+          <div class="card p-5">
+            <h3 class="text-base font-semibold text-slate-800 mb-2">Métricas del sistema</h3>
+            <p class="text-3xl font-bold text-violet-600">
+              {{ dashboard.systemMetrics.value?.totalUsers ?? '-' }}
+            </p>
+            <p class="text-sm text-slate-500">Usuarios registrados</p>
           </div>
-        </div>
-        <div class="mt-5">
-          <ConsultationPanel />
-        </div>
+        </template>
+
+        <!-- Doctor layout -->
+        <template v-if="dashboard.role.value === 'doctor'">
+          <div class="flex gap-5">
+            <HeroCard
+              :stats="dashboard.stats.value"
+              :loading="dashboard.loading.value"
+              :error="dashboard.error.value instanceof Error ? dashboard.error.value.message : null"
+              :user-name="authStore.user?.name || 'Usuario'"
+              class="flex-1"
+            />
+            <div class="w-160">
+              <PatientList
+                :patients="dashboard.patients.value"
+                :loading="dashboard.loading.value"
+              />
+            </div>
+          </div>
+          <div class="mt-5 flex gap-5">
+            <ConsultationPanel class="flex-1" />
+            <div class="w-80">
+              <PendingReportsWidget
+                :reports="dashboard.pendingReports.value"
+                :loading="dashboard.loading.value"
+                :role="dashboard.role.value"
+              />
+            </div>
+          </div>
+        </template>
+
         </div>
       </main>
 
