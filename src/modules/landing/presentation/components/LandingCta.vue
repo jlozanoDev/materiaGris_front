@@ -18,20 +18,8 @@ const emit = defineEmits<{
         Únete a más de 300 profesionales que ya confían en MaterIA Gris. Sin contrato, sin compromiso.
       </p>
       <div class="flex flex-wrap gap-3 justify-center">
-        <button
-          class="inline-flex items-center gap-2 font-semibold text-white transition"
-          style="padding: 12px 24px; border-radius: 10px; font-size: 15px; letter-spacing: -0.005em; background: #7c3aed; box-shadow: 0 1px 12px rgba(124, 58, 237, 0.30);"
-          @click="emit('demo')"
-        >
-          Solicitar demo gratuita
-        </button>
-        <button
-          class="inline-flex items-center gap-2 font-medium transition hover:bg-white/5"
-          style="padding: 12px 24px; border-radius: 10px; font-size: 15px; letter-spacing: -0.005em; background: transparent; color: #e8e4f0; border: 1px solid rgba(255, 255, 255, 0.10);"
-          @click="emit('sales')"
-        >
-          Hablar con ventas
-        </button>
+        
+        
       </div>
     </div>
   </section>

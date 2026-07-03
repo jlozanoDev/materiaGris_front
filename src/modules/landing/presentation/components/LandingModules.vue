@@ -38,7 +38,7 @@ import sangreBg from '@/assets/sangre-bg.png'
             </svg>
           </div>
           <h3 class="font-sans font-semibold tracking-tight" style="font-size: 22px; line-height: 1.3; letter-spacing: -0.01em;">Generación de Informes Inteligentes</h3>
-          <p style="color: #6b6b7b; font-size: 15px; line-height: 1.6;">La IA redacta informes clínicos estructurados a partir de notas de voz, dictados o texto libre. Compatible con formatos HL7 FHIR y CDA.</p>
+          <p style="color: #6b6b7b; font-size: 15px; line-height: 1.6;">La IA redacta informes clínicos estructurados a partir de notas de voz, dictados o texto libre.</p>
           <div class="ph-img" style="margin-top: 12px; aspect-ratio: 16/9; border-radius: 16px; background: rgba(124,58,237,0.10); display: flex; flex-direction: column; gap: 8px; align-items: center; justify-content: center;">
             <span style="font-size: 11px; color: #7c3aed; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;">Previsualización de informe</span>
             <div class="grid grid-cols-2 gap-1.5" style="width: 80%; opacity: 0.6;">
@@ -81,14 +81,15 @@ import sangreBg from '@/assets/sangre-bg.png'
               <polyline points="12 6 12 12 16 14"></polyline>
             </svg>
           </div>
-          <h3 class="font-sans font-semibold tracking-tight" style="font-size: 22px; line-height: 1.3; letter-spacing: -0.01em;">Gestión Integral del Paciente</h3>
-          <p style="color: #6b6b7b; font-size: 15px; line-height: 1.6;">Historial clínico unificado, programación de citas, recordatorios automáticos y un timeline inteligente que destaca eventos relevantes.</p>
+          <h3 class="font-sans font-semibold tracking-tight" style="font-size: 22px; line-height: 1.3; letter-spacing: -0.01em;">Consultas Grabadas con IA</h3>
+          <p style="color: #6b6b7b; font-size: 15px; line-height: 1.6;">Graba la consulta, la IA transcribe en tiempo real, extrae datos clínicos y sugiere acciones de seguimiento automáticamente.</p>
           <div class="ph-img" style="margin-top: 12px; aspect-ratio: 16/9; border-radius: 16px; background: rgba(124,58,237,0.10); display: flex; flex-direction: column; gap: 6px; align-items: center; justify-content: center;">
-            <span style="font-size: 11px; color: #7c3aed; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;">Línea de tiempo del paciente</span>
-            <div class="flex flex-col gap-1" style="width: 80%;">
-              <div style="height: 4px; background: #7c3aed; border-radius: 2px; opacity: 0.5; width: 90%;"></div>
-              <div style="height: 4px; background: #7c3aed; border-radius: 2px; opacity: 0.3; width: 70%;"></div>
-              <div style="height: 4px; background: #7c3aed; border-radius: 2px; opacity: 0.4; width: 85%;"></div>
+            <span style="font-size: 11px; color: #7c3aed; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;">Transcripción en vivo</span>
+            <div class="flex items-center gap-1.5" style="width: 60%;">
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: #ef4444; animation: pulse-dot 1.5s infinite;"></span>
+              <div style="flex: 1; height: 3px; background: #7c3aed; border-radius: 2px; opacity: 0.5;"></div>
+              <div style="flex: 1; height: 3px; background: #7c3aed; border-radius: 2px; opacity: 0.3;"></div>
+              <div style="flex: 0.6; height: 3px; background: #7c3aed; border-radius: 2px; opacity: 0.2;"></div>
             </div>
           </div>
         </div>
@@ -100,5 +101,10 @@ import sangreBg from '@/assets/sangre-bg.png'
 <style scoped>
 .section {
   padding-top: clamp(48px, 8vw, 96px);
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.7); }
 }
 </style>

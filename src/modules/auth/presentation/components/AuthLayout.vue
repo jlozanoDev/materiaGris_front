@@ -1,36 +1,21 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import logoSvg from '@/assets/logo-materiagris.svg'
-import doctorImg from '@/assets/doctor.png'
-import { useParticleNetwork } from '@/modules/auth/presentation/composables/useParticleNetwork'
 
+import doctorImg from '@/assets/doctor.png'
 interface Props {
   title: string
   subtitle?: string
 }
 
 defineProps<Props>()
-
-const canvasRef = ref<HTMLCanvasElement | null>(null)
-
-useParticleNetwork(canvasRef)
 </script>
 
 <template>
   <div
     class="min-h-screen flex flex-col relative overflow-hidden"
-    style="background: linear-gradient(135deg, rgba(124,58,237,0.55) 0%, rgba(6,182,212,0.30) 100%);"
+    style="background: linear-gradient(180deg, #d0d7e2 0%, #e8ecf1 100%);"
   >
-    <div
-      class="absolute inset-0 pointer-events-none select-none overflow-hidden"
-      style="z-index: 0;"
-    >
-      <canvas
-        ref="canvasRef"
-        class="absolute inset-0 w-full h-full"
-      />
-    </div>
     <div
       class="absolute inset-0 pointer-events-none select-none overflow-hidden"
       style="z-index: 1;"

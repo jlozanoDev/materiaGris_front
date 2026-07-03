@@ -30,19 +30,13 @@ const emit = defineEmits<{
       <!-- Actions -->
       <div class="flex items-center gap-3">
         <button
-          class="bg-transparent border border-white/10 font-medium transition hover:bg-white/5"
-          style="padding: 8px 16px; border-radius: 10px; font-size: 13px; color: #9690a8;"
+          class="font-semibold text-white transition"
+          style="padding: 8px 18px; border-radius: 10px; font-size: 13px; background: #7c3aed; box-shadow: 0 1px 12px rgba(124, 58, 237, 0.30);"
           @click="emit('login')"
         >
           Acceder
         </button>
-        <button
-          class="font-semibold text-white transition"
-          style="padding: 8px 18px; border-radius: 10px; font-size: 13px; background: #7c3aed; box-shadow: 0 1px 12px rgba(124, 58, 237, 0.30);"
-          @click="emit('demo')"
-        >
-          Solicitar demo
-        </button>
+       
       </div>
     </div>
   </header>
