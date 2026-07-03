@@ -186,6 +186,8 @@ function createField(type: FieldType): FieldConfig {
       return { ...base, type, showLabel: false }
     case 'horizontal_separator':
       return { ...base, type, showLabel: false }
+    case 'signature':
+      return { ...base, type }
     default:
       // Exhaustive check — unreachable
       const _exhaustive: never = type

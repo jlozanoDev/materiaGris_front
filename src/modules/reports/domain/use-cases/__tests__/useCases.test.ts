@@ -20,6 +20,7 @@ function createMockRepo(): ReportRepository {
     saveDraft: vi.fn(),
     sign: vi.fn(),
     close: vi.fn(),
+    delete: vi.fn(),
     downloadPdf: vi.fn(),
     getActiveTemplates: vi.fn(),
   };
