@@ -305,6 +305,6 @@ onMounted(() => {
   color: #aca4c0;
 }
 .signature-pad__typed-input {
-  @apply pl-9 !important;
+  @apply !pl-9;
 }
 </style>
