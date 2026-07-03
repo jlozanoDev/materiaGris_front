@@ -267,6 +267,7 @@ export type ReportStatus = 'draft' | 'signed' | 'closed'
 export interface PatientReport {
   id: string
   patientId: string
+  templateId?: string
   userId: string
   status: ReportStatus
   templateStructureSnapshot: { sections: Section[]; header?: HeaderFooterConfig; footer?: HeaderFooterConfig }
