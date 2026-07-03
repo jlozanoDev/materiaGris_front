@@ -22,6 +22,10 @@ export async function fetchClient(path: string, options: FetchClientOptions = {}
   const opts = { ...options };
   const ignoreUnauthorized = !!opts.ignoreUnauthorized;
   if ("ignoreUnauthorized" in opts) delete opts.ignoreUnauthorized;
+  const ignoreForbidden = !!opts.ignoreForbidden;
+  if ("ignoreForbidden" in opts) delete opts.ignoreForbidden;
+  const timeoutMs = opts.timeout ?? 30000;
+  if ("timeout" in opts) delete opts.timeout;
 
   const url =
     path && (path.startsWith("http://") || path.startsWith("https://"))
@@ -80,6 +84,7 @@ export async function fetchClient(path: string, options: FetchClientOptions = {}
   }
 
   if (response.status === 403) {
+    if (ignoreForbidden) return Promise.reject({ status: 403, body } satisfies ApiError);
     const { show } = useToast();
     const msg = body?.message || "No tienes permisos para realizar esta acción";
     show(msg, "error", 4000);

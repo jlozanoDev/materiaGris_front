@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useRouter } from "vue-router";
 import type { PatientSummary } from "@/modules/dashboard/domain/entities/PatientSummary";
 
 interface Props {
@@ -11,12 +12,10 @@ withDefaults(defineProps<Props>(), {
   loading: false,
 });
 
-const emit = defineEmits<{
-  select: [id: string | number];
-}>();
+const router = useRouter();
 
-function selectPatient(id: string | number): void {
-  emit("select", id);
+function goToPatient(id: string | number): void {
+  router.push(`/patients/${id}`);
 }
 </script>
 
@@ -24,24 +23,7 @@ function selectPatient(id: string | number): void {
   <div class="card p-5">
     <!-- Header -->
     <div class="flex items-center justify-between mb-4">
-      <h3 class="text-base font-semibold text-slate-800">Lista de pacientes</h3>
-      <button
-        class="flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition"
-        style="border-color: rgba(124, 58, 237, 0.15); color: #7c3aed;"
-      >
-        Hoy
-        <svg
-          class="h-3 w-3"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.5"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
-      </button>
+      <h3 class="text-base font-semibold text-slate-800">Últimos pacientes registrados</h3>
     </div>
 
     <!-- Loading skeleton -->
@@ -65,7 +47,7 @@ function selectPatient(id: string | number): void {
       v-else-if="patients.length === 0"
       class="py-8 text-center text-sm text-slate-400"
     >
-      No hay pacientes hoy
+      No hay pacientes registrados
     </div>
 
     <!-- Data list -->
@@ -74,7 +56,7 @@ function selectPatient(id: string | number): void {
         v-for="p in patients"
         :key="p.id"
         class="flex cursor-pointer items-center gap-3 rounded-2xl px-3 py-2.5 transition hover:bg-[#7c3aed]/5"
-        @click="selectPatient(p.id)"
+        @click="goToPatient(p.id)"
       >
         <!-- Avatar -->
         <div
@@ -88,27 +70,15 @@ function selectPatient(id: string | number): void {
           <p class="text-sm font-semibold text-slate-800 truncate">{{ p.name }}</p>
         </div>
 
-        <!-- Time badge -->
+        <!-- Date badge -->
         <span
+          v-if="p.timeLabel"
           class="rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap"
           style="background: rgba(124, 58, 237, 0.10); color: #7c3aed;"
         >
-          {{ p.visitTime }}
+          {{ p.timeLabel }}
         </span>
       </li>
     </ul>
-
-    <!-- Pagination dots -->
-    <div class="mt-4 flex justify-center gap-1.5">
-      <span
-        v-for="n in 3"
-        :key="n"
-        :class="[
-          'h-1.5 rounded-full transition',
-          n === 1 ? 'w-4' : 'w-1.5',
-        ]"
-        :style="n === 1 ? { background: '#7c3aed' } : { background: 'rgba(124,58,237,0.20)' }"
-      />
-    </div>
   </div>
 </template>

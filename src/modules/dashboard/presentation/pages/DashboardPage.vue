@@ -6,7 +6,7 @@ import Breadcrumb from "@/shared/components/Breadcrumb.vue";
 import HeroCard from "@/modules/dashboard/presentation/components/HeroCard.vue";
 import PatientList from "@/modules/dashboard/presentation/components/PatientList.vue";
 import PendingReportsWidget from "@/modules/dashboard/presentation/components/PendingReportsWidget.vue";
-import ConsultationPanel from "@/modules/dashboard/presentation/components/ConsultationPanel.vue";
+import QuickActions from "@/modules/dashboard/presentation/components/QuickActions.vue";
 import RightPanel from "@/modules/dashboard/presentation/components/RightPanel.vue";
 import EditUserModal from "@/modules/admin/users/presentation/components/EditUserModal.vue";
 import ChangePasswordModal from "@/shared/components/ChangePasswordModal.vue";
@@ -85,8 +85,8 @@ const onSaveAddresses = (newAddresses: Address[]): void => {
 
 const breadcrumb = [{ text: "Dashboard", icon: "pi pi-objects-column", to: "/" }];
 
-onMounted(() => {
-  authStore.fetchUser();
+onMounted(async () => {
+  await authStore.fetchUser();
   dashboard.fetchDashboard();
 });
 </script>
@@ -120,12 +120,36 @@ onMounted(() => {
 
         <!-- Admin layout -->
         <template v-if="dashboard.role.value === 'admin'">
-          <div class="card p-5">
-            <h3 class="text-base font-semibold text-slate-800 mb-2">Métricas del sistema</h3>
-            <p class="text-3xl font-bold text-violet-600">
-              {{ dashboard.systemMetrics.value?.totalUsers ?? '-' }}
-            </p>
-            <p class="text-sm text-slate-500">Usuarios registrados</p>
+          <div class="flex flex-wrap gap-4">
+            <template
+              v-for="m in [
+                { label: 'Usuarios', value: dashboard.systemMetrics.value?.totalUsers, icon: 'pi pi-users', color: '#7c3aed' },
+                { label: 'Pacientes', value: dashboard.systemMetrics.value?.totalPatients, icon: 'pi pi-user', color: '#60a5fa' },
+                { label: 'Pendientes', value: dashboard.systemMetrics.value?.totalPendingReports, icon: 'pi pi-file', color: '#f59e0b' },
+                { label: 'Firmados', value: dashboard.systemMetrics.value?.totalSignedReports, icon: 'pi pi-check-circle', color: '#10b981' },
+                { label: 'Cerrados', value: dashboard.systemMetrics.value?.totalClosedReports, icon: 'pi pi-times-circle', color: '#ef4444' },
+                { label: 'Plantillas', value: dashboard.systemMetrics.value?.totalTemplates, icon: 'pi pi-palette', color: '#06b6d4' },
+              ]"
+              :key="m.label"
+            >
+              <div
+                v-if="m.value != null"
+                class="card flex flex-1 items-center gap-4 p-5 min-w-[180px]"
+              >
+                <div
+                  class="flex h-12 w-12 items-center justify-center rounded-xl shrink-0"
+                  :style="{ background: `${m.color}14`, color: m.color }"
+                >
+                  <i :class="['text-xl', m.icon]" />
+                </div>
+                <div class="min-w-0">
+                  <p class="text-2xl font-bold text-slate-800 leading-none">
+                    {{ m.value }}
+                  </p>
+                  <p class="mt-1 text-sm text-slate-500 truncate">{{ m.label }}</p>
+                </div>
+              </div>
+            </template>
           </div>
         </template>
 
@@ -139,20 +163,20 @@ onMounted(() => {
               :user-name="authStore.user?.name || 'Usuario'"
               class="flex-1"
             />
-            <div class="w-160">
-              <PatientList
-                :patients="dashboard.patients.value"
-                :loading="dashboard.loading.value"
-              />
-            </div>
-          </div>
-          <div class="mt-5 flex gap-5">
-            <ConsultationPanel class="flex-1" />
             <div class="w-80">
               <PendingReportsWidget
                 :reports="dashboard.pendingReports.value"
                 :loading="dashboard.loading.value"
                 :role="dashboard.role.value"
+              />
+            </div>
+          </div>
+          <div class="mt-5 flex gap-5">
+            <QuickActions class="flex-1" />
+            <div class="w-160">
+              <PatientList
+                :patients="dashboard.patients.value"
+                :loading="dashboard.loading.value"
               />
             </div>
           </div>

@@ -11,39 +11,61 @@
     <div class="flex-1" />
 
     <!-- Icons -->
-    <button class="icon-btn group">
-      <svg
-        class="h-5 w-5 transform transition duration-150 group-hover:scale-110 group-hover:rotate-6"
-        style="color: #9690a8;"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-      </svg>
-    </button>
-    <button class="icon-btn group">
-      <svg
-        class="h-5 w-5 transform transition duration-150 group-hover:scale-110 group-hover:-rotate-6"
-        style="color: #9690a8;"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
-        <path d="M13.73 21a2 2 0 01-3.46 0" />
-      </svg>
-      <span
-        class="absolute top-1.5 right-1.5 h-2 w-2 rounded-full"
-        style="background-color: var(--color-danger)"
-      ></span>
-    </button>
+    <div class="relative">
+      <button class="icon-btn group" @click="showComingSoon('messages', $event)">
+        <svg
+          class="h-5 w-5 transform transition duration-150 group-hover:scale-110 group-hover:rotate-6"
+          style="color: #9690a8;"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+        </svg>
+      </button>
+      <transition name="fade">
+        <div
+          v-if="activeTooltip === 'messages'"
+          class="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap z-50"
+        >
+          Próximamente
+          <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
+        </div>
+      </transition>
+    </div>
+    <div class="relative">
+      <button class="icon-btn group" @click="showComingSoon('notifications', $event)">
+        <svg
+          class="h-5 w-5 transform transition duration-150 group-hover:scale-110 group-hover:-rotate-6"
+          style="color: #9690a8;"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
+          <path d="M13.73 21a2 2 0 01-3.46 0" />
+        </svg>
+        <span
+          class="absolute top-1.5 right-1.5 h-2 w-2 rounded-full"
+          style="background-color: var(--color-danger)"
+        ></span>
+      </button>
+      <transition name="fade">
+        <div
+          v-if="activeTooltip === 'notifications'"
+          class="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap z-50"
+        >
+          Próximamente
+          <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
+        </div>
+      </transition>
+    </div>
 
     <!-- User -->
     <div class="relative">
@@ -224,6 +246,12 @@ const emit = defineEmits<{
 const menuOpen = ref<boolean>(false);
 const userRef = ref<HTMLElement | null>(null);
 const menuRef = ref<HTMLElement | null>(null);
+const activeTooltip = ref<string | null>(null);
+
+function showComingSoon(type: string, e: Event): void {
+  e.stopPropagation();
+  activeTooltip.value = activeTooltip.value === type ? null : type;
+}
 
 const toggleMenu = (): void => {
   menuOpen.value = !menuOpen.value;
@@ -259,6 +287,7 @@ const initials = computed<string>(() => {
 });
 
 function onClickOutside(e: MouseEvent): void {
+  activeTooltip.value = null;
   if (!menuOpen.value) return;
   if (userRef.value && userRef.value.contains(e.target as Node)) return;
   if (menuRef.value && menuRef.value.contains(e.target as Node)) return;

@@ -14,14 +14,27 @@ export default class GetRecentPatientsUseCase {
     const firstName = apiPatient.first_name ?? '';
     const lastName = apiPatient.last_name ?? '';
 
-    let visitTime = '';
-    if (apiPatient.last_visit_at) {
-      const date = new Date(apiPatient.last_visit_at);
-      visitTime = date.toLocaleTimeString('es-ES', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-      });
+    let timeLabel = '';
+    if (apiPatient.created_at) {
+      const date = new Date(apiPatient.created_at);
+      const now = new Date();
+      const isToday =
+        date.getDate() === now.getDate() &&
+        date.getMonth() === now.getMonth() &&
+        date.getFullYear() === now.getFullYear();
+
+      if (isToday) {
+        timeLabel = date.toLocaleTimeString('es-ES', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        });
+      } else {
+        timeLabel = date.toLocaleDateString('es-ES', {
+          day: 'numeric',
+          month: 'short',
+        });
+      }
     }
 
     const initials = (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
@@ -29,7 +42,7 @@ export default class GetRecentPatientsUseCase {
     return {
       id: apiPatient.id,
       name: `${firstName} ${lastName}`.trim(),
-      visitTime,
+      timeLabel,
       initials,
     };
   }

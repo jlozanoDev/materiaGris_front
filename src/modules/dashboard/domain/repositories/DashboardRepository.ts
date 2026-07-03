@@ -4,5 +4,8 @@ export interface DashboardRepository {
   getStats(range: DateRange): Promise<{ data: any[] }>;
   getRecentPatients(range: DateRange): Promise<any[]>;
   getPendingReports(limit: number): Promise<any[]>;
-  getSystemMetrics(): Promise<{ total: number }>;
+  getSystemMetrics(): Promise<{ totalUsers: number }>;
+  getPatientsCount(): Promise<number>;
+  getTemplatesCount(): Promise<number>;
+  getReportsByStatus(status: string): Promise<number>;
 }

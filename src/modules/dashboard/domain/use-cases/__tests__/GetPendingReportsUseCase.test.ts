@@ -8,6 +8,9 @@ function createMockRepo(): DashboardRepository {
     getRecentPatients: vi.fn(),
     getPendingReports: vi.fn(),
     getSystemMetrics: vi.fn(),
+    getPatientsCount: vi.fn(),
+    getTemplatesCount: vi.fn(),
+    getReportsByStatus: vi.fn(),
   };
 }
 

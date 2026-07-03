@@ -9,8 +9,16 @@ export default class ApiDashboardRepository implements DashboardRepository {
     return { data: patients };
   }
 
-  async getRecentPatients(range: DateRange): Promise<any[]> {
-    return this.fetchPatients(range);
+  async getRecentPatients(_range: DateRange): Promise<any[]> {
+    const res = await fetchClient("/patients/find", { ignoreForbidden: true });
+    const patients = Array.isArray(res) ? res : res?.data ?? [];
+    return patients
+      .filter((p: any) => p.created_at)
+      .sort(
+        (a: any, b: any) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      )
+      .slice(0, 5);
   }
 
   async getPendingReports(limit: number): Promise<PendingReport[]> {
@@ -28,10 +36,28 @@ export default class ApiDashboardRepository implements DashboardRepository {
     };
   }
 
-  async getSystemMetrics(): Promise<{ total: number }> {
+  async getSystemMetrics(): Promise<{ totalUsers: number }> {
     const res = await fetchClient("/admin/users");
     const users = Array.isArray(res) ? res : res?.data ?? [];
-    return { total: users.length };
+    return { totalUsers: users.length };
+  }
+
+  async getPatientsCount(): Promise<number> {
+    const res = await fetchClient("/patients/find", { ignoreForbidden: true });
+    const patients = Array.isArray(res) ? res : res?.data ?? [];
+    return patients.length;
+  }
+
+  async getTemplatesCount(): Promise<number> {
+    const res = await fetchClient("/templates/active", { ignoreForbidden: true });
+    const templates = Array.isArray(res) ? res : res?.data ?? [];
+    return templates.length;
+  }
+
+  async getReportsByStatus(status: string): Promise<number> {
+    const res = await fetchClient(`/reports?status=${status}`, { ignoreForbidden: true });
+    const reports = Array.isArray(res) ? res : res?.data ?? [];
+    return reports.length;
   }
 
   private async fetchPatients(range: DateRange): Promise<any[]> {

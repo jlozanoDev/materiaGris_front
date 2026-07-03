@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useRouter } from "vue-router";
 import type { PendingReport } from "@/modules/dashboard/domain/entities/PendingReport";
 import type { DashboardRole } from "@/modules/dashboard/domain/entities/types";
 
@@ -13,6 +14,12 @@ withDefaults(defineProps<Props>(), {
   loading: false,
   role: "none",
 });
+
+const router = useRouter();
+
+function goToReport(id: string | number): void {
+  router.push({ name: "ReportView", params: { id: String(id) } });
+}
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
@@ -61,7 +68,8 @@ function formatDate(iso: string): string {
       <li
         v-for="report in reports.slice(0, 5)"
         :key="report.id"
-        class="flex items-center justify-between py-2.5"
+        class="flex items-center justify-between py-2.5 cursor-pointer hover:bg-slate-50 rounded px-1 -mx-1 transition"
+        @click="goToReport(report.id)"
       >
         <div class="min-w-0 flex-1">
           <p class="text-sm font-medium text-slate-800 truncate">
