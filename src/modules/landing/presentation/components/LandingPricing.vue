@@ -27,7 +27,7 @@ const emit = defineEmits<{
           <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">Básico</h3>
           <p style="font-size: 14px; color: #6b6b7b;">Para profesionales independientes</p>
           <div class="price" style="font-size: 40px; font-weight: 800; letter-spacing: -0.03em; margin: 20px 0;">
-            $0<small style="font-size: 16px; font-weight: 400; color: #6b6b7b;">/mes</small>
+            0 €<small style="font-size: 16px; font-weight: 400; color: #6b6b7b;">/mes</small>
           </div>
           <ul>
             <li>Hasta 50 informes/mes</li>
@@ -53,7 +53,7 @@ const emit = defineEmits<{
           <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">Avanzado</h3>
           <p style="font-size: 14px; color: #6b6b7b;">Para clínicas y consultorios grupales</p>
           <div class="price" style="font-size: 40px; font-weight: 800; letter-spacing: -0.03em; margin: 20px 0;">
-            $149<small style="font-size: 16px; font-weight: 400; color: #6b6b7b;">/mes</small>
+            149 €<small style="font-size: 16px; font-weight: 400; color: #6b6b7b;">/mes</small>
           </div>
           <ul>
             <li>Informes ilimitados</li>

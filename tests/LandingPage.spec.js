@@ -50,7 +50,7 @@ describe('LandingPage (maqueta)', () => {
       expect(html).toContain('Solicitar demo gratuita') // Hero + CTA
       expect(html).toContain('Módulos de análisis')     // Modules
       expect(html).toContain('Resultados comprobados')  // Metrics
-      expect(html).toContain('Seguridad e Integración') // Security
+      expect(html).toContain('Todo en una plataforma') // Security
       expect(html).toContain('Escala con tus necesidades') // Pricing
       expect(html).toContain('Comienza hoy')            // CTA
     })
@@ -96,7 +96,7 @@ describe('LandingPage (maqueta)', () => {
       const { wrapper } = mountPage()
       expect(wrapper.text()).toContain('Generación de Informes Inteligentes')
       expect(wrapper.text()).toContain('Diagnóstico Asistido')
-      expect(wrapper.text()).toContain('Gestión Integral del Paciente')
+      expect(wrapper.text()).toContain('Consultas Grabadas con IA')
     })
   })
 
