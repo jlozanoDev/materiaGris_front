@@ -87,7 +87,7 @@ const breadcrumb = [{ text: "Dashboard", icon: "pi pi-objects-column", to: "/" }
 
 onMounted(async () => {
   await authStore.fetchUser();
-  dashboard.fetchDashboard();
+  await dashboard.fetchDashboard();
 });
 </script>
 

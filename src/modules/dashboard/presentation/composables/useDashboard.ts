@@ -73,8 +73,6 @@ export function useDashboard(): UseDashboardReturn {
       } else if (role.value === "admin") {
         const metricsUseCase = provideGetSystemMetricsUseCase();
         systemMetrics.value = await metricsUseCase.execute();
-      } else {
-        throw new Error("No tienes permisos para acceder al dashboard");
       }
     } catch (e) {
       error.value = e;
