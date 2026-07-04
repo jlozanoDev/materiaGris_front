@@ -65,6 +65,8 @@ export interface PermissionShape {
 // HTTP
 export interface FetchClientOptions extends RequestInit {
   ignoreUnauthorized?: boolean;
+  ignoreForbidden?: boolean;
+  timeout?: number;
 }
 
 export interface ApiError {

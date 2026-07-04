@@ -1,21 +1,20 @@
 <script setup lang="ts">
-import { computed } from "vue";
 import logoSvg from '@/assets/logo-materiagris.svg'
-
-interface User {
-  name?: string;
-  email?: string;
-}
+import type { DashboardStats } from "@/modules/dashboard/domain/entities/DashboardStats";
 
 interface Props {
-  user?: User | null;
+  stats?: DashboardStats | null;
+  loading?: boolean;
+  error?: string | null;
+  userName?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  user: null,
+  stats: null,
+  loading: false,
+  error: null,
+  userName: "Usuario",
 });
-
-const displayName = computed<string>(() => props.user?.name || props.user?.email || "Usuario");
 </script>
 
 <template>
@@ -32,45 +31,56 @@ const displayName = computed<string>(() => props.user?.name || props.user?.email
       <!-- Left: text + stats -->
       <div>
         <p class="text-lg text-white/90">Buenos días</p>
-        <h2 class="mt-0.5 text-3xl font-bold tracking-tight">{{ displayName }}!</h2>
+        <h2 class="mt-0.5 text-3xl font-bold tracking-tight">{{ userName }}!</h2>
 
-        <div class="mt-5">
-          <p class="text-sm text-white/70 uppercase tracking-widest">Visitas hoy</p>
-          <p class="mt-1 text-7xl font-bold leading-none">104</p>
+        <!-- Error badge -->
+        <div
+          v-if="error"
+          class="mt-4 rounded-xl bg-red-500/20 px-4 py-2 text-sm text-red-100 border border-red-400/30"
+        >
+          {{ error }}
         </div>
 
-        <div class="mt-6 flex flex-wrap gap-3">
-          <!-- New Patients -->
-          <div
-            class="rounded-2xl px-4 py-3 backdrop-blur-xl"
-            style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.20);"
-          >
-            <p class="text-xs text-white/80">Nuevos pacientes</p>
-            <div class="mt-1 flex items-center gap-2.5">
-              <span class="text-2xl font-bold">40</span>
-              <span
-                class="rounded-full bg-emerald-400/25 px-2 py-0.5 text-xs font-semibold text-emerald-200"
-              >
-                +51% ↑
-              </span>
-            </div>
-          </div>
-          <!-- Old Patients -->
-          <div
-            class="rounded-2xl px-4 py-3 backdrop-blur-xl"
-            style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.20);"
-          >
-            <p class="text-xs text-white/80">Pacientes antiguos</p>
-            <div class="mt-1 flex items-center gap-2.5">
-              <span class="text-2xl font-bold">64</span>
-              <span
-                class="rounded-full bg-red-400/25 px-2 py-0.5 text-xs font-semibold text-red-200"
-              >
-                -20% ↓
-              </span>
-            </div>
+        <!-- Loading skeleton -->
+        <div v-else-if="loading" class="mt-5 space-y-4">
+          <div class="h-4 w-24 bg-white/20 rounded animate-pulse" />
+          <div class="h-16 w-32 bg-white/20 rounded animate-pulse" />
+          <div class="flex gap-3">
+            <div class="h-20 w-36 bg-white/20 rounded-2xl animate-pulse" />
+            <div class="h-20 w-36 bg-white/20 rounded-2xl animate-pulse" />
           </div>
         </div>
+
+        <!-- Stats data -->
+        <template v-else-if="stats">
+          <div class="mt-5">
+            <p class="text-sm text-white/70 uppercase tracking-widest">Visitas hoy</p>
+            <p class="mt-1 text-7xl font-bold leading-none">{{ stats.visits }}</p>
+          </div>
+
+          <div class="mt-6 flex flex-wrap gap-3">
+            <!-- New Patients -->
+            <div
+              class="rounded-2xl px-4 py-3 backdrop-blur-xl"
+              style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.20);"
+            >
+              <p class="text-xs text-white/80">Nuevos pacientes</p>
+              <div class="mt-1 flex items-center gap-2.5">
+                <span class="text-2xl font-bold">{{ stats.newPatients }}</span>
+              </div>
+            </div>
+            <!-- Returning Patients -->
+            <div
+              class="rounded-2xl px-4 py-3 backdrop-blur-xl"
+              style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.20);"
+            >
+              <p class="text-xs text-white/80">Pacientes antiguos</p>
+              <div class="mt-1 flex items-center gap-2.5">
+                <span class="text-2xl font-bold">{{ stats.returningPatients }}</span>
+              </div>
+            </div>
+          </div>
+        </template>
       </div>
 
       <!-- Right: weather icon -->

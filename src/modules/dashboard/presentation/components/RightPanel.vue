@@ -7,21 +7,18 @@ const today = { year: now.getFullYear(), month: now.getMonth(), day: now.getDate
 
 const viewDate = ref<Date>(new Date(today.year, today.month, 1));
 
-const monthName = computed<string>(() => viewDate.value.toLocaleString("en-US", { month: "long" }));
+const monthName = computed<string>(() => viewDate.value.toLocaleString("es-ES", { month: "long" }));
 const yearNum = computed<number>(() => viewDate.value.getFullYear());
 
 const calDays = computed<(number | null)[]>(() => {
   const y = viewDate.value.getFullYear();
   const m = viewDate.value.getMonth();
-  const firstDow = new Date(y, m, 1).getDay();
+  const firstDow = (new Date(y, m, 1).getDay() + 6) % 7;
   const total = new Date(y, m + 1, 0).getDate();
   const cells: (number | null)[] = Array(firstDow).fill(null);
   for (let d = 1; d <= total; d++) cells.push(d);
   return cells;
 });
-
-// Days with appointment dots
-const dotDays = new Set<number>([1, 8, 14, 21]);
 
 function prevMonth(): void {
   const d = new Date(viewDate.value);
@@ -40,6 +37,34 @@ const isToday = (day: number | null): boolean =>
   viewDate.value.getFullYear() === today.year &&
   viewDate.value.getMonth() === today.month &&
   day === today.day;
+
+/* ── Daily reads ──────────────────────────────────── */
+const readings = ref([
+  {
+    title: "Educación médica equitativa con esfuerzos hacia un cambio real",
+    source: "medscape.com",
+    readTime: "4 min",
+    tag: "Medicina social",
+    bg: "#7c3aed",
+    icon: "pi-heart",
+  },
+  {
+    title: "Nuevos biomarcadores en la detección temprana del cáncer",
+    source: "thelancet.com",
+    readTime: "6 min",
+    tag: "Oncología",
+    bg: "#0891b2",
+    icon: "pi-search-plus",
+  },
+  {
+    title: "Protocolos actualizados para el manejo de la diabetes tipo 2",
+    source: "nih.gov",
+    readTime: "5 min",
+    tag: "Endocrinología",
+    bg: "#059669",
+    icon: "pi-chart-line",
+  },
+]);
 </script>
 
 <template>
@@ -94,7 +119,7 @@ const isToday = (day: number | null): boolean =>
       <!-- days of week -->
       <div class="mb-1 grid grid-cols-7 text-center">
         <span
-          v-for="d in ['D', 'L', 'M', 'X', 'J', 'V', 'S']"
+          v-for="d in ['L', 'M', 'X', 'J', 'V', 'S', 'D']"
           :key="d"
           class="text-[10px] font-semibold py-1"
           style="color: #9690a8;"
@@ -121,12 +146,6 @@ const isToday = (day: number | null): boolean =>
             @mouseleave="(e) => { if (!isToday(day)) { (e.target as HTMLElement).style.background = 'transparent' } }"
           >
             {{ day }}
-            <!-- dot -->
-            <span
-              v-if="dotDays.has(day) && !isToday(day)"
-              class="absolute bottom-0.5 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full"
-              style="background: #06b6d4;"
-            ></span>
           </span>
         </div>
       </div>
@@ -157,28 +176,32 @@ const isToday = (day: number | null): boolean =>
       </div>
     </div>
 
-    <!-- ── Daily Read ─────────────────────────── -->
-    <div class="card overflow-hidden" style="border: 1px solid rgba(124, 58, 237, 0.08);">
-      <!-- Image placeholder -->
-      <div class="hero-card relative h-28 flex items-end p-3">
-        <div class="absolute inset-0 flex items-center justify-end pr-4 opacity-40">
-          <!-- medical cross SVG decoration -->
-          <svg class="h-16 w-16 text-white/30" viewBox="0 0 48 48" fill="currentColor">
-            <path d="M20 0h8v20h20v8H28v20h-8V28H0v-8h20z" />
-          </svg>
-        </div>
-        <span
-          class="relative rounded px-1.5 py-0.5 text-[10px] uppercase tracking-widest font-semibold"
-          style="background: rgba(124,58,237,0.50); color: #ffffff;"
+    <!-- ── Daily Reads ────────────────────────── -->
+    <div>
+      <h3 class="mb-3 text-sm font-semibold" style="color: #0b0817;">Lecturas diarias</h3>
+      <div class="flex flex-col gap-2">
+        <div
+          v-for="(r, i) in readings"
+          :key="i"
+          class="overflow-hidden rounded-2xl border"
+          style="border-color: rgba(124, 58, 237, 0.08);"
         >
-          Lectura diaria
-        </span>
-      </div>
-      <div class="p-3">
-        <p class="text-xs font-semibold leading-snug" style="color: #0b0817;">
-          Educación médica equitativa con esfuerzos hacia un cambio real
-        </p>
-        <p class="mt-1 text-[11px]" style="color: #9690a8;">medscape.com · 4 min lectura</p>
+          <div class="hero-card relative h-24 flex items-end p-3" :style="{ background: r.bg }">
+            <div class="absolute inset-0 flex items-center justify-end pr-4 opacity-40">
+              <i :class="['pi', r.icon, 'text-4xl text-white/30']"></i>
+            </div>
+            <span
+              class="relative rounded px-1.5 py-0.5 text-[10px] uppercase tracking-widest font-semibold"
+              style="background: rgba(124,58,237,0.50); color: #ffffff;"
+            >
+              {{ r.tag }}
+            </span>
+          </div>
+          <div class="p-3">
+            <p class="text-xs font-semibold leading-snug" style="color: #0b0817;">{{ r.title }}</p>
+            <p class="mt-1 text-[11px]" style="color: #9690a8;">{{ r.source }} · {{ r.readTime }} lectura</p>
+          </div>
+        </div>
       </div>
     </div>
   </aside>

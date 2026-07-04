@@ -5,7 +5,8 @@ import TopBar from "@/shared/components/TopBar.vue";
 import Breadcrumb from "@/shared/components/Breadcrumb.vue";
 import HeroCard from "@/modules/dashboard/presentation/components/HeroCard.vue";
 import PatientList from "@/modules/dashboard/presentation/components/PatientList.vue";
-import ConsultationPanel from "@/modules/dashboard/presentation/components/ConsultationPanel.vue";
+import PendingReportsWidget from "@/modules/dashboard/presentation/components/PendingReportsWidget.vue";
+import QuickActions from "@/modules/dashboard/presentation/components/QuickActions.vue";
 import RightPanel from "@/modules/dashboard/presentation/components/RightPanel.vue";
 import EditUserModal from "@/modules/admin/users/presentation/components/EditUserModal.vue";
 import ChangePasswordModal from "@/shared/components/ChangePasswordModal.vue";
@@ -14,6 +15,7 @@ import AddressesModal from "@/shared/components/AddressesModal.vue";
 import { useAuthStore } from "@/core/store/auth";
 import { useLogout } from "@/shared/composables/useLogout";
 import LocalStorageGateway from "@/modules/auth/infrastructure/LocalStorageGateway";
+import { useDashboard } from "@/modules/dashboard/presentation/composables/useDashboard";
 
 interface Address {
   id: number;
@@ -28,6 +30,7 @@ interface Address {
 const authStore = useAuthStore();
 const { logout } = useLogout();
 const storage = new LocalStorageGateway();
+const dashboard = useDashboard();
 
 const showEditModal = ref<boolean>(false);
 const showChangePasswordModal = ref<boolean>(false);
@@ -82,8 +85,9 @@ const onSaveAddresses = (newAddresses: Address[]): void => {
 
 const breadcrumb = [{ text: "Dashboard", icon: "pi pi-objects-column", to: "/" }];
 
-onMounted(() => {
-  authStore.fetchUser();
+onMounted(async () => {
+  await authStore.fetchUser();
+  dashboard.fetchDashboard();
 });
 </script>
 
@@ -94,7 +98,7 @@ onMounted(() => {
     <div class="flex flex-1 min-w-0 overflow-hidden">
       <main class="flex flex-1 min-w-0 flex-col p-5 gap-5 min-h-0">
         <div class="flex flex-col gap-1 shrink-0 relative z-10">
-          
+
           <TopBar
             :user="authStore.user"
             @open-edit="showEditModal = true"
@@ -105,15 +109,79 @@ onMounted(() => {
           <Breadcrumb :items="breadcrumb" />
         </div>
         <div class="flex-1 overflow-y-auto min-h-0">
-        <div class="flex gap-5">
-          <HeroCard :user="authStore.user" class="flex-1" />
-          <div class="w-160">
-            <PatientList />
+
+        <!-- Error state -->
+        <div
+          v-if="dashboard.error.value"
+          class="mb-4 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700"
+        >
+          {{ dashboard.error.value instanceof Error ? dashboard.error.value.message : 'Error al cargar el dashboard' }}
+        </div>
+
+        <!-- Admin layout -->
+        <template v-if="dashboard.role.value === 'admin'">
+          <div class="flex flex-wrap gap-4">
+            <template
+              v-for="m in [
+                { label: 'Usuarios', value: dashboard.systemMetrics.value?.totalUsers, icon: 'pi pi-users', color: '#7c3aed' },
+                { label: 'Pacientes', value: dashboard.systemMetrics.value?.totalPatients, icon: 'pi pi-user', color: '#60a5fa' },
+                { label: 'Pendientes', value: dashboard.systemMetrics.value?.totalPendingReports, icon: 'pi pi-file', color: '#f59e0b' },
+                { label: 'Firmados', value: dashboard.systemMetrics.value?.totalSignedReports, icon: 'pi pi-check-circle', color: '#10b981' },
+                { label: 'Cerrados', value: dashboard.systemMetrics.value?.totalClosedReports, icon: 'pi pi-times-circle', color: '#ef4444' },
+                { label: 'Plantillas', value: dashboard.systemMetrics.value?.totalTemplates, icon: 'pi pi-palette', color: '#06b6d4' },
+              ]"
+              :key="m.label"
+            >
+              <div
+                v-if="m.value != null"
+                class="card flex flex-1 items-center gap-4 p-5 min-w-[180px]"
+              >
+                <div
+                  class="flex h-12 w-12 items-center justify-center rounded-xl shrink-0"
+                  :style="{ background: `${m.color}14`, color: m.color }"
+                >
+                  <i :class="['text-xl', m.icon]" />
+                </div>
+                <div class="min-w-0">
+                  <p class="text-2xl font-bold text-slate-800 leading-none">
+                    {{ m.value }}
+                  </p>
+                  <p class="mt-1 text-sm text-slate-500 truncate">{{ m.label }}</p>
+                </div>
+              </div>
+            </template>
           </div>
-        </div>
-        <div class="mt-5">
-          <ConsultationPanel />
-        </div>
+        </template>
+
+        <!-- Doctor layout -->
+        <template v-if="dashboard.role.value === 'doctor'">
+          <div class="flex gap-5">
+            <HeroCard
+              :stats="dashboard.stats.value"
+              :loading="dashboard.loading.value"
+              :error="dashboard.error.value instanceof Error ? dashboard.error.value.message : null"
+              :user-name="authStore.user?.name || 'Usuario'"
+              class="flex-1"
+            />
+            <div class="w-80">
+              <PendingReportsWidget
+                :reports="dashboard.pendingReports.value"
+                :loading="dashboard.loading.value"
+                :role="dashboard.role.value"
+              />
+            </div>
+          </div>
+          <div class="mt-5 flex gap-5">
+            <QuickActions class="flex-1" />
+            <div class="w-160">
+              <PatientList
+                :patients="dashboard.patients.value"
+                :loading="dashboard.loading.value"
+              />
+            </div>
+          </div>
+        </template>
+
         </div>
       </main>
 
