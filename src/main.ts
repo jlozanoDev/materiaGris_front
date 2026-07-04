@@ -8,7 +8,7 @@ import "./style.css";
 import App from "./App.vue";
 import router from "@/core/router/index";
 import toastPlugin from "@/shared/plugins/toastPlugin";
-import { setUnauthorizedHandler, setTokenGetter } from "@/core/api/httpClient";
+import { setUnauthorizedHandler, setForbiddenHandler, setTokenGetter } from "@/core/api/httpClient";
 import { provideAuthService } from "@/modules/auth/application/containers/authContainer";
 import { setAuthService, setStorageGateway } from "@/core/services/serviceRegistry";
 import { useToast } from "@/shared/composables/useToast";
@@ -34,6 +34,12 @@ import vHasPermission from "@/shared/directives/v-has-permission";
       authStore.clearUser();
     } catch { /* noop */ }
     router.replace({ name: "Login" });
+  });
+
+  setForbiddenHandler(() => {
+    if (router.currentRoute.value.name !== "Dashboard") {
+      router.replace({ name: "Dashboard" });
+    }
   });
 
   const isValid = await authService.validateToken();
