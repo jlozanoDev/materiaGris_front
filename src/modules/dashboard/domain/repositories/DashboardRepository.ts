@@ -1,4 +1,5 @@
 import type { DateRange } from '@/modules/dashboard/domain/entities/types';
+import type { WeatherData } from '@/modules/dashboard/domain/entities/WeatherData';
 
 export interface DashboardRepository {
   getStats(range: DateRange): Promise<{ data: any[] }>;
@@ -8,4 +9,5 @@ export interface DashboardRepository {
   getPatientsCount(): Promise<number>;
   getTemplatesCount(): Promise<number>;
   getReportsByStatus(status: string): Promise<number>;
+  getWeather(lat: number, lon: number): Promise<WeatherData>;
 }

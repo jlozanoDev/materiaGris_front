@@ -88,6 +88,9 @@ const breadcrumb = [{ text: "Dashboard", icon: "pi pi-objects-column", to: "/" }
 onMounted(async () => {
   await authStore.fetchUser();
   await dashboard.fetchDashboard();
+  if (dashboard.role.value === "doctor") {
+    await dashboard.fetchWeather();
+  }
 });
 </script>
 
@@ -161,7 +164,12 @@ onMounted(async () => {
               :loading="dashboard.loading.value"
               :error="dashboard.error.value instanceof Error ? dashboard.error.value.message : null"
               :user-name="authStore.user?.name || 'Usuario'"
+              :weather-data="dashboard.weather.value"
+              :weather-loading="dashboard.weatherLoading.value"
+              :weather-error="dashboard.weatherError.value"
+              :show-city-selector="dashboard.showCitySelector.value"
               class="flex-1"
+              @select-city="dashboard.selectCity"
             />
             <div class="w-80">
               <PendingReportsWidget

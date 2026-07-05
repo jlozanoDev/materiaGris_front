@@ -1,20 +1,35 @@
 <script setup lang="ts">
 import logoSvg from '@/assets/logo-materiagris.svg'
 import type { DashboardStats } from "@/modules/dashboard/domain/entities/DashboardStats";
+import type { WeatherData } from "@/modules/dashboard/domain/entities/WeatherData";
+import WeatherDisplay from "@/modules/dashboard/presentation/components/WeatherDisplay.vue";
+import CitySelector from "@/modules/dashboard/presentation/components/CitySelector.vue";
 
 interface Props {
   stats?: DashboardStats | null;
   loading?: boolean;
   error?: string | null;
   userName?: string;
+  weatherData?: WeatherData | null;
+  weatherLoading?: boolean;
+  weatherError?: string | null;
+  showCitySelector?: boolean;
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   stats: null,
   loading: false,
   error: null,
   userName: "Usuario",
+  weatherData: null,
+  weatherLoading: false,
+  weatherError: null,
+  showCitySelector: false,
 });
+
+const emit = defineEmits<{
+  (e: "select-city", payload: { lat: number; lon: number; name: string }): void;
+}>();
 </script>
 
 <template>
@@ -83,29 +98,18 @@ const props = withDefaults(defineProps<Props>(), {
         </template>
       </div>
 
-      <!-- Right: weather icon -->
-      <div class="flex flex-shrink-0 items-center justify-center h-20 w-36 relative">
-        <div class="flex items-center gap-3">
-          <!-- Sun+Cloud SVG -->
-          <svg
-            viewBox="0 0 64 64"
-            class="h-12 w-12 text-white/90"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-          >
-            <g fill="currentColor" class="text-yellow-300">
-              <circle cx="20" cy="20" r="8" />
-            </g>
-            <g fill="currentColor" class="text-white/90">
-              <path d="M44 32a10 10 0 00-9.5-9.995A8 8 0 1030 40h14a6 6 0 000-8z" />
-            </g>
-          </svg>
-          <div class="text-right">
-            <div class="text-2xl font-bold">22°C</div>
-            <div class="text-xs text-white/70">Soleado</div>
-          </div>
-        </div>
+      <!-- Right: weather -->
+      <div class="flex flex-col items-end gap-2 flex-shrink-0">
+        <WeatherDisplay
+          :weather-data="weatherData"
+          :loading="weatherLoading"
+          :error="weatherError"
+        />
+        <CitySelector
+          v-if="showCitySelector"
+          class="w-72"
+          @city-selected="(payload) => emit('select-city', payload)"
+        />
       </div>
     </div>
   </div>

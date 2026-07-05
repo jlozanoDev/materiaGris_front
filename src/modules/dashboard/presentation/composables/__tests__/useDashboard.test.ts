@@ -10,6 +10,7 @@ vi.mock("@/modules/dashboard/application/containers/dashboardContainer", () => (
   provideGetRecentPatientsUseCase: vi.fn(),
   provideGetPendingReportsUseCase: vi.fn(),
   provideGetSystemMetricsUseCase: vi.fn(),
+  provideGetWeatherUseCase: vi.fn(),
 }));
 
 // ============================================================================
@@ -22,6 +23,7 @@ import {
   provideGetRecentPatientsUseCase,
   provideGetPendingReportsUseCase,
   provideGetSystemMetricsUseCase,
+  provideGetWeatherUseCase,
 } from "@/modules/dashboard/application/containers/dashboardContainer";
 import { useAuthStore } from "@/core/store/auth";
 
@@ -172,6 +174,103 @@ describe("useDashboard", () => {
       expect(dashboard.loading.value).toBe(false);
       expect(dashboard.stats.value).toBeNull();
       expect(dashboard.systemMetrics.value).toBeNull();
+    });
+  });
+
+  describe("weather scenarios", () => {
+    function setupDoctor() {
+      const authStore = useAuthStore();
+      authStore.user = {
+        id: 1,
+        name: "Dr. Test",
+        email: "dr@test.com",
+        permissions: { "report.edit": 1 },
+      };
+    }
+
+    it("sets weatherLoading during fetch and clears it after", async () => {
+      setupDoctor();
+
+      let resolveWeather: any;
+      const weatherPromise = new Promise((r) => { resolveWeather = r; });
+      (provideGetWeatherUseCase as any).mockReturnValue({
+        execute: vi.fn().mockReturnValue(weatherPromise),
+      });
+
+      const dashboard = useDashboard();
+      const fetchP = dashboard.fetchWeather();
+
+      expect(dashboard.weatherLoading.value).toBe(true);
+
+      resolveWeather({ temperature: 22, description: "Soleado", wmoCode: 0, iconName: "sunny" });
+      await fetchP;
+
+      expect(dashboard.weatherLoading.value).toBe(false);
+    });
+
+    it("falls back to env defaults on geolocation failure and fetches weather", async () => {
+      setupDoctor();
+
+      const mockWeather = { temperature: 18, description: "Nublado", wmoCode: 2, iconName: "cloudy-sun" };
+      (provideGetWeatherUseCase as any).mockReturnValue({
+        execute: vi.fn().mockResolvedValue(mockWeather),
+      });
+
+      // In jsdom, navigator.geolocation is undefined so it falls back to env defaults
+      const dashboard = useDashboard();
+      await dashboard.fetchWeather();
+
+      expect(dashboard.weather.value).toEqual(mockWeather);
+      expect(dashboard.weatherLoading.value).toBe(false);
+      expect(dashboard.weatherError.value).toBeNull();
+      // showCitySelector should be true because geolocation fails in jsdom
+      expect(dashboard.showCitySelector.value).toBe(true);
+    });
+
+    it("sets weatherError when API call fails", async () => {
+      setupDoctor();
+
+      (provideGetWeatherUseCase as any).mockReturnValue({
+        execute: vi.fn().mockRejectedValue(new Error("API error")),
+      });
+
+      const dashboard = useDashboard();
+      await dashboard.fetchWeather();
+
+      expect(dashboard.weatherError.value).toBe("No disponible");
+      expect(dashboard.weatherLoading.value).toBe(false);
+      expect(dashboard.weather.value).toBeNull();
+    });
+
+    it("selectCity fetches weather for given coordinates", async () => {
+      setupDoctor();
+
+      const mockWeather = { temperature: 30, description: "Despejado", wmoCode: 0, iconName: "sunny" };
+      (provideGetWeatherUseCase as any).mockReturnValue({
+        execute: vi.fn().mockResolvedValue(mockWeather),
+      });
+
+      const dashboard = useDashboard();
+      await dashboard.selectCity(40.4168, -3.7038);
+
+      expect(dashboard.weather.value).toEqual(mockWeather);
+      expect(dashboard.weatherLoading.value).toBe(false);
+      expect(dashboard.weatherError.value).toBeNull();
+      expect(dashboard.showCitySelector.value).toBe(false);
+    });
+
+    it("selectCity sets error on failure", async () => {
+      setupDoctor();
+
+      (provideGetWeatherUseCase as any).mockReturnValue({
+        execute: vi.fn().mockRejectedValue(new Error("fail")),
+      });
+
+      const dashboard = useDashboard();
+      await dashboard.selectCity(40.4168, -3.7038);
+
+      expect(dashboard.weatherError.value).toBe("No disponible");
+      expect(dashboard.weatherLoading.value).toBe(false);
     });
   });
 });
