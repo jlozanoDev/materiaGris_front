@@ -59,8 +59,23 @@
 
       <hr class="border-[rgba(124,58,237,0.08)]" />
 
-      <!-- Roles -->
-      <div>
+      <!-- Roles (solo-lectura: requiere que /auth/me incluya campo "roles") -->
+      <div v-if="isProfileReadonly && selectedRoleIds.length > 0">
+        <h4 class="text-xs font-semibold uppercase tracking-wider text-[#7c3aed] mb-3">
+          Roles
+        </h4>
+        <div class="flex flex-wrap gap-1.5">
+          <span
+            v-for="roleId in selectedRoleIds"
+            :key="'badge-' + roleId"
+            class="badge badge--primary"
+          >
+            {{ getRoleName(roleId) }}
+          </span>
+        </div>
+      </div>
+
+      <div v-else>
         <div class="flex items-center justify-between mb-3">
           <h4 class="text-xs font-semibold uppercase tracking-wider text-[#7c3aed]">
             Roles
@@ -215,7 +230,7 @@
                 <h4 class="text-xs font-semibold text-[#0b0817]">
                   Permisos individuales
                 </h4>
-                <button type="button" class="btn btn-ghost btn-sm" @click="resetPermissions">
+                <button v-if="!isProfileReadonly" type="button" class="btn btn-ghost btn-sm" @click="resetPermissions">
                   Restaurar
                 </button>
               </div>
@@ -260,7 +275,7 @@
                       </template>
 
                       <!-- Override individual -->
-                      <template v-else>
+                      <template v-else-if="!isProfileReadonly">
                         <div class="flex items-center gap-1.5">
                           <button
                             type="button"
@@ -293,6 +308,7 @@
                           </button>
                         </div>
                       </template>
+                      <!-- Read-only: inherited directly (no role source) -->
                     </div>
                   </div>
                 </div>
@@ -381,6 +397,7 @@
 import { ref, watch, computed } from "vue";
 import Modal from "@/shared/components/Modal.vue";
 import { fetchClient } from "@/core/api/httpClient";
+import { useAuthStore } from "@/core/store/auth";
 
 interface UserRole {
   id: number;
@@ -443,6 +460,11 @@ const emit = defineEmits<{
   (e: "close"): void;
   (e: "save", payload: Payload): void;
 }>();
+
+const authStore = useAuthStore();
+
+// Modo solo-lectura: usuario sin admin.role.view (ej. perfil propio)
+const isProfileReadonly = computed<boolean>(() => !authStore.hasPermission("admin.role.view"));
 
 const apiRoles = ref<UserRole[]>([]);
 const apiPermissions = ref<PermissionItem[]>([]);
@@ -524,8 +546,10 @@ const showPermissions = ref(false);
 
 watch(() => props.show, (val) => {
   if (val) {
-    fetchRoles();
-    fetchPermissions();
+    if (!isProfileReadonly.value) {
+      fetchRoles();
+      fetchPermissions();
+    }
   }
 });
 const roleExpanded = ref<Record<number, boolean>>({});

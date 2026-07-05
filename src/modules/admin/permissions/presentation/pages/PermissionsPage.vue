@@ -7,7 +7,7 @@ import { useAuthStore } from "@/core/store/auth";
 import { useLogout } from "@/shared/composables/useLogout";
 import UiVuetifyDataTable from "@/shared/components/UiVuetifyDataTable.vue";
 import { usePermissions } from "@/modules/admin/permissions/presentation/composables/usePermissions";
-import EditUserModal from "@/modules/admin/users/presentation/components/EditUserModal.vue";
+import ProfileEditModal from "@/modules/admin/users/presentation/components/ProfileEditModal.vue";
 import ChangePasswordModal from "@/shared/components/ChangePasswordModal.vue";
 import AddressesModal from "@/shared/components/AddressesModal.vue";
 import type { PermissionShape } from "@/shared/types";
@@ -243,7 +243,7 @@ onMounted(async () => {
     </div>
   </div>
 
-  <EditUserModal
+  <ProfileEditModal
     :show="showProfileEditModal"
     :user="authStore.user"
     @close="showProfileEditModal = false"

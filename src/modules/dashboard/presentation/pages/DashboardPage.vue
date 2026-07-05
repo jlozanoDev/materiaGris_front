@@ -8,7 +8,7 @@ import PatientList from "@/modules/dashboard/presentation/components/PatientList
 import PendingReportsWidget from "@/modules/dashboard/presentation/components/PendingReportsWidget.vue";
 import QuickActions from "@/modules/dashboard/presentation/components/QuickActions.vue";
 import RightPanel from "@/modules/dashboard/presentation/components/RightPanel.vue";
-import EditUserModal from "@/modules/admin/users/presentation/components/EditUserModal.vue";
+import ProfileEditModal from "@/modules/admin/users/presentation/components/ProfileEditModal.vue";
 import ChangePasswordModal from "@/shared/components/ChangePasswordModal.vue";
 import AddressesModal from "@/shared/components/AddressesModal.vue";
 
@@ -197,7 +197,7 @@ onMounted(async () => {
     </div>
   </div>
 
-  <EditUserModal
+  <ProfileEditModal
     :show="showEditModal"
     :user="authStore.user"
     @close="showEditModal = false"

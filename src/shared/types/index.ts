@@ -9,7 +9,13 @@ export interface AuthUser {
   name: string;
   email: string;
   permissions: PermissionShape[] | string[] | Record<string, number>;
+  roles?: RoleSummary[];
   is_active?: boolean;
+}
+
+export interface RoleSummary {
+  id: number | string;
+  name: string;
 }
 
 // Patients
