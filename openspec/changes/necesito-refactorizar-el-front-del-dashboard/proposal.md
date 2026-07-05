@@ -13,7 +13,7 @@ Por qué ahora: los endpoints (`/patients/find`, `/reports?status=draft`, `/auth
 1. **Capas hexagonales completas** para el módulo dashboard: domain entities (`DashboardStats`, `PatientSummary`, `PendingReport`), interfaz de repositorio, implementación API con `fetchClient`, use cases (`GetDashboardStats`, `GetRecentPatients`), contenedor DI, composable Pinia `useDashboard` y un store.
 2. **KPIs reales** reemplazando números mock de HeroCard: visitas de hoy, pacientes nuevos vs recurrentes desde `GET /patients/find?last_visit_from/to=`.
 3. **PatientList con datos reales** desde `/patients/find` (últimos pacientes atendidos hoy), mostrando nombre real, tipo de consulta y hora.
-4. **Dashboard consciente del rol**: admin ve conteo de usuarios desde `GET /admin/users`; doctor ve estadísticas de pacientes y reportes pendientes desde `GET /reports?status=draft`.
+4. **Dashboard consciente del rol**: admin ve conteo de usuarios desde `GET /admin/users`; doctor ve estadísticas de pacientes y Informes pendientes desde `GET /reports?status=draft`.
 5. **Tests unitarios TDD** para todos los use cases con repositorio mock (0 tests actuales).
 
 ### Out of Scope
@@ -29,7 +29,7 @@ Por qué ahora: los endpoints (`/patients/find`, `/reports?status=draft`, `/auth
 
 ### New Capabilities
 
-- `dashboard-stats`: KPIs del dashboard (visitas hoy, pacientes nuevos/recurrentes, reportes pendientes) — nuevos dominios, repositorios y use cases para el módulo dashboard.
+- `dashboard-stats`: KPIs del dashboard (visitas hoy, pacientes nuevos/recurrentes, Informes pendientes) — nuevos dominios, repositorios y use cases para el módulo dashboard.
 - `dashboard-patient-list`: Lista de pacientes recientes consumiendo `/patients/find` — entidad `PatientSummary`, repositorio y use case.
 - `dashboard-role-aware`: Conmutación de datos del dashboard según el rol del usuario (admin vs doctor) — use case `GetDashboardStats` consulta diferentes endpoints.
 
@@ -82,7 +82,7 @@ Los componentes existentes (`HeroCard`, `PatientList`) pasan de props hardcodead
 |------|------------|------------|
 | `GET /patients/find?last_visit_from/to=` no permite distinguir nuevos vs recurrentes directamente | Medium | La API devuelve `created_at`; comparar con rango del día vs anterior. Si no es viable, simplificar a "visitas hoy" como primer KPI y añadir "nuevos" en iteración posterior |
 | `GET /admin/users` devuelve datos con paginación que requieren permisos admin | Low | Verificar respuesta en entorno real; usar `total` o contar resultados si la API lo devuelve |
-| `GET /reports?status=draft` solo devuelve conteo sin desglose por doctor | Low | Aceptable para Fase 1: mostrar número total de reportes pendientes |
+| `GET /reports?status=draft` solo devuelve conteo sin desglose por doctor | Low | Aceptable para Fase 1: mostrar número total de Informes pendientes |
 | El composable `useDashboard` podría duplicar lógica con `useAuthStore` | Low | Mantener `useAuthStore` como fuente única de auth/permisos; `useDashboard` solo consulta datos de negocio |
 | Test coverage gap: 0 tests en módulo dashboard | High | TDD estricto: tests de use cases antes de implementación. Mínimo 8 tests para Fase 1 |
 
@@ -106,7 +106,7 @@ Si los endpoints fallan o devuelven datos inesperados:
 
 - [ ] HeroCard muestra KPIs reales del día (visitas, pacientes nuevos/recurrentes) desde el backend, no números hardcodeados
 - [ ] PatientList muestra pacientes reales del día desde `/patients/find`
-- [ ] Admin ve conteo de usuarios; doctor ve estadísticas de pacientes y reportes pendientes
+- [ ] Admin ve conteo de usuarios; doctor ve estadísticas de pacientes y Informes pendientes
 - [ ] Arquitectura hexagonal completa para el módulo dashboard (domain → infra → app → presentation)
 - [ ] 8+ tests unitarios (use cases con repositorio mock) pasan con `npx vitest run`
 - [ ] Build de producción exitoso (`npm run build`)

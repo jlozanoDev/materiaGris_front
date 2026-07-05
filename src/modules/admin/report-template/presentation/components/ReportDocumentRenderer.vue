@@ -230,12 +230,6 @@ const props = withDefaults(defineProps<Props>(), {
   footerEnabled: false,
 })
 
-const today = new Date().toLocaleDateString('es-ES', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-})
-
 const hasHeader = computed(() => props.headerEnabled && props.headerSections.length > 0)
 const hasFooter = computed(() => props.footerEnabled && props.footerSections.length > 0)
 

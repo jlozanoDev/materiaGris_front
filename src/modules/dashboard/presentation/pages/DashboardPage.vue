@@ -169,7 +169,7 @@ onMounted(async () => {
               :weather-error="dashboard.weatherError.value"
               :show-city-selector="dashboard.showCitySelector.value"
               class="flex-1"
-              @select-city="dashboard.selectCity"
+              @select-city="(payload) => dashboard.selectCity(payload.lat, payload.lon)"
             />
             <div class="w-80">
               <PendingReportsWidget

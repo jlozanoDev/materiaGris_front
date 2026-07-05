@@ -1,6 +1,6 @@
 # Dashboard Pending Reports
 
-Widget visible para doctores que muestra un preview de los primeros N reportes pendientes de firma. Consume `GET /reports?status=draft`. Muestra información resumida: nombre del paciente, nombre del template, fecha de creación.
+Widget visible para doctores que muestra un preview de los primeros N Informes pendientes de firma. Consume `GET /reports?status=draft`. Muestra información resumida: nombre del paciente, nombre del template, fecha de creación.
 
 ## Requirements
 
@@ -24,7 +24,7 @@ The dashboard SHALL display a widget listing up to N (default 5) pending reports
 
 - GIVEN `GET /reports?status=draft` returns empty array
 - WHEN the dashboard loads
-- THEN the widget MUST show "Sin reportes pendientes" message
+- THEN the widget MUST show "Sin Informes pendientes" message
 
 #### Scenario: Pending reports widget loading
 
@@ -40,7 +40,7 @@ The dashboard SHALL display a total count of pending reports as a badge, visible
 
 - GIVEN `GET /reports?status=draft` returns 8 reports
 - WHEN the dashboard renders
-- THEN a badge SHALL show "8" next to the "Reportes pendientes" label
+- THEN a badge SHALL show "8" next to the "Informes pendientes" label
 
 #### Scenario: Count badge at zero
 

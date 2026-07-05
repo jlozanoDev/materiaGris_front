@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, provide, computed } from 'vue'
-import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router'
+import { useRoute, onBeforeRouteLeave } from 'vue-router'
 import draggable from 'vuedraggable'
 import { BUILDER_KEY, useTemplateBuilder } from '../composables/useTemplateBuilder'
 import type { ZoneType } from '../composables/useTemplateBuilder'
@@ -31,7 +31,6 @@ const canSave = computed(() => authStore.hasPermission('admin.reporttemplate.upd
 // ============================================================================
 
 const route = useRoute()
-const router = useRouter()
 const authStore = useAuthStore()
 const { logout } = useLogout()
 const builder = useTemplateBuilder()
