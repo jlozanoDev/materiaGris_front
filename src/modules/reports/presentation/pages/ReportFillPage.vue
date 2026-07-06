@@ -80,9 +80,9 @@
                   {{ showAIPanel ? "Cerrar asistente" : "Asistente de dictado IA" }}
                 </button>
 
-                <!-- Guardar borrador -->
+                <!-- Guardar borrador (solo draft) -->
                 <button
-                  v-if="canEdit"
+                  v-if="canEdit && report.status === 'draft'"
                   type="button"
                   class="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
                   :disabled="isSaving"

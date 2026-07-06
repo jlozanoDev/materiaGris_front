@@ -126,10 +126,16 @@ export default class ApiReportRepository implements ReportRepository {
 
   async downloadPdf(id: string | number): Promise<Blob> {
     try {
-      return await fetchClient(`/reports/${id}/pdf`, {
+      const token = localStorage.getItem("access_token");
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/reports/${id}/pdf`, {
         method: "GET",
-        headers: { Accept: "application/pdf" },
+        headers: {
+          Accept: "application/pdf",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
       });
+      if (!response.ok) throw new Error("Error al generar el PDF");
+      return await response.blob();
     } catch (err) {
       throw new Error("Error al generar el PDF. Intente nuevamente.");
     }
