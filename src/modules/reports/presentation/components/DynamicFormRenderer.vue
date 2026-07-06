@@ -1,25 +1,5 @@
 <template>
   <div class="dynamic-form-renderer">
-    <!-- AI Warnings -->
-    <div
-      v-if="aiHasWarnings && aiWarnings && aiWarnings.length > 0"
-      class="mb-4 flex flex-col gap-1.5 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200"
-    >
-      <span class="text-xs font-semibold text-amber-700 flex items-center gap-1.5">
-        <i class="pi pi-exclamation-triangle"></i>
-        Advertencias de la IA
-      </span>
-      <ul class="list-disc list-inside">
-        <li
-          v-for="(warn, idx) in aiWarnings"
-          :key="idx"
-          class="text-xs text-amber-700"
-        >
-          {{ warn }}
-        </li>
-      </ul>
-    </div>
-
     <!-- Read-only header zone -->
     <div
       v-if="headerSections && headerSections.length > 0"
@@ -138,10 +118,6 @@
                 :model-value="getFieldValue(field.key)"
                 :disabled="!isEditable"
                 :variable-resolver="variableResolver"
-                :ai-review="getAIReview(field.key)"
-                :ai-accept-field="aiAcceptField"
-                :ai-reject-field="aiRejectField"
-                :ai-edit-field="aiEditField"
                 @update:model-value="onFieldUpdate(field.key, $event)"
               />
             </div>
@@ -195,7 +171,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import type { Section } from '@/shared/types'
-import type { FieldReview } from '@/modules/reports/domain/entities/AIProcessing'
 import DynamicField from './DynamicField.vue'
 
 interface Props {
@@ -205,24 +180,12 @@ interface Props {
   modelValue: Record<string, any>
   isEditable: boolean
   variableResolver?: (text: string) => string
-  aiReviews?: FieldReview[]
-  aiWarnings?: string[]
-  aiHasWarnings?: boolean
-  aiAcceptField?: (key: string) => void
-  aiRejectField?: (key: string) => void
-  aiEditField?: (key: string, value: unknown) => void
 }
 
 const props = withDefaults(defineProps<Props>(), {
   headerSections: undefined,
   footerSections: undefined,
   variableResolver: undefined,
-  aiReviews: undefined,
-  aiWarnings: undefined,
-  aiHasWarnings: undefined,
-  aiAcceptField: undefined,
-  aiRejectField: undefined,
-  aiEditField: undefined,
 })
 
 const emit = defineEmits<{
@@ -273,10 +236,6 @@ function triggerAutoSave(): void {
 
 function toggleAccordion(idx: number): void {
   openAccordion.value = openAccordion.value === idx ? -1 : idx
-}
-
-function getAIReview(fieldKey: string): FieldReview | undefined {
-  return props.aiReviews?.find((r) => r.fieldKey === fieldKey)
 }
 
 function rowStyle(row: { columns: any[] }): Record<string, string> {
