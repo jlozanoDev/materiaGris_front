@@ -1,9 +1,9 @@
 import type { ReportRepository } from "@/modules/reports/domain/repositories/ReportRepository";
 
-export default class CloseReportUseCase {
+export default class ArchiveReportUseCase {
   constructor(private readonly reportRepository: ReportRepository) {}
 
   async execute(id: string | number): Promise<any> {
-    return this.reportRepository.close(id);
+    return this.reportRepository.archive(id);
   }
 }

@@ -108,7 +108,7 @@
                   { value: '', label: 'Todos' },
                   { value: 'draft', label: 'Borrador' },
                   { value: 'signed', label: 'Firmado' },
-                  { value: 'closed', label: 'Cerrado' },
+                  { value: 'archived', label: 'Archivado' },
                 ]"
                 class="w-44"
                 @change="applyFilters"
@@ -362,7 +362,7 @@ const visiblePages = computed(() => {
 });
 
 function statusLabel(status: string): string {
-  const map: Record<string, string> = { draft: "Borrador", signed: "Firmado", closed: "Cerrado" };
+  const map: Record<string, string> = { draft: "Borrador", signed: "Firmado", archived: "Archivado" };
   return map[status] ?? status;
 }
 
@@ -373,7 +373,7 @@ function statusBadgeClass(status: string): string {
       return `${base} bg-yellow-100 text-yellow-800`;
     case "signed":
       return `${base} bg-green-100 text-green-800`;
-    case "closed":
+    case "archived":
       return `${base} bg-gray-100 text-[#1f2937]`;
     default:
       return `${base} bg-gray-100 text-gray-600`;

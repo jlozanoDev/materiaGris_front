@@ -96,14 +96,14 @@ export default class ApiReportRepository implements ReportRepository {
     }
   }
 
-  async close(id: string | number): Promise<any> {
+  async archive(id: string | number): Promise<any> {
     try {
-      const raw = await fetchClient(`/reports/${id}/close`, {
+      const raw = await fetchClient(`/reports/${id}/archive`, {
         method: "POST",
       });
       return this.normalizeReport(raw);
     } catch (err) {
-      throw new Error("Error al cerrar el informe");
+      throw new Error("Error al archivar el informe");
     }
   }
 

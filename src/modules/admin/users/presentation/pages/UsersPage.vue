@@ -296,7 +296,7 @@ onMounted(async () => {
                 :columns="columns"
                 :paginator="true"
                 :rows="10"
-                :rows-per-page-options="[5, 10, 25, 50]"
+
               >
                 <template #body-name="{ data }">
                   <div class="px-3 py-2 text-sm">{{ data?.name }}</div>

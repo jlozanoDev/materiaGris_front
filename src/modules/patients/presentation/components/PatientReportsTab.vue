@@ -42,7 +42,7 @@ function statusBadgeClass(status: ReportStatus): string {
       return `${base} bg-yellow-100 text-yellow-800`;
     case "signed":
       return `${base} bg-green-100 text-green-800`;
-    case "closed":
+    case "archived":
       return `${base} bg-gray-100 text-[#1f2937]`;
     default:
       return `${base} bg-gray-100 text-gray-600`;
@@ -55,8 +55,8 @@ function statusLabel(status: ReportStatus): string {
       return "Borrador";
     case "signed":
       return "Firmado";
-    case "closed":
-      return "Cerrado";
+    case "archived":
+      return "Archivado";
     default:
       return status;
   }
@@ -218,7 +218,7 @@ const paginatedReports = computed(() => {
               { value: '', label: 'Todos' },
               { value: 'draft', label: 'Borrador' },
               { value: 'signed', label: 'Firmado' },
-              { value: 'closed', label: 'Cerrado' },
+              { value: 'archived', label: 'Archivado' },
             ]"
             class="w-44"
             @change="currentPage = 1"

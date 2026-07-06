@@ -119,7 +119,7 @@ describe("ReportListPage", () => {
     mockReports.value = [
       { id: "r1", patient_name: "P1", author_name: "A1", template_name: "T1", status: "draft", created_at: "", updated_at: "" },
       { id: "r2", patient_name: "P2", author_name: "A2", template_name: "T2", status: "signed", created_at: "", updated_at: "" },
-      { id: "r3", patient_name: "P3", author_name: "A3", template_name: "T3", status: "closed", created_at: "", updated_at: "" },
+      { id: "r3", patient_name: "P3", author_name: "A3", template_name: "T3", status: "archived", created_at: "", updated_at: "" },
     ];
 
     const wrapper = mount(ReportListPage, {
@@ -129,7 +129,7 @@ describe("ReportListPage", () => {
 
     expect(wrapper.text()).toContain("Borrador");
     expect(wrapper.text()).toContain("Firmado");
-    expect(wrapper.text()).toContain("Cerrado");
+    expect(wrapper.text()).toContain("Archivado");
   });
 
   it("renders loading state", async () => {

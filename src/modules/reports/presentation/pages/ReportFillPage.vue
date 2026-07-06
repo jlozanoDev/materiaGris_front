@@ -91,20 +91,20 @@
                   Firmar informe
                 </button>
 
-                <!-- Cerrar -->
+                <!-- Archivar -->
                 <button
-                  v-if="canClose && report.status === 'signed'"
+                  v-if="canArchive && report.status === 'signed'"
                   type="button"
                   class="inline-flex items-center gap-2 rounded-2xl bg-slate-600 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
-                  @click="handleClose"
+                  @click="handleArchive"
                 >
-                  <i class="pi pi-lock text-xs"></i>
-                  Cerrar informe
+                  <i class="pi pi-archive text-xs"></i>
+                  Archivar informe
                 </button>
 
                 <!-- Descargar PDF -->
                 <button
-                  v-if="canDownloadPdf && (report.status === 'signed' || report.status === 'closed')"
+                  v-if="canDownloadPdf && (report.status === 'signed' || report.status === 'archived')"
                   type="button"
                   class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
                   @click="handleDownloadPdf"
@@ -271,40 +271,40 @@
     </template>
   </Modal>
 
-  <!-- Close confirmation modal -->
+  <!-- Archive confirmation modal -->
   <Modal
-    :show="showCloseModal"
-    title="Cerrar informe"
+    :show="showArchiveModal"
+    title="Archivar informe"
     size="sm"
     :close-on-backdrop="false"
-    @close="cancelClose"
+    @close="cancelArchive"
   >
     <p class="text-[#6b6b7b] text-sm">
-      ¿Confirmar cierre del informe?
+      ¿Confirmar archivado del informe?
     </p>
 
     <div
-      v-if="closeError"
+      v-if="archiveError"
       class="mt-3 rounded-xl bg-red-50 p-3"
     >
-      <p class="text-sm text-red-700">{{ closeError }}</p>
+      <p class="text-sm text-red-700">{{ archiveError }}</p>
     </div>
 
     <template #footer>
       <div class="flex justify-end gap-3">
         <button
           class="btn btn-outline btn-sm"
-          :disabled="isClosing"
-          @click="cancelClose"
+          :disabled="isArchiving"
+          @click="cancelArchive"
         >
           Cancelar
         </button>
         <button
           class="btn bg-slate-600 hover:bg-slate-700 text-white btn-sm"
-          :disabled="isClosing"
-          @click="confirmClose"
+          :disabled="isArchiving"
+          @click="confirmArchive"
         >
-          {{ isClosing ? "Cerrando..." : "Cerrar" }}
+          {{ isArchiving ? "Archivando..." : "Archivar" }}
         </button>
       </div>
     </template>
@@ -337,11 +337,11 @@ const patientData = ref<Patient | null>(null);
 
 // Modals
 const showSignModal = ref(false);
-const showCloseModal = ref(false);
+const showArchiveModal = ref(false);
 const signError = ref("");
-const closeError = ref("");
+const archiveError = ref("");
 const isSigning = ref(false);
-const isClosing = ref(false);
+const isArchiving = ref(false);
 
 // Computed property to check if signature is provided
 const hasSignature = computed(() => {
@@ -363,7 +363,7 @@ const {
   validateFormFields,
   saveDraft,
   sign,
-  close,
+  archive,
   downloadPdf,
 } = useReportForm();
 
@@ -515,7 +515,7 @@ function retry(): void {
 // Permissions
 const canEdit = computed(() => authStore.hasPermission("report.edit"));
 const canSign = computed(() => authStore.hasPermission("report.sign"));
-const canClose = computed(() => authStore.hasPermission("report.close"));
+const canArchive = computed(() => authStore.hasPermission("report.archive"));
 const canDownloadPdf = computed(() => authStore.hasPermission("report.download-pdf"));
 
 // Handlers
@@ -570,28 +570,28 @@ function cancelSign(): void {
   signError.value = "";
 }
 
-async function handleClose(): Promise<void> {
-  closeError.value = "";
-  showCloseModal.value = true;
+async function handleArchive(): Promise<void> {
+  archiveError.value = "";
+  showArchiveModal.value = true;
 }
 
-async function confirmClose(): Promise<void> {
-  isClosing.value = true;
-  closeError.value = "";
+async function confirmArchive(): Promise<void> {
+  isArchiving.value = true;
+  archiveError.value = "";
   try {
-    await close();
-    showCloseModal.value = false;
+    await archive();
+    showArchiveModal.value = false;
   } catch (e: any) {
-    closeError.value = e.message || "Error al cerrar el informe";
+    archiveError.value = e.message || "Error al archivar el informe";
   } finally {
-    isClosing.value = false;
+    isArchiving.value = false;
   }
 }
 
-function cancelClose(): void {
-  if (isClosing.value) return;
-  showCloseModal.value = false;
-  closeError.value = "";
+function cancelArchive(): void {
+  if (isArchiving.value) return;
+  showArchiveModal.value = false;
+  archiveError.value = "";
 }
 
 async function handleDownloadPdf(): Promise<void> {

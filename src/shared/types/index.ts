@@ -270,7 +270,7 @@ export interface ReportTemplate {
   updatedAt?: string
 }
 
-export type ReportStatus = 'draft' | 'signed' | 'closed'
+export type ReportStatus = 'draft' | 'signed' | 'archived'
 
 export interface PatientReport {
   id: string

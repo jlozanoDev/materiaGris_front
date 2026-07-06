@@ -8,7 +8,7 @@ vi.mock("@/modules/reports/application/containers/reportsContainer", () => ({
   provideGetReportUseCase: vi.fn(),
   provideSaveReportDraftUseCase: vi.fn(),
   provideSignReportUseCase: vi.fn(),
-  provideCloseReportUseCase: vi.fn(),
+  provideArchiveReportUseCase: vi.fn(),
   provideDownloadReportPdfUseCase: vi.fn(),
 }));
 
@@ -19,7 +19,7 @@ vi.mock("@/core/store/auth", () => ({
       const perms: Record<string, boolean> = {
         "report.edit": true,
         "report.sign": true,
-        "report.close": true,
+        "report.archive": true,
         "report.download-pdf": true,
       };
       return perms[slug] ?? false;
@@ -33,7 +33,7 @@ import {
   provideGetReportUseCase,
   provideSaveReportDraftUseCase,
   provideSignReportUseCase,
-  provideCloseReportUseCase,
+  provideArchiveReportUseCase,
   provideDownloadReportPdfUseCase,
 } from "@/modules/reports/application/containers/reportsContainer";
 
@@ -213,26 +213,26 @@ describe("useReportForm", () => {
     });
   });
 
-  // ── close ──────────────────────────────────────────────────────────────────
-  describe("close", () => {
+  // ── archive ────────────────────────────────────────────────────────────────
+  describe("archive", () => {
     it("throws if report is not signed", async () => {
       const store = useReportForm();
       store.report.value = { id: "r1", status: "draft", userId: "1" } as any;
 
-      await expect(store.close()).rejects.toThrow(/firmad/);
+      await expect(store.archive()).rejects.toThrow(/firmad/);
     });
 
-    it("calls CloseReportUseCase when valid", async () => {
-      const report = { id: "r1", status: "closed", userId: "1" };
+    it("calls ArchiveReportUseCase when valid", async () => {
+      const report = { id: "r1", status: "archived", userId: "1" };
       const execute = vi.fn().mockResolvedValue(report);
-      (provideCloseReportUseCase as any).mockReturnValue({ execute });
+      (provideArchiveReportUseCase as any).mockReturnValue({ execute });
 
       const store = useReportForm();
       store.report.value = { id: "r1", status: "signed", userId: "1" } as any;
 
-      await store.close();
+      await store.archive();
       expect(execute).toHaveBeenCalledWith("r1");
-      expect(store.report.value!.status).toBe("closed");
+      expect(store.report.value!.status).toBe("archived");
     });
   });
 

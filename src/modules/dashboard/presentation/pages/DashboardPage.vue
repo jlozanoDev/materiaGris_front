@@ -130,7 +130,7 @@ onMounted(async () => {
                 { label: 'Pacientes', value: dashboard.systemMetrics.value?.totalPatients, icon: 'pi pi-user', color: '#60a5fa' },
                 { label: 'Pendientes', value: dashboard.systemMetrics.value?.totalPendingReports, icon: 'pi pi-file', color: '#f59e0b' },
                 { label: 'Firmados', value: dashboard.systemMetrics.value?.totalSignedReports, icon: 'pi pi-check-circle', color: '#10b981' },
-                { label: 'Cerrados', value: dashboard.systemMetrics.value?.totalClosedReports, icon: 'pi pi-times-circle', color: '#ef4444' },
+                { label: 'Archivados', value: dashboard.systemMetrics.value?.totalArchivedReports, icon: 'pi pi-archive', color: '#ef4444' },
                 { label: 'Plantillas', value: dashboard.systemMetrics.value?.totalTemplates, icon: 'pi pi-palette', color: '#06b6d4' },
               ]"
               :key="m.label"

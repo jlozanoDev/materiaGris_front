@@ -4,7 +4,7 @@ import {
   provideGetReportUseCase,
   provideSaveReportDraftUseCase,
   provideSignReportUseCase,
-  provideCloseReportUseCase,
+  provideArchiveReportUseCase,
   provideDownloadReportPdfUseCase,
 } from "@/modules/reports/application/containers/reportsContainer";
 import { useAuthStore } from "@/core/store/auth";
@@ -28,7 +28,7 @@ export interface UseReportFormReturn {
   validateForSignature: () => Record<string, string>;
   saveDraft: () => Promise<void>;
   sign: () => Promise<void>;
-  close: () => Promise<void>;
+  archive: () => Promise<void>;
   downloadPdf: () => Promise<void>;
 }
 
@@ -165,13 +165,13 @@ export function useReportForm(): UseReportFormReturn {
     report.value = { ...report.value, ...updated };
   }
 
-  // ── close ──────────────────────────────────────────────────────────────────
-  async function close(): Promise<void> {
+  // ── archive ────────────────────────────────────────────────────────────────
+  async function archive(): Promise<void> {
     if (!report.value) throw new Error("No hay informe cargado");
     if (report.value.status !== "signed") {
-      throw new Error("Solo se pueden cerrar informes firmados");
+      throw new Error("Solo se pueden archivar informes firmados");
     }
-    const useCase = provideCloseReportUseCase();
+    const useCase = provideArchiveReportUseCase();
     const updated = await useCase.execute(report.value.id);
     report.value = { ...report.value, ...updated };
   }
@@ -218,7 +218,7 @@ export function useReportForm(): UseReportFormReturn {
     validateForSignature,
     saveDraft,
     sign,
-    close,
+    archive,
     downloadPdf,
   };
 }
