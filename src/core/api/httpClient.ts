@@ -51,7 +51,7 @@ export async function fetchClient(path: string, options: FetchClientOptions = {}
   if (!opts.credentials) opts.credentials = "include";
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 30000);
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   opts.signal = controller.signal;
 
   let response: Response;

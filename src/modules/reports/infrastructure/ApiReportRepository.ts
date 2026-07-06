@@ -1,5 +1,6 @@
-import type { ReportRepository } from "@/modules/reports/domain/repositories/ReportRepository";
+import type { ReportRepository, TranscribeOptions } from "@/modules/reports/domain/repositories/ReportRepository";
 import type { ReportTemplate } from "@/shared/types";
+import type { TranscriptionResult, LLMExtractionResult } from "@/modules/reports/domain/entities/AIProcessing";
 import { fetchClient } from "@/core/api/httpClient";
 
 export default class ApiReportRepository implements ReportRepository {
@@ -131,6 +132,45 @@ export default class ApiReportRepository implements ReportRepository {
       });
     } catch (err) {
       throw new Error("Error al generar el PDF. Intente nuevamente.");
+    }
+  }
+
+  async transcribe(
+    reportId: string | number,
+    formData: FormData,
+    options?: TranscribeOptions,
+  ): Promise<TranscriptionResult> {
+    try {
+      const timeout = 120000; // 2 minutes for audio uploads
+      const raw = await fetchClient(`/reports/${reportId}/transcribe`, {
+        method: "POST",
+        body: formData,
+        timeout,
+      });
+      return raw.data ?? raw;
+    } catch (err: any) {
+      if (err && (err.status === 422 || err.status === 413)) throw err;
+      throw new Error("Error al transcribir el audio");
+    }
+  }
+
+  async extractData(
+    reportId: string | number,
+    transcript: string,
+    templateId: string | number,
+  ): Promise<LLMExtractionResult> {
+    try {
+      const raw = await fetchClient(`/reports/${reportId}/extract-data`, {
+        method: "POST",
+        body: JSON.stringify({
+          transcript,
+          template_id: templateId,
+        }),
+      });
+      return raw.data ?? raw;
+    } catch (err: any) {
+      if (err && err.status === 422) throw err;
+      throw new Error("Error al extraer datos del informe");
     }
   }
 }

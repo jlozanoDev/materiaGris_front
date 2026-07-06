@@ -1,4 +1,10 @@
 import type { PatientReport, ReportTemplate } from "@/shared/types";
+import type { TranscriptionResult, LLMExtractionResult } from "@/modules/reports/domain/entities/AIProcessing";
+
+export interface TranscribeOptions {
+  diarization?: boolean;
+  language?: string;
+}
 
 export interface ReportRepository {
   initReport(patientId: string | number, templateId: string | number): Promise<PatientReport>;
@@ -10,4 +16,18 @@ export interface ReportRepository {
   delete(id: string | number): Promise<void>;
   downloadPdf(id: string | number): Promise<Blob>;
   getActiveTemplates(): Promise<ReportTemplate[]>;
+
+  /** Send audio blob for transcription via POST /reports/{id}/transcribe */
+  transcribe(
+    reportId: string | number,
+    formData: FormData,
+    options?: TranscribeOptions,
+  ): Promise<TranscriptionResult>;
+
+  /** Extract structured data from transcription via POST /reports/{id}/extract-data */
+  extractData(
+    reportId: string | number,
+    transcript: string,
+    templateId: string | number,
+  ): Promise<LLMExtractionResult>;
 }

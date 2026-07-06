@@ -68,6 +68,18 @@
               </div>
 
               <div class="flex gap-3">
+                <!-- Asistente IA -->
+                <button
+                  v-if="canEdit && report.status === 'draft' && report.id && report.templateId"
+                  type="button"
+                  class="inline-flex items-center gap-2 rounded-2xl border border-indigo-300 bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 disabled:opacity-50"
+                  :disabled="isSaving"
+                  @click="showAIPanel = !showAIPanel"
+                >
+                  <i class="pi pi-sparkles text-xs text-indigo-500"></i>
+                  {{ showAIPanel ? "Cerrar asistente" : "Asistente de dictado IA" }}
+                </button>
+
                 <!-- Guardar borrador -->
                 <button
                   v-if="canEdit"
@@ -126,6 +138,41 @@
               </ul>
             </div>
 
+            <!-- AI Assistant Dropdown -->
+            <div
+              v-if="showAIPanel && canEdit && report.status === 'draft' && report.id && report.templateId"
+              class="relative mb-6"
+            >
+              <div class="absolute right-0 top-0 z-50 w-full max-w-2xl">
+                <div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+                  <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-white">
+                    <h3 class="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                      <i class="pi pi-sparkles text-indigo-500"></i>
+                      Asistente de dictado IA
+                    </h3>
+                    <button
+                      type="button"
+                      class="text-slate-400 hover:text-slate-600 transition-colors"
+                      @click="showAIPanel = false"
+                    >
+                      <i class="pi pi-times"></i>
+                    </button>
+                  </div>
+                  <div class="p-4 bg-white">
+                    <AIAssistantPanel
+                      :report-id="report.id"
+                      :template-id="report.templateId"
+                      :field-configs="fieldConfigs"
+                      :form-values="values"
+                      :form-set-value="setValue"
+                      @llm-result="handleLLMResult"
+                      @done="handleAIDone"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- Dynamic form -->
             <DynamicFormRenderer
               v-if="report.templateStructureSnapshot"
@@ -133,8 +180,14 @@
               :header-sections="report.templateStructureSnapshot.header?.enabled ? report.templateStructureSnapshot.header.sections : undefined"
               :footer-sections="report.templateStructureSnapshot.footer?.enabled ? report.templateStructureSnapshot.footer.sections : undefined"
               :model-value="values"
-              :is-editable="canEdit"
+              :is-editable="canEdit && report.status === 'draft'"
               :variable-resolver="variableResolver"
+              :ai-reviews="aiReviews"
+              :ai-warnings="aiWarnings"
+              :ai-has-warnings="aiHasWarnings"
+              :ai-accept-field="aiAcceptField"
+              :ai-reject-field="aiRejectField"
+              :ai-edit-field="aiEditField"
               @update:model-value="handleUpdate"
               @auto-save="handleSave"
             />
@@ -319,14 +372,17 @@ import TopBarLayout from "@/shared/components/TopBarLayout.vue";
 import Breadcrumb from "@/shared/components/Breadcrumb.vue";
 import DynamicFormRenderer from "@/modules/reports/presentation/components/DynamicFormRenderer.vue";
 import SignaturePad from "@/modules/reports/presentation/components/SignaturePad.vue";
+import AIAssistantPanel from "@/modules/reports/presentation/components/AIAssistantPanel.vue";
 import Modal from "@/shared/components/Modal.vue";
 import { useReportForm } from "@/modules/reports/presentation/composables/useReportForm";
 import { useTemplateList } from "@/modules/reports/presentation/composables/useTemplateList";
+import { useAIReview } from "@/modules/reports/presentation/composables/useAIReview";
 import { useAuthStore } from "@/core/store/auth";
 import { useLogout } from "@/shared/composables/useLogout";
 import { provideGetPatientUseCase } from "@/modules/patients/application/containers/patientsContainer";
 import { SystemVariableRegistry } from "@/shared/types/SystemVariableRegistry";
-import type { Patient } from "@/shared/types";
+import type { Patient, FieldConfig, Section } from "@/shared/types";
+import type { LLMExtractionResult } from "@/modules/reports/domain/entities/AIProcessing";
 
 const route = useRoute();
 const router = useRouter();
@@ -338,6 +394,7 @@ const patientData = ref<Patient | null>(null);
 // Modals
 const showSignModal = ref(false);
 const showArchiveModal = ref(false);
+const showAIPanel = ref(false);
 const signError = ref("");
 const archiveError = ref("");
 const isSigning = ref(false);
@@ -483,6 +540,41 @@ const templateName = computed(() => {
   }
   return "";
 });
+
+/** Flattened field configs from the report template structure */
+const fieldConfigs = computed<FieldConfig[]>(() => {
+  if (!report.value?.templateStructureSnapshot?.sections) return [];
+  return report.value.templateStructureSnapshot.sections.flatMap(
+    (s: Section) =>
+      s.rows.flatMap((r: any) =>
+        r.columns.flatMap((c: any) => c.fields as FieldConfig[]),
+      ),
+  );
+});
+
+// AI Review — inline field-by-field review
+const llmResultForReview = ref<LLMExtractionResult | null>(null);
+const {
+  reviews: aiReviews,
+  warnings: aiWarnings,
+  hasWarnings: aiHasWarnings,
+  acceptField: aiAcceptField,
+  rejectField: aiRejectField,
+  editField: aiEditField,
+  applyAll: aiApplyAll,
+} = useAIReview(llmResultForReview, fieldConfigs, values, setValue);
+
+function handleLLMResult(result: any): void {
+  const inner = result?.data?.extracted_data !== undefined ? result.data : result;
+  llmResultForReview.value = inner;
+  showAIPanel.value = false;
+}
+
+function handleAIDone(): void {
+  aiApplyAll();
+  llmResultForReview.value = null;
+  showAIPanel.value = false;
+}
 
 const breadcrumbText = computed(() => {
   if (!report.value) return "Nuevo";

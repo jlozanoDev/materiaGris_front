@@ -8,6 +8,8 @@ import ArchiveReportUseCase from "@/modules/reports/domain/use-cases/ArchiveRepo
 import DeleteReportUseCase from "@/modules/reports/domain/use-cases/DeleteReportUseCase";
 import DownloadReportPdfUseCase from "@/modules/reports/domain/use-cases/DownloadReportPdfUseCase";
 import GetActiveTemplatesUseCase from "@/modules/reports/domain/use-cases/GetActiveTemplatesUseCase";
+import TranscribeAudioUseCase from "@/modules/reports/domain/use-cases/TranscribeAudioUseCase";
+import ExtractReportDataUseCase from "@/modules/reports/domain/use-cases/ExtractReportDataUseCase";
 
 export function provideInitReportUseCase(): InitReportUseCase {
   const repo = new ApiReportRepository();
@@ -52,4 +54,14 @@ export function provideDeleteReportUseCase(): DeleteReportUseCase {
 export function provideGetActiveTemplatesUseCase(): GetActiveTemplatesUseCase {
   const repo = new ApiReportRepository();
   return new GetActiveTemplatesUseCase(repo);
+}
+
+export function provideTranscribeAudioUseCase(): TranscribeAudioUseCase {
+  const repo = new ApiReportRepository();
+  return new TranscribeAudioUseCase(repo);
+}
+
+export function provideExtractReportDataUseCase(): ExtractReportDataUseCase {
+  const repo = new ApiReportRepository();
+  return new ExtractReportDataUseCase(repo);
 }
