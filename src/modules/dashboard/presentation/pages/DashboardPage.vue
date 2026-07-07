@@ -8,6 +8,7 @@ import PatientList from "@/modules/dashboard/presentation/components/PatientList
 import PendingReportsWidget from "@/modules/dashboard/presentation/components/PendingReportsWidget.vue";
 import QuickActions from "@/modules/dashboard/presentation/components/QuickActions.vue";
 import RightPanel from "@/modules/dashboard/presentation/components/RightPanel.vue";
+import UiSkeleton from "@/shared/components/UiSkeleton.vue";
 import ProfileEditModal from "@/modules/admin/users/presentation/components/ProfileEditModal.vue";
 import ChangePasswordModal from "@/shared/components/ChangePasswordModal.vue";
 import AddressesModal from "@/shared/components/AddressesModal.vue";
@@ -123,7 +124,20 @@ onMounted(async () => {
 
         <!-- Admin layout -->
         <template v-if="dashboard.role.value === 'admin'">
-          <div class="flex flex-wrap gap-4">
+          <div v-if="dashboard.loading.value" class="flex flex-wrap gap-4">
+            <div
+              v-for="n in 6"
+              :key="n"
+              class="card flex flex-1 items-center gap-4 p-5 min-w-[180px]"
+            >
+              <UiSkeleton variant="circle" width="48px" height="48px" />
+              <div class="min-w-0 flex-1 space-y-2">
+                <UiSkeleton width="40px" height="28px" />
+                <UiSkeleton width="80px" height="14px" />
+              </div>
+            </div>
+          </div>
+          <div v-else class="flex flex-wrap gap-4">
             <template
               v-for="m in [
                 { label: 'Usuarios', value: dashboard.systemMetrics.value?.totalUsers, icon: 'pi pi-users', color: '#7c3aed' },

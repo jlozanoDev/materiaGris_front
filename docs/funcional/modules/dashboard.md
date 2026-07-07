@@ -13,9 +13,12 @@ Proporcionar al médico una visión general del día: pacientes pendientes, cons
 | Tarjeta de bienvenida con estadísticas (visitas hoy, pacientes nuevos/antiguos) | ✅ Completo (conectado a API) |
 | Clima actual con temperatura e icono según ubicación | ✅ Completo (Open-Meteo + geolocalización) |
 | Selección manual de ciudad cuando la geolocalización es denegada | ✅ Completo (Nominatim) |
-| Lista de pacientes del día | ⚠️ Parcial (datos hardcoded) |
+| Lista de pacientes del día | ✅ Completo (conectado a API) |
+| Informes pendientes de firma | ✅ Completo (conectado a API) |
+| Métricas del sistema (rol admin) | ✅ Completo (conectado a API) |
 | Panel de consulta rápida | ⚠️ Parcial (maqueta visual) |
 | Calendario mensual | ⚠️ Parcial (maqueta visual) |
+| Estados de carga (skeleton) en cada apartado con datos | ✅ Completo |
 
 ## Criterios de Aceptación del Clima
 
@@ -26,6 +29,16 @@ Proporcionar al médico una visión general del día: pacientes pendientes, cons
 - Si la API de Open-Meteo falla o excede el timeout de 10 segundos, se muestra "No disponible" sin bloquear las estadísticas del HeroCard
 - El clima se obtiene automáticamente al montar el dashboard
 - Antes de resolver las coordenadas, se muestra un placeholder skeleton
+
+## Estados de Carga
+
+- Cada apartado que consume datos de la API muestra un skeleton mientras se encuentra en carga:
+  - `HeroCard`: skeleton sobre el número de visitas y las tarjetas de pacientes nuevos/antiguos.
+  - `WeatherDisplay`: skeleton/spinner mientras se resuelve la ubicación y el clima.
+  - `PatientList`: 5 filas skeleton que simulan el listado de pacientes.
+  - `PendingReportsWidget`: 3 filas skeleton que simulan los informes pendientes.
+  - Métricas del sistema (rol admin): 6 tarjetas skeleton que simulan cada KPI.
+- Los skeletons desaparecen una vez finalizada la petición, independientemente de que los datos estén vacíos o contengan valores.
 
 ## Reglas de Negocio del Clima
 
@@ -56,7 +69,6 @@ Proporcionar al médico una visión general del día: pacientes pendientes, cons
 ✅ **Funcional con clima en tiempo real.** Las estadísticas se cargan desde la API. El clima se obtiene de Open-Meteo. La geolocalización tiene fallback a ciudad manual.
 
 ## Pendientes (Roadmap)
-- [ ] Reemplazar datos hardcoded en PatientList
 - [ ] Conectar calendario con módulo de citas (futuro)
-- [ ] Hacer clic en paciente → ir a detalle/iniciar consulta
+- [ ] Conectar panel de consulta rápida con flujo real de consultas
 - [ ] Widgets configurables por rol de usuario
