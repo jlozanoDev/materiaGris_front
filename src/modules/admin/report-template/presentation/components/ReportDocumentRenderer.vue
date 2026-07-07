@@ -207,6 +207,14 @@
         </template>
       </div>
     </div>
+
+    <!-- Signature image -->
+    <div
+      v-if="props.signatureUrl && hasFooter"
+      class="report-document__signature"
+    >
+      <img :src="props.signatureUrl" alt="Firma" class="report-document__signature-img" />
+    </div>
   </div>
 </template>
 
@@ -221,6 +229,8 @@ interface Props {
   headerEnabled?: boolean
   footerEnabled?: boolean
   values: Record<string, any>
+  variableResolver?: (text: string) => string
+  signatureUrl?: string | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -261,7 +271,8 @@ function formatCellValue(val: unknown, type: string): string {
 function interpolateContent(text: string): string {
   // First substitute variables
   const resolved = text.replace(/\{([^}]+)\}/g, (_match, path: string) => {
-    const value = previewResolve(path.trim())
+    const resolveFn = props.variableResolver ?? previewResolve
+    const value = resolveFn(path.trim())
     return value ?? `{${path}}`
   })
 
@@ -446,6 +457,15 @@ function rowStyle(row: { columns: { width?: number }[] }): Record<string, string
 
 .report-document__zone--footer {
   @apply mt-4;
+}
+
+.report-document__signature {
+  @apply mt-6 flex justify-end;
+}
+
+.report-document__signature-img {
+  max-height: 80px;
+  max-width: 200px;
 }
 
 </style>

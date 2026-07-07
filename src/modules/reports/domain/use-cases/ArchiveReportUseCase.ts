@@ -3,7 +3,7 @@ import type { ReportRepository } from "@/modules/reports/domain/repositories/Rep
 export default class ArchiveReportUseCase {
   constructor(private readonly reportRepository: ReportRepository) {}
 
-  async execute(id: string | number): Promise<any> {
-    return this.reportRepository.archive(id);
+  async execute(id: string | number, pdfBlob?: Blob): Promise<any> {
+    return this.reportRepository.archive(id, pdfBlob);
   }
 }

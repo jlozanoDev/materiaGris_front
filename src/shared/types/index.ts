@@ -285,4 +285,5 @@ export interface PatientReport {
   patient_name?: string
   author_name?: string
   template_name?: string
+  pdf_path?: string
 }

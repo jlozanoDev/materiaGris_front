@@ -97,8 +97,33 @@ export default class ApiReportRepository implements ReportRepository {
     }
   }
 
-  async archive(id: string | number): Promise<any> {
+  async archive(id: string | number, pdfBlob?: Blob): Promise<any> {
     try {
+      if (pdfBlob) {
+        const formData = new FormData();
+        formData.append("pdf", pdfBlob, "informe.pdf");
+
+        const token = localStorage.getItem("access_token");
+        const response = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/reports/${id}/archive`,
+          {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: formData,
+          },
+        );
+        if (!response.ok) {
+          const body = await response.json().catch(() => null);
+          throw { status: response.status, body };
+        }
+        const raw = await response.json();
+        return this.normalizeReport(raw);
+      }
+
+      // Fallback: no PDF blob (legacy behavior for signed-only download)
       const raw = await fetchClient(`/reports/${id}/archive`, {
         method: "POST",
       });
