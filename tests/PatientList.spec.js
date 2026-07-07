@@ -1,6 +1,11 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import PatientList from '@/modules/dashboard/presentation/components/PatientList.vue'
+
+const pushMock = vi.fn()
+vi.mock('vue-router', () => ({
+  useRouter: () => ({ push: pushMock }),
+}))
 
 const MOCK_PATIENTS = [
   { id: 1, name: 'Denzel White', visitTime: '9:00', initials: 'DW' },
@@ -15,7 +20,7 @@ describe('PatientList', () => {
     const wrapper = mount(PatientList, {
       props: { patients: MOCK_PATIENTS },
     })
-    expect(wrapper.text()).toContain('Lista de pacientes')
+    expect(wrapper.text()).toContain('Últimos pacientes registrados')
     expect(wrapper.text()).toContain('Denzel White')
     expect(wrapper.text()).toContain('Stacy Mitchell')
     expect(wrapper.text()).toContain('Amy Dunham')
@@ -34,23 +39,23 @@ describe('PatientList', () => {
     const wrapper = mount(PatientList, {
       props: { patients: [] },
     })
-    expect(wrapper.text()).toContain('No hay pacientes hoy')
+    expect(wrapper.text()).toContain('No hay pacientes registrados')
   })
 
-  it('emite el evento select con el id del paciente al hacer click', async () => {
+  it('navega al paciente al hacer click', async () => {
     const wrapper = mount(PatientList, {
       props: { patients: MOCK_PATIENTS },
     })
     const secondItem = wrapper.findAll('li')[1]
     await secondItem.trigger('click')
-    expect(wrapper.emitted('select')).toBeTruthy()
-    expect(wrapper.emitted('select')[0][0]).toBe(2)
+    expect(pushMock).toHaveBeenCalledWith('/patients/2')
   })
 
-  it('tiene dots de paginación', () => {
+  it('renderiza los nombres de los pacientes', () => {
     const wrapper = mount(PatientList, {
       props: { patients: MOCK_PATIENTS },
     })
-    expect(wrapper.text()).toContain('Hoy')
+    expect(wrapper.text()).toContain('Denzel White')
+    expect(wrapper.text()).toContain('Stacy Mitchell')
   })
 })

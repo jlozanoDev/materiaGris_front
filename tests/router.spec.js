@@ -1,5 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
+
+vi.mock('@/core/store/auth', () => ({
+  useAuthStore: () => ({
+    user: null,
+    fetchUser: vi.fn().mockResolvedValue(null),
+    hasPermission: () => true,
+    hasPermissions: () => true,
+    clearUser: vi.fn(),
+  }),
+}))
+
 import { setAuthService, setStorageGateway } from '@/core/services/serviceRegistry'
 
 describe('router guard', () => {

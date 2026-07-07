@@ -68,10 +68,10 @@ const CHILD_STUBS = {
   },
   PatientList: { name: 'PatientList', template: '<ul class="stub-patientlist" />' },
   PendingReportsWidget: { name: 'PendingReportsWidget', template: '<div class="stub-pending-reports" />' },
-  ConsultationPanel: { name: 'ConsultationPanel', template: '<div class="stub-consultation" />' },
+  QuickActions: { name: 'QuickActions', template: '<div class="stub-consultation" />' },
   RightPanel: { name: 'RightPanel', template: '<aside class="stub-rightpanel" />' },
-  EditUserModal: {
-    name: 'EditUserModal',
+  ProfileEditModal: {
+    name: 'ProfileEditModal',
     template: '<div class="stub-edit-modal" v-if="show"></div>',
     props: ['show', 'user'],
   },
@@ -391,12 +391,12 @@ describe('DashboardPage', () => {
     expect(wrapper.vm.showAddressesModal).toBe(true)
   })
 
-  it('EditUserModal @close sets showEditModal to false', async () => {
+  it('ProfileEditModal @close sets showEditModal to false', async () => {
     const wrapper = mount(DashboardPage, { global: { stubs: CHILD_STUBS } })
     wrapper.vm.showEditModal = true
     await wrapper.vm.$nextTick()
 
-    const modal = wrapper.findComponent({ name: 'EditUserModal' })
+    const modal = wrapper.findComponent({ name: 'ProfileEditModal' })
     await modal.vm.$emit('close')
 
     expect(wrapper.vm.showEditModal).toBe(false)

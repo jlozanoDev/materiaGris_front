@@ -107,7 +107,7 @@ export class SystemVariableRegistry {
     const lower = prefix.toLowerCase()
 
     if (!lower) {
-      return Array.from(this.flat.values())
+      return []
     }
 
     const results: SystemVarDef[] = []

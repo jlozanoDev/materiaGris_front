@@ -175,7 +175,7 @@ export function useReportForm(): UseReportFormReturn {
     isSaving.value = true;
     try {
       // Generate PDF
-      const { createApp, h } = await import("vue");
+      const { createApp } = await import("vue");
       const ReportPdfExport = (
         await import(
           "@/modules/reports/presentation/components/ReportPdfExport.vue"
@@ -186,15 +186,10 @@ export function useReportForm(): UseReportFormReturn {
       container.id = "pdf-export-container";
       document.body.appendChild(container);
 
-      const app = createApp({
-        render() {
-          return h(ReportPdfExport as any, {
-            report: report.value,
-            signatureUrl: signatureValue.value,
-          });
-        },
+      const app = createApp(ReportPdfExport, {
+        report: report.value,
+        signatureUrl: signatureValue.value,
       });
-
       const instance = app.mount(container);
 
       // Wait for render

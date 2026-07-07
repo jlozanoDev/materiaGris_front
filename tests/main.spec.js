@@ -48,6 +48,7 @@ vi.mock('@/shared/plugins/toastPlugin', () => ({
 
 vi.mock('@/core/api/httpClient', () => ({
   setUnauthorizedHandler: vi.fn(),
+  setForbiddenHandler: vi.fn(),
   setTokenGetter: vi.fn(),
 }))
 
@@ -169,8 +170,8 @@ describe('main.ts app bootstrap', () => {
 
     const app = createApp.mock.results[0].value
 
-    expect(app.use).toHaveBeenCalledTimes(5) // Pinia, PrimeVue, router, toastPlugin, vuetify
-    expect(app.component).toHaveBeenCalledTimes(2)
+    expect(app.use).toHaveBeenCalledTimes(4) // Pinia, router, toastPlugin, vuetify
+    expect(app.component).toHaveBeenCalledTimes(0)
     expect(app.directive).toHaveBeenCalledWith('has-permission', expect.anything())
   })
 

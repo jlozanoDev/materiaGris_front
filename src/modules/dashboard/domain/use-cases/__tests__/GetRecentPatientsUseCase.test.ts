@@ -32,12 +32,16 @@ describe('GetRecentPatientsUseCase', () => {
 
   it('maps API patient objects to PatientSummary[]', async () => {
     const range = todayRange();
+    const now = new Date('2026-07-03T10:30:00');
+    vi.useFakeTimers();
+    vi.setSystemTime(now);
+
     const apiPatients = [
       {
         id: 1,
         first_name: 'Ana',
         last_name: 'García',
-        created_at: '2026-07-03T10:30:00',
+        created_at: now.toISOString(),
       },
       {
         id: 2,

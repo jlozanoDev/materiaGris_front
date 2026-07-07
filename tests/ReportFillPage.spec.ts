@@ -336,6 +336,9 @@ describe("ReportFillPage", () => {
       mockRoute.name = "ReportEdit";
       mockSign.mockResolvedValue(undefined);
 
+      // Set signature so confirm button is not disabled
+      mockSignatureValue.value = "data:image/png;base64,sig";
+
       const wrapper = mountWithModalStub();
       await flushPromises();
 
@@ -346,8 +349,8 @@ describe("ReportFillPage", () => {
         await flushPromises();
       }
 
-      // Click "Firmar" inside the modal
-      const confirmBtn = wrapper.findAll("button").find((b) => b.text() === "Firmar");
+      // Click "Confirmar firma" inside the modal
+      const confirmBtn = wrapper.findAll("button").find((b) => b.text() === "Confirmar firma");
       if (confirmBtn) {
         await confirmBtn.trigger("click");
         await flushPromises();

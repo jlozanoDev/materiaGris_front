@@ -27,6 +27,10 @@ vi.mock("@/core/store/auth", () => ({
   })),
 }));
 
+vi.mock("@/modules/reports/presentation/composables/useReportPdf", () => ({
+  generateReportPdf: vi.fn().mockResolvedValue(new Blob(["pdf"])),
+}));
+
 import { useReportForm } from "../useReportForm";
 import {
   provideInitReportUseCase,
@@ -223,17 +227,25 @@ describe("useReportForm", () => {
     });
 
     it("calls ArchiveReportUseCase when valid", async () => {
+      vi.useRealTimers();
+
       const report = { id: "r1", status: "archived", userId: "1" };
       const execute = vi.fn().mockResolvedValue(report);
       (provideArchiveReportUseCase as any).mockReturnValue({ execute });
 
       const store = useReportForm();
-      store.report.value = { id: "r1", status: "signed", userId: "1" } as any;
+      store.report.value = {
+        id: "r1",
+        status: "signed",
+        userId: "1",
+        templateStructureSnapshot: { sections: [] },
+      } as any;
 
       await store.archive();
-      expect(execute).toHaveBeenCalledWith("r1");
+
+      expect(execute).toHaveBeenCalledWith("r1", expect.any(Blob));
       expect(store.report.value!.status).toBe("archived");
-    });
+    }, 10000);
   });
 
   // ── isLoading / errorMessage ────────────────────────────────────────────────

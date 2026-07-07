@@ -140,7 +140,7 @@ describe("ReportListPage", () => {
       global: { stubs: ["AppSidebar", "TopBarLayout", "Breadcrumb"] },
     });
 
-    expect(wrapper.text()).toContain("Cargando");
+    expect(wrapper.findAll('.animate-pulse').length).toBeGreaterThanOrEqual(5);
   });
 
   // ── Edit button ─────────────────────────────────────────────

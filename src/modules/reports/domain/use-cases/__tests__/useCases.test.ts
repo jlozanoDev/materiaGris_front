@@ -211,7 +211,7 @@ describe("ArchiveReportUseCase", () => {
     const useCase = new ArchiveReportUseCase(repo);
     const result = await useCase.execute("1");
 
-    expect(repo.archive).toHaveBeenCalledWith("1");
+    expect(repo.archive).toHaveBeenCalledWith("1", undefined);
     expect(result).toEqual(expected);
   });
 

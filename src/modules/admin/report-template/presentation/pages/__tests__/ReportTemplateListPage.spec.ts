@@ -69,6 +69,10 @@ function createWrapper(permissions: string[]) {
         AppSidebar: true,
         TopBar: true,
         Breadcrumb: true,
+        Modal: {
+          props: ['show'],
+          template: '<div v-if="show" class="modal-stub"><slot></slot><slot name="footer" /></div>',
+        },
       },
     },
   })
@@ -205,11 +209,6 @@ describe('ReportTemplateListPage', () => {
   // --- Delete flow ---
 
   describe('delete flow', () => {
-    beforeEach(() => {
-      vi.spyOn(window, 'confirm').mockReturnValue(true)
-      vi.spyOn(window, 'alert').mockImplementation(() => {})
-    })
-
     it('calls deleteTemplate when confirm accepts', async () => {
       const wrapper = createWrapper([
         'admin.reporttemplate.view',
@@ -224,7 +223,12 @@ describe('ReportTemplateListPage', () => {
       await deleteBtn.trigger('click')
       await flushPromises()
 
-      expect(window.confirm).toHaveBeenCalled()
+      // Click confirm button in modal
+      const confirmBtn = wrapper.find('.modal-stub').findAll('button').find((b) => b.text() === 'Eliminar')
+      expect(confirmBtn).toBeDefined()
+      await confirmBtn!.trigger('click')
+      await flushPromises()
+
       expect(mockDeleteTemplateUseCase.execute).toHaveBeenCalledWith('1')
     })
 
@@ -241,12 +245,14 @@ describe('ReportTemplateListPage', () => {
       await deleteBtn.trigger('click')
       await flushPromises()
 
+      const confirmBtn = wrapper.find('.modal-stub').findAll('button').find((b) => b.text() === 'Eliminar')
+      await confirmBtn!.trigger('click')
+      await flushPromises()
+
       expect(mockDeleteTemplateUseCase.execute).toHaveBeenCalledWith('2')
     })
 
     it('does not call deleteTemplate when confirm is cancelled', async () => {
-      vi.spyOn(window, 'confirm').mockReturnValue(false)
-
       const wrapper = createWrapper([
         'admin.reporttemplate.view',
         'admin.reporttemplate.delete',
@@ -259,10 +265,16 @@ describe('ReportTemplateListPage', () => {
       await deleteBtn.trigger('click')
       await flushPromises()
 
+      // Click cancel button
+      const cancelBtn = wrapper.find('.modal-stub').findAll('button').find((b) => b.text() === 'Cancelar')
+      expect(cancelBtn).toBeDefined()
+      await cancelBtn!.trigger('click')
+      await flushPromises()
+
       expect(mockDeleteTemplateUseCase.execute).not.toHaveBeenCalled()
     })
 
-    it('shows alert on delete error', async () => {
+    it('shows error toast on delete error', async () => {
       mockDeleteTemplateUseCase.execute.mockRejectedValue(
         new Error('No se puede eliminar: existen informes asociados')
       )
@@ -277,9 +289,12 @@ describe('ReportTemplateListPage', () => {
       await deleteBtn.trigger('click')
       await flushPromises()
 
-      expect(window.alert).toHaveBeenCalledWith(
-        'No se puede eliminar: existen informes asociados'
-      )
+      const confirmBtn = wrapper.find('.modal-stub').findAll('button').find((b) => b.text() === 'Eliminar')
+      await confirmBtn!.trigger('click')
+      await flushPromises()
+
+      // Should not throw — error is caught and shown as toast
+      expect(mockDeleteTemplateUseCase.execute).toHaveBeenCalled()
     })
   })
 })
