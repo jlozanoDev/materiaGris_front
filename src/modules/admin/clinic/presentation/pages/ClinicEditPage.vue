@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { onMounted, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import { useClinicStore } from "@/core/store/clinic";
@@ -9,6 +9,9 @@ import { useClinicForm } from "@/modules/admin/clinic/presentation/composables/u
 import AppSidebar from "@/shared/components/AppSidebar.vue";
 import TopBar from "@/shared/components/TopBar.vue";
 import Breadcrumb from "@/shared/components/Breadcrumb.vue";
+import ProfileEditModal from "@/modules/admin/users/presentation/components/ProfileEditModal.vue";
+import ChangePasswordModal from "@/shared/components/ChangePasswordModal.vue";
+import AddressesModal from "@/shared/components/AddressesModal.vue";
 
 // ---------------------------------------------------------------------------
 // Composables
@@ -19,6 +22,14 @@ const { clinic: clinicRef } = storeToRefs(clinicStore);
 const authStore = useAuthStore();
 const router = useRouter();
 const { logout } = useLogout();
+
+// ---------------------------------------------------------------------------
+// Modal visibility
+// ---------------------------------------------------------------------------
+
+const showProfileEditModal = ref<boolean>(false);
+const showChangePasswordModal = ref<boolean>(false);
+const showAddressesModal = ref<boolean>(false);
 
 const {
   form,
@@ -83,6 +94,9 @@ function onFieldInput(key: string): void {
           <Breadcrumb :items="breadcrumb" />
           <TopBar
             :user="authStore.user"
+            @open-edit="showProfileEditModal = true"
+            @open-change-password="showChangePasswordModal = true"
+            @manage-addresses="showAddressesModal = true"
             @logout="logout"
           />
         </div>
@@ -303,5 +317,20 @@ function onFieldInput(key: string): void {
         </div>
       </main>
     </div>
+
+    <!-- Profile modals -->
+    <ProfileEditModal
+      :show="showProfileEditModal"
+      :user="authStore.user"
+      @close="showProfileEditModal = false"
+    />
+    <ChangePasswordModal
+      :show="showChangePasswordModal"
+      @close="showChangePasswordModal = false"
+    />
+    <AddressesModal
+      :show="showAddressesModal"
+      @close="showAddressesModal = false"
+    />
   </div>
 </template>
