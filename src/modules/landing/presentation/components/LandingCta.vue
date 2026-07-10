@@ -1,8 +1,11 @@
 <script setup lang="ts">
-defineEmits<{
-  demo: []
-  sales: []
-}>()
+import { ref } from 'vue'
+
+const email = ref('')
+
+function handleSubmit() {
+  console.log('early access:', email.value)
+}
 </script>
 
 <template>
@@ -15,12 +18,25 @@ defineEmits<{
         Transforma tu práctica clínica con inteligencia artificial
       </h2>
       <p class="leading-[1.625]" style="font-size: 18px; line-height: 1.6; color: #9690a8; margin: 12px auto 32px; max-width: 60ch;">
-        Únete a más de 300 profesionales que ya confían en MaterIA Gris. Sin contrato, sin compromiso.
+        Únete a MaterIA Gris. Sin contrato, sin compromiso. Solicita acceso anticipado y descubre cómo nuestra plataforma puede ayudarte a optimizar tu práctica clínica con herramientas de inteligencia artificial diseñadas específicamente para profesionales de la salud.
       </p>
-      <div class="flex flex-wrap gap-3 justify-center">
-        
-        
-      </div>
+      <form @submit.prevent="handleSubmit" class="flex flex-wrap gap-3 justify-center">
+        <input
+          v-model="email"
+          type="email"
+          required
+          placeholder="tu@email.com"
+          class="font-sans"
+          style="padding: 12px 20px; border-radius: 10px; font-size: 15px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: #fff; min-width: 220px; outline: none;"
+        />
+        <button
+          type="submit"
+          class="font-semibold text-white transition flex items-center gap-2"
+          style="padding: 12px 24px; border-radius: 10px; font-size: 15px; background: #7c3aed; box-shadow: 0 1px 12px rgba(124,58,237,0.30); cursor: pointer;"
+        >
+          Solicitar acceso
+        </button>
+      </form>
     </div>
   </section>
 </template>

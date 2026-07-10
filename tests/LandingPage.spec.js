@@ -42,7 +42,7 @@ describe('LandingPage (maqueta)', () => {
       expect(root.exists()).toBe(true)
     })
 
-    it('renders all 9 child components', () => {
+    it('renders all child components', () => {
       const { wrapper } = mountPage()
       const html = wrapper.html()
       // Check key sections are present
@@ -51,7 +51,7 @@ describe('LandingPage (maqueta)', () => {
       expect(html).toContain('Módulos de análisis')     // Modules
       expect(html).toContain('Resultados comprobados')  // Metrics
       expect(html).toContain('Todo en una plataforma') // Security
-      expect(html).toContain('Escala con tus necesidades') // Pricing
+      expect(html).toContain('Cómo funciona')          // Workflow
       expect(html).toContain('Comienza hoy')            // CTA
     })
   })
@@ -66,7 +66,7 @@ describe('LandingPage (maqueta)', () => {
     it('renders navigation links', () => {
       const { wrapper } = mountPage()
       expect(wrapper.text()).toContain('Plataforma')
-      expect(wrapper.text()).toContain('Precios')
+      expect(wrapper.text()).toContain('Cómo funciona')
     })
 
     it('renders login and demo buttons', () => {
@@ -110,20 +110,41 @@ describe('LandingPage (maqueta)', () => {
     })
   })
 
-  // ── Pricing Section ──────────────────────────────────────
-  describe('pricing section', () => {
-    it('renders three pricing plans', () => {
+  // ── Workflow Section ─────────────────────────────────────
+  describe('workflow section', () => {
+    it('renders the section title', () => {
       const { wrapper } = mountPage()
-      expect(wrapper.text()).toContain('Básico')
-      expect(wrapper.text()).toContain('Avanzado')
-      expect(wrapper.text()).toContain('Hospital')
+      expect(wrapper.text()).toContain('De la consulta al informe en seis pasos')
     })
 
-    it('renders the Recomendado badge on Avanzado as ::before', () => {
+    it('renders all 6 workflow step titles', () => {
       const { wrapper } = mountPage()
-      const highlighted = wrapper.find('.pricing-highlight')
-      expect(highlighted.exists()).toBe(true)
-      // Badge is rendered via CSS ::before pseudo-element
+      const text = wrapper.text()
+      expect(text).toContain('Buscar Paciente')
+      expect(text).toContain('Elegir Plantilla')
+      expect(text).toContain('Grabar Consulta')
+      expect(text).toContain('IA Rellena Informe')
+      expect(text).toContain('Revisar')
+      expect(text).toContain('Firmar')
+    })
+  })
+
+  // ── FAQ Section ──────────────────────────────────────────
+  describe('faq section', () => {
+    it('renders the FAQ title', () => {
+      const { wrapper } = mountPage()
+      expect(wrapper.text()).toContain('Todo lo que necesitas saber')
+    })
+
+    it('renders all 6 FAQ questions', () => {
+      const { wrapper } = mountPage()
+      const text = wrapper.text()
+      expect(text).toContain('¿Qué es MateriaGris?')
+      expect(text).toContain('¿Cómo funciona la IA?')
+      expect(text).toContain('¿Mis datos están seguros?')
+      expect(text).toContain('¿Qué especialidades soporta?')
+      expect(text).toContain('¿Se integra con mi HCE?')
+      expect(text).toContain('¿Tiene costo?')
     })
   })
 
