@@ -300,7 +300,7 @@ const previewVars: Record<string, string> = {
   'paciente.edad': '42',
   'paciente.genero': 'Masculino',
   'paciente.identificacion': '8-888-888',
-  'clinica.nombre': 'Clínica Materia Gris',
+  'clinica.nombre': '{clinica.nombre}',
   'clinica.direccion': 'Av. Central 123, Panamá',
   'fecha.hoy': new Date().toLocaleDateString('es-ES'),
   'fecha.actual': new Date().toLocaleDateString('es-ES'),

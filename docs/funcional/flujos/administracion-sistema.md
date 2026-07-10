@@ -8,6 +8,12 @@ Proceso completo de gestión de usuarios, roles y permisos del sistema por parte
 ```
 Administrador → Navega a /admin/
   │
+  ├── /admin/clinic — Configuración de Clínica
+  │     └── Formulario de edición de datos institucionales
+  │           ├── Campos: nombre, dirección, teléfono, email, ciudad, provincia, CP, web, CUIT
+  │           ├── Validación en tiempo real (email, URL)
+  │           └── Guardar → toast de éxito → datos reflejados en informes
+  │
   ├── /admin/users — Gestión de Usuarios
   │     ├── Listado de usuarios
   │     │     └── Filtros (futuro: por rol, activo/inactivo)

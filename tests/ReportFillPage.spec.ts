@@ -29,6 +29,23 @@ vi.mock("@/core/store/auth", () => ({
   }),
 }));
 
+// ── Clinic store mock ─────────────────────────────────────────────────────────
+vi.mock("@/core/store/clinic", () => ({
+  useClinicStore: () => ({
+    clinic: ref(null),
+    loading: ref(false),
+    error: ref(null),
+    fetchClinic: vi.fn(),
+  }),
+}));
+
+// ── ReportVariableResolver mock ───────────────────────────────────────────────
+vi.mock("@/shared/composables/useReportVariableResolver", () => ({
+  useReportVariableResolver: () => ({
+    resolve: (text: string) => text,
+  }),
+}));
+
 // ── Composable mocks ──────────────────────────────────────────────────────────
 const mockReport = ref<any>(null);
 const mockValues = ref<Record<string, any>>({});

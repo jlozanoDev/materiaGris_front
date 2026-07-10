@@ -24,6 +24,7 @@
 | Admin — Usuarios | [`modulos/administracion/usuarios.md`](./modulos/administracion/usuarios.md) | CRUD de usuarios del sistema |
 | Admin — Roles | [`modulos/administracion/roles.md`](./modulos/administracion/roles.md) | Roles y asignación de permisos |
 | Admin — Permisos | [`modulos/administracion/permisos.md`](./modulos/administracion/permisos.md) | Catálogo de permisos del sistema |
+| Admin — Clínica | [`modulos/administracion/clinica.md`](./modulos/administracion/clinica.md) | Datos institucionales: nombre, dirección, contacto, CUIT |
 | Admin — Informes | [`modulos/administracion/informes.md`](./modulos/administracion/informes.md) | Configuración de campos de plantillas de informes |
 | Admin — Cabecera/Pie informes | [`modulos/admin-report-template.md`](./modulos/admin-report-template.md) | Cabecera y pie configurables en plantillas |
 
@@ -46,6 +47,7 @@
 | Admin — Roles | ✅ Documentado | ⚠️ Parcial | Alta |
 | Admin — Permisos | ✅ Documentado | ✅ Completo | Media |
 | Admin — Informes (campos) | ✅ Documentado | ✅ Completo | Alta |
+| Admin — Clínica | ✅ Documentado | ✅ Completo | Alta |
 | Admin — Cabecera/Pie informes | ✅ Documentado | ✅ Completo | Media |
 | Consultas médicas | ❌ Pendiente | ❌ No implementado | Futura |
 

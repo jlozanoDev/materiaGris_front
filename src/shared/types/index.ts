@@ -11,6 +11,25 @@ export interface AuthUser {
   permissions: PermissionShape[] | string[] | Record<string, number>;
   roles?: RoleSummary[];
   is_active?: boolean;
+  apellido?: string | null;
+  num_colegiado?: string | null;
+  especialidad?: string | null;
+  telefono?: string | null;
+}
+
+export interface Clinic {
+  id: number | string;
+  nombre: string;
+  direccion: string;
+  telefono: string;
+  email: string;
+  ciudad: string;
+  provincia: string;
+  codigo_postal: string;
+  web?: string | null;
+  cuit?: string | null;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface RoleSummary {

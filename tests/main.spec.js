@@ -67,6 +67,15 @@ vi.mock('@/core/store/auth', () => ({
   })),
 }))
 
+vi.mock('@/core/store/clinic', () => ({
+  useClinicStore: vi.fn(() => ({
+    clinic: null,
+    loading: false,
+    error: null,
+    fetchClinic: vi.fn().mockResolvedValue(null),
+  })),
+}))
+
 vi.mock('@/shared/directives/v-has-permission', () => ({
   default: {},
 }))
