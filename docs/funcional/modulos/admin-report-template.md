@@ -22,6 +22,7 @@ Permitir al administrador configurar **cabeceras y pies configurables** en las p
 | Render read-only en formulario de reporte | ✅ Implementado |
 | Variables de sistema en texto fijo de cabecera/pie | ✅ Implementado |
 | Templates legacy sin cabecera/pie cargan con defaults | ✅ Implementado |
+| Panel de propiedades redimensionable entre canvas y propiedades | ✅ Implementado |
 
 ## Criterios de Aceptación
 

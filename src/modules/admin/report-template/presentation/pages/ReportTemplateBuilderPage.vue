@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, provide, computed } from 'vue'
+import { Splitpanes, Pane } from 'splitpanes'
 import { useRoute, onBeforeRouteLeave } from 'vue-router'
 import draggable from 'vuedraggable'
 import { BUILDER_KEY, useTemplateBuilder } from '../composables/useTemplateBuilder'
@@ -25,6 +26,29 @@ const systemVariables = useSystemVariableRegistry()
 provide(SYSTEM_VARIABLES_KEY, systemVariables)
 
 const canSave = computed(() => authStore.hasPermission('admin.reporttemplate.update'))
+
+// ============================================================================
+// Resizable splitter (canvas ↔ properties panel)
+// ============================================================================
+
+const STORAGE_KEY = 'report-template-builder-properties-width'
+const DEFAULT_RIGHT_WIDTH = 25
+
+const storedVal = localStorage.getItem(STORAGE_KEY)
+const parsed = storedVal !== null && storedVal !== '' && !Number.isNaN(Number(storedVal))
+  ? Number(storedVal)
+  : DEFAULT_RIGHT_WIDTH
+const rightSize = ref(Math.max(20, Math.min(parsed, 50)))
+
+function onRightResize(e: { size: number }) {
+  const size = e.size
+  rightSize.value = size
+  try {
+    localStorage.setItem(STORAGE_KEY, String(size))
+  } catch {
+    // localStorage unavailable (private browsing, quota exceeded) — silently continue
+  }
+}
 
 // ============================================================================
 // State
@@ -332,79 +356,86 @@ onMounted(async () => {
             @update:page-display="builder.footerPageDisplay = $event as 'all' | 'first' | 'last'"
           />
 
-          <!-- 3-panel layout -->
+          <!-- 3-panel layout: palette fixed, canvas + properties resizable -->
           <div class="flex flex-1 min-h-0 overflow-hidden gap-4">
-            <!-- Left: Palette -->
+            <!-- Left: Palette (fixed width — no splitter) -->
             <aside class="w-56 border border-[rgba(124,58,237,0.10)] rounded-lg bg-white p-3 overflow-y-auto shrink-0 app-scrollbar">
               <FieldPalette :registry="fieldRegistry.getAll()" />
             </aside>
 
-            <!-- Center: Canvas -->
-            <main class="flex-1 overflow-y-auto border border-[rgba(124,58,237,0.10)] rounded-lg bg-white p-4 app-scrollbar">
-              <!-- Empty state -->
-              <div
-                v-if="builder.activeSections.length === 0"
-                class="flex flex-col items-center justify-center h-full px-6"
-              >
-                <div class="relative mb-6">
-                  <div class="absolute inset-0 bg-[#ede9fe] rounded-full blur-2xl opacity-60 scale-150" />
-                  <div class="relative h-24 w-24 rounded-2xl bg-gradient-to-br from-[#ede9fe] to-[#f5f3ff] border border-[rgba(124,58,237,0.15)] flex items-center justify-center shadow-sm">
-                    <i class="pi pi-th-large text-3xl text-[#7c3aed]" />
-                  </div>
-                </div>
-                <h3 class="text-lg font-bold text-[#0b0817] mb-1.5">
-                  {{ builder.activeZone === 'header' ? 'Añade contenido a la cabecera' : builder.activeZone === 'footer' ? 'Añade contenido al pie' : 'Crea tu primera sección' }}
-                </h3>
-                <p class="text-sm text-[#9690a8] mb-6 max-w-xs text-center leading-[1.625]">
-                  {{ builder.activeZone === 'header' ? 'La cabecera aparece al inicio del informe. Arrastra campos desde la paleta.' : builder.activeZone === 'footer' ? 'El pie aparece al final del informe. Arrastra campos desde la paleta.' : 'Las secciones organizan los campos del informe. Arrastra campos desde la paleta para construir el formulario.' }}
-                </p>
-                <button
-                  class="btn btn-primary px-5 py-2.5 text-sm rounded-xl font-semibold shadow-md shadow-[#7c3aed]/20 hover:shadow-lg hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 transition-all duration-200"
-                  data-add-section
-                  @click="builder.addSection()"
-                >
-                  <i class="pi pi-plus mr-1.5 text-xs" />
-                  {{ builder.activeZone === 'body' ? 'Añadir sección' : 'Añadir contenido' }}
-                </button>
-              </div>
-
-              <!-- Sections -->
-              <div v-else class="space-y-3">
-                <draggable
-                  :list="builder.activeSections"
-                  group="report-sections"
-                  item-key="id"
-                  tag="div"
-                  class="space-y-3"
-                  @change="() => {}"
-                >
-                  <template #item="{ element }">
-                    <SectionPanel :section="element" />
-                  </template>
-                </draggable>
-
-                <div class="relative pt-2">
-                  <div class="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-[rgba(124,58,237,0.15)] to-transparent" />
-                  <button
-                    class="relative w-full text-sm text-[#7c3aed] font-semibold py-3.5 rounded-xl border-2 border-dashed border-[rgba(124,58,237,0.20)] hover:border-[#7c3aed] hover:bg-[#f5f3ff] hover:shadow-sm hover:-translate-y-0.5 transition-all duration-200 group"
-                    @click="builder.addSection()"
+            <!-- Center + Right: Resizable split panes -->
+            <Splitpanes class="flex-1 min-h-0">
+              <Pane :min-size="30">
+                <main class="h-full overflow-y-auto border border-[rgba(124,58,237,0.10)] rounded-lg bg-white p-4 app-scrollbar">
+                  <!-- Empty state -->
+                  <div
+                    v-if="builder.activeSections.length === 0"
+                    class="flex flex-col items-center justify-center h-full px-6"
                   >
-                    <span class="inline-flex items-center gap-1.5">
-                      <i class="pi pi-plus text-xs transition-transform duration-200 group-hover:scale-110" />
+                    <div class="relative mb-6">
+                      <div class="absolute inset-0 bg-[#ede9fe] rounded-full blur-2xl opacity-60 scale-150" />
+                      <div class="relative h-24 w-24 rounded-2xl bg-gradient-to-br from-[#ede9fe] to-[#f5f3ff] border border-[rgba(124,58,237,0.15)] flex items-center justify-center shadow-sm">
+                        <i class="pi pi-th-large text-3xl text-[#7c3aed]" />
+                      </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-[#0b0817] mb-1.5">
+                      {{ builder.activeZone === 'header' ? 'Añade contenido a la cabecera' : builder.activeZone === 'footer' ? 'Añade contenido al pie' : 'Crea tu primera sección' }}
+                    </h3>
+                    <p class="text-sm text-[#9690a8] mb-6 max-w-xs text-center leading-[1.625]">
+                      {{ builder.activeZone === 'header' ? 'La cabecera aparece al inicio del informe. Arrastra campos desde la paleta.' : builder.activeZone === 'footer' ? 'El pie aparece al final del informe. Arrastra campos desde la paleta.' : 'Las secciones organizan los campos del informe. Arrastra campos desde la paleta para construir el formulario.' }}
+                    </p>
+                    <button
+                      class="btn btn-primary px-5 py-2.5 text-sm rounded-xl font-semibold shadow-md shadow-[#7c3aed]/20 hover:shadow-lg hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 transition-all duration-200"
+                      data-add-section
+                      @click="builder.addSection()"
+                    >
+                      <i class="pi pi-plus mr-1.5 text-xs" />
                       {{ builder.activeZone === 'body' ? 'Añadir sección' : 'Añadir contenido' }}
-                    </span>
-                  </button>
-                </div>
-              </div>
-            </main>
+                    </button>
+                  </div>
 
-            <!-- Right: Properties -->
-            <aside
-              v-if="builder.selectedFieldId"
-              class="w-72 border border-[rgba(124,58,237,0.10)] rounded-lg bg-white flex flex-col shrink-0 overflow-hidden"
-            >
-              <FieldPropertiesPanel />
-            </aside>
+                  <!-- Sections -->
+                  <div v-else class="space-y-3">
+                    <draggable
+                      :list="builder.activeSections"
+                      group="report-sections"
+                      item-key="id"
+                      tag="div"
+                      class="space-y-3"
+                      @change="() => {}"
+                    >
+                      <template #item="{ element }">
+                        <SectionPanel :section="element" />
+                      </template>
+                    </draggable>
+
+                    <div class="relative pt-2">
+                      <div class="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-[rgba(124,58,237,0.15)] to-transparent" />
+                      <button
+                        class="relative w-full text-sm text-[#7c3aed] font-semibold py-3.5 rounded-xl border-2 border-dashed border-[rgba(124,58,237,0.20)] hover:border-[#7c3aed] hover:bg-[#f5f3ff] hover:shadow-sm hover:-translate-y-0.5 transition-all duration-200 group"
+                        @click="builder.addSection()"
+                      >
+                        <span class="inline-flex items-center gap-1.5">
+                          <i class="pi pi-plus text-xs transition-transform duration-200 group-hover:scale-110" />
+                          {{ builder.activeZone === 'body' ? 'Añadir sección' : 'Añadir contenido' }}
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                </main>
+              </Pane>
+
+              <Pane
+                v-if="builder.selectedFieldId"
+                :size="rightSize"
+                :min-size="20"
+                @resize="onRightResize"
+              >
+                <aside class="h-full border border-[rgba(124,58,237,0.10)] rounded-lg bg-white flex flex-col overflow-hidden">
+                  <FieldPropertiesPanel />
+                </aside>
+              </Pane>
+            </Splitpanes>
           </div>
         </div>
       </div>
@@ -459,3 +490,26 @@ onMounted(async () => {
   </div>
 
 </template>
+
+<style>
+.splitpanes__splitter {
+  background: transparent;
+  position: relative;
+  width: 10px;
+}
+.splitpanes__splitter::before {
+  content: '';
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  top: 0;
+  bottom: 0;
+  background: rgba(124, 58, 237, 0.08);
+  border-radius: 4px;
+  transition: background-color 0.15s;
+}
+.splitpanes__splitter:hover::before {
+  background: rgba(124, 58, 237, 0.2);
+  cursor: col-resize;
+}
+</style>
