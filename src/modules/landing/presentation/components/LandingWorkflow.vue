@@ -6,15 +6,16 @@ interface Step {
   title: string
   desc: string
   icon: string
+  morphIcon: string
 }
 
 const steps: Step[] = [
-  { number: 1, title: 'Buscar Paciente', desc: 'Localiza pacientes al instante con búsqueda por nombre, documento o historial clínico.', icon: 'search' },
-  { number: 2, title: 'Elegir Plantilla', desc: 'Selecciona entre plantillas personalizadas para cada especialidad médica.', icon: 'file-plus' },
-  { number: 3, title: 'Grabar Consulta', desc: 'Graba la conversación de forma segura. La IA transcribe en tiempo real.', icon: 'microphone' },
-  { number: 4, title: 'IA Rellena Informe', desc: 'El motor de IA estructura hallazgos, diagnósticos y recomendaciones automáticamente.', icon: 'sparkles' },
-  { number: 5, title: 'Revisar', desc: 'Verifica cada campo del informe generado antes de la emisión definitiva.', icon: 'eye' },
-  { number: 6, title: 'Firmar y Compartir', desc: 'Firma electrónicamente y comparte el informe con el paciente o el centro de salud.', icon: 'pen' },
+  { number: 1, title: 'Buscar Paciente', desc: 'Localiza pacientes al instante con búsqueda por nombre, documento o historial clínico.', icon: 'search', morphIcon: 'user' },
+  { number: 2, title: 'Elegir Plantilla', desc: 'Selecciona entre plantillas personalizadas para cada especialidad médica.', icon: 'file-plus', morphIcon: 'file-text' },
+  { number: 3, title: 'Grabar Consulta', desc: 'Graba la conversación de forma segura. La IA transcribe en tiempo real.', icon: 'microphone', morphIcon: 'activity' },
+  { number: 4, title: 'IA Rellena Informe', desc: 'El motor de IA estructura hallazgos, diagnósticos y recomendaciones automáticamente.', icon: 'sparkles', morphIcon: 'file-text' },
+  { number: 5, title: 'Revisar', desc: 'Verifica cada campo del informe generado antes de la emisión definitiva.', icon: 'eye', morphIcon: 'check-circle' },
+  { number: 6, title: 'Firmar y Compartir', desc: 'Firma electrónicamente y comparte el informe con el paciente o el centro de salud.', icon: 'pen', morphIcon: 'check' },
 ]
 
 const visibleSteps = ref<Set<number>>(new Set())
@@ -89,28 +90,49 @@ function isVisible(n: number): boolean {
             <!-- Giant watermark number -->
             <span class="wf-watermark" aria-hidden="true">{{ String(step.number).padStart(2, '0') }}</span>
 
-            <!-- Icon -->
+            <!-- Morphing icon pair -->
             <div class="wf-icon-wrap">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="wf-icon">
-                <template v-if="step.icon === 'search'">
-                  <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </template>
-                <template v-else-if="step.icon === 'file-plus'">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><line x1="9" y1="15" x2="15" y2="15" />
-                </template>
-                <template v-else-if="step.icon === 'microphone'">
-                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><line x1="12" y1="19" x2="12" y2="23" /><line x1="8" y1="23" x2="16" y2="23" />
-                </template>
-                <template v-else-if="step.icon === 'sparkles'">
-                  <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z" /><path d="M20 16l-1 2.5L16.5 20l2.5 1 1 2.5 1-2.5L23.5 20 21 18.5 20 16z" /><path d="M4 16l1 2 2 1-2 1-1 2-1-2-2-1 2-1 1-2z" />
-                </template>
-                <template v-else-if="step.icon === 'eye'">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
-                </template>
-                <template v-else-if="step.icon === 'pen'">
-                  <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
-                </template>
-              </svg>
+              <div class="wf-morph-stage">
+                <!-- Icon A: primary -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="wf-icon wf-icon-a">
+                  <template v-if="step.icon === 'search'">
+                    <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </template>
+                  <template v-else-if="step.icon === 'file-plus'">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><line x1="9" y1="15" x2="15" y2="15" />
+                  </template>
+                  <template v-else-if="step.icon === 'microphone'">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><line x1="12" y1="19" x2="12" y2="23" /><line x1="8" y1="23" x2="16" y2="23" />
+                  </template>
+                  <template v-else-if="step.icon === 'sparkles'">
+                    <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z" /><path d="M20 16l-1 2.5L16.5 20l2.5 1 1 2.5 1-2.5L23.5 20 21 18.5 20 16z" /><path d="M4 16l1 2 2 1-2 1-1 2-1-2-2-1 2-1 1-2z" />
+                  </template>
+                  <template v-else-if="step.icon === 'eye'">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
+                  </template>
+                  <template v-else-if="step.icon === 'pen'">
+                    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+                  </template>
+                </svg>
+                <!-- Icon B: morph target -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="wf-icon wf-icon-b">
+                  <template v-if="step.morphIcon === 'user'">
+                    <circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 4-6.7 8-6.7s8 2.7 8 6.7" />
+                  </template>
+                  <template v-else-if="step.morphIcon === 'file-text'">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" />
+                  </template>
+                  <template v-else-if="step.morphIcon === 'activity'">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                  </template>
+                  <template v-else-if="step.morphIcon === 'check-circle'">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
+                  </template>
+                  <template v-else-if="step.morphIcon === 'check'">
+                    <polyline points="20 6 9 17 4 12" />
+                  </template>
+                </svg>
+              </div>
             </div>
 
             <div class="wf-card-body">
@@ -408,6 +430,67 @@ function isVisible(n: number): boolean {
 .wf-card:hover .wf-icon {
   color: #5b21b6;
   transform: scale(1.12);
+}
+
+/* ============================================
+   Icon morph — scale+rotate swap (step 1 only)
+   ============================================ */
+.wf-morph-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.wf-morph-stage .wf-icon {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  color: #7c3aed;
+}
+
+/* Both icons use the same keyframes, 180° out of phase */
+.wf-morph-stage .wf-icon-a {
+  animation: wf-swap-cycle 5s ease-in-out infinite;
+}
+.wf-morph-stage .wf-icon-b {
+  animation: wf-swap-cycle 5s ease-in-out infinite;
+  animation-delay: -2.5s; /* half cycle offset */
+}
+
+/* Stagger each step so they don't all morph in sync */
+.wf-step:nth-child(1) .wf-morph-stage .wf-icon-a { animation-delay: 0s; }
+.wf-step:nth-child(2) .wf-morph-stage .wf-icon-a { animation-delay: 0.8s; }
+.wf-step:nth-child(3) .wf-morph-stage .wf-icon-a { animation-delay: 1.6s; }
+.wf-step:nth-child(4) .wf-morph-stage .wf-icon-a { animation-delay: 2.4s; }
+.wf-step:nth-child(5) .wf-morph-stage .wf-icon-a { animation-delay: 3.2s; }
+.wf-step:nth-child(6) .wf-morph-stage .wf-icon-a { animation-delay: 4.0s; }
+
+.wf-step:nth-child(1) .wf-morph-stage .wf-icon-b { animation-delay: -2.5s; }
+.wf-step:nth-child(2) .wf-morph-stage .wf-icon-b { animation-delay: -1.7s; }
+.wf-step:nth-child(3) .wf-morph-stage .wf-icon-b { animation-delay: -0.9s; }
+.wf-step:nth-child(4) .wf-morph-stage .wf-icon-b { animation-delay: -0.1s; }
+.wf-step:nth-child(5) .wf-morph-stage .wf-icon-b { animation-delay: 0.7s; }
+.wf-step:nth-child(6) .wf-morph-stage .wf-icon-b { animation-delay: 1.5s; }
+
+/* Full cycle: visible → shrink+rotate out → hidden → grow+rotate in → visible */
+@keyframes wf-swap-cycle {
+  /* search/user at rest (40% of cycle = 2s) */
+  0%, 20%   { opacity: 1; transform: scale(1) rotate(0deg); }
+  /* transition out (15% = 0.75s) */
+  35%       { opacity: 0; transform: scale(0.15) rotate(110deg); }
+  /* hidden (30% = 1.5s) */
+  50%, 70%  { opacity: 0; transform: scale(0.15) rotate(110deg); }
+  /* transition in (15% = 0.75s) */
+  85%       { opacity: 1; transform: scale(1) rotate(0deg); }
+  /* back at rest */
+  100%      { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+/* Hover: pause + show both at half blend */
+.wf-card:hover .wf-morph-stage .wf-icon-a,
+.wf-card:hover .wf-morph-stage .wf-icon-b {
+  animation-play-state: paused;
+  opacity: 0.5;
+  transform: scale(1) rotate(0deg);
 }
 
 /* ============================================
