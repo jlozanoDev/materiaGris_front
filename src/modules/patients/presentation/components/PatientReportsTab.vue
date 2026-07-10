@@ -21,6 +21,7 @@ const { templates, fetchActive: fetchTemplates } = useTemplateList();
 const showModal = ref(false);
 const canCreate = computed(() => authStore.hasPermission("report.create"));
 const canEdit = computed(() => authStore.hasPermission("report.edit"));
+const canDelete = computed(() => authStore.hasPermission("report.delete"));
 const templatesAvailable = computed(() => templates.value.length > 0);
 
 const filterSearch = ref("");
@@ -299,7 +300,7 @@ const paginatedReports = computed(() => {
                     <i class="pi pi-eye text-xs" />
                   </button>
                   <button
-                    v-if="canEdit && report.status === 'draft'"
+                    v-if="canDelete && report.status === 'draft'"
                     type="button"
                     class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-[#fef2f2] border border-[#fee2e2] text-[#dc2626] hover:bg-[#dc2626] hover:text-white hover:border-[#dc2626] hover:shadow-sm transition-all duration-150"
                     title="Eliminar"
