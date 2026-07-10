@@ -469,3 +469,44 @@ function rowStyle(row: { columns: { width?: number }[] }): Record<string, string
 }
 
 </style>
+
+<style>
+.report-document__fixed-text h1 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 0.5em 0 0.25em;
+}
+
+.report-document__fixed-text h2 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0.5em 0 0.25em;
+}
+
+.report-document__fixed-text h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0.5em 0 0.25em;
+}
+
+.report-document__fixed-text strong {
+  font-weight: 600;
+}
+
+.report-document__fixed-text em {
+  font-style: italic;
+}
+
+.report-document__fixed-text ul,
+.report-document__fixed-text ol {
+  padding-left: 1.5rem;
+  margin: 0.25em 0;
+}
+
+.report-document__fixed-text li {
+  margin: 0.125em 0;
+}
+</style>
