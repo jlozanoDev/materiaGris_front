@@ -48,9 +48,11 @@ Composable central del formulario. expone:
 | `saveDraft()` | Guarda borrador |
 | `sign()` | Valida y firma el informe |
 | `archive()` | Genera PDF cliente y sube blob al backend |
-| `printReport()` | Renderiza en iframe y abre diálogo de impresión |
+| `printReport()` | Renderiza en iframe y abre diálogo de impresión (deshabilitado en UI) |
 
 ## Lógica de Impresión
+
+> **Nota:** La funcionalidad de impresión está deshabilitada en la UI para la entrega del TFM. El código base (`printReport`) existe en `useReportForm.ts` pero requiere más trabajo de pulido.
 
 La impresión se resuelve completamente en el cliente:
 

@@ -106,11 +106,13 @@ El flujo de edición y bloqueo del informe clínico consta de tres etapas bien d
 
 ---
 
-### RF4: Motor de Impresión
+### RF4: Motor de Impresión (Pendiente)
 
-* **Generación Cliente:** El frontend renderiza el informe en un iframe oculto utilizando el componente `ReportPdfExport`, reutilizando el `template_structure_snapshot` y los `values` del informe firmado/archivado.
-* **Diálogo de Impresión del Navegador:** Al pulsar "Imprimir", el sistema muestra un skeleton de carga mientras prepara el documento y luego invoca `window.print()` sobre el iframe, delegando la gestión de PDF al navegador del usuario.
-* **Diseño Fluido y Adaptable:** Se utilizan reglas CSS fluidas (Tailwind + estilos scoped del componente de impresión) para que las secciones y párrafos fluyan orgánicamente. Los campos opcionales vacíos se omiten del documento impreso.
+> **Estado:** La impresión cliente fue implementada parcialmente pero se deshabilitó para la entrega del TFM. Se retomará en una versión posterior.
+
+* **Generación Cliente (planeada):** El frontend renderizará el informe en un iframe oculto utilizando el componente `ReportPdfExport`, reutilizando el `template_structure_snapshot` y los `values` del informe firmado/archivado.
+* **Diálogo de Impresión del Navegador (planeado):** Al pulsar "Imprimir", el sistema mostrará un skeleton de carga mientras prepara el documento y luego invocará `window.print()` sobre el iframe, delegando la gestión de PDF al navegador del usuario.
+* **Diseño Fluido y Adaptable:** Se utilizarán reglas CSS fluidas para que las secciones y párrafos fluyan orgánicamente. Los campos opcionales vacíos se omitirán del documento impreso.
 * **Estructura Visual del Informe:**
     * **Cabecera:** Inserción automatizada del logotipo oficial de la clínica, información de contacto de la entidad y un bloque estructurado con los datos demográficos del paciente.
     * **Cuerpo del Documento:** Secciones ordenadas cronológica y visualmente imitando el layout de columnas diseñado.

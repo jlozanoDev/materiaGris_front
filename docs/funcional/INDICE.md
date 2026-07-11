@@ -51,7 +51,7 @@
 | Admin — Informes (campos) | ✅ Documentado | ✅ Completo | Alta |
 | Admin — Clínica | ✅ Documentado | ✅ Completo | Alta |
 | Admin — Cabecera/Pie informes | ✅ Documentado | ✅ Completo | Media |
-| Reports (Informes) | ✅ Documentado | ⚠️ Parcial | Alta |
+| Reports (Informes) | ✅ Documentado | ⚠️ Parcial (impresión deshabilitada) | Alta |
 | Consultas médicas | ❌ Pendiente | ❌ No implementado | Futura |
 
 ✅ Documentado / Implementado · ⚠️ Parcial / En progreso · ❌ No existe / No implementado

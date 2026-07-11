@@ -18,8 +18,8 @@ Permitir a los profesionales médicos crear, editar, firmar digitalmente e impri
 | Validación de campos obligatorios al firmar | ✅ Implementado |
 | Firma digital (canvas o texto) | ✅ Implementado |
 | Archivado de informes firmados | ✅ Implementado |
-| Impresión mediante diálogo del navegador | ✅ Implementado |
-| Descarga directa de PDF | ❌ Eliminado (sustituido por impresión) |
+| Impresión mediante diálogo del navegador | ⚠️ Implementación parcial — deshabilitada para entrega TFM |
+| Descarga directa de PDF | ❌ Eliminado (sustituido por impresión pendiente) |
 
 ## Criterios de Aceptación
 
@@ -28,9 +28,9 @@ Permitir a los profesionales médicos crear, editar, firmar digitalmente e impri
 - El botón "Firmar" solo está habilitado si todos los campos obligatorios están completos.
 - La firma puede ser dibujada en canvas o tipeada.
 - Una vez firmado, el informe no admite más ediciones.
-- El botón "Imprimir" aparece para informes `signed` o `archived`.
-- Al pulsar "Imprimir" se muestra un skeleton con el texto "Preparando impresión...".
-- El navegador abre su diálogo de impresión con el documento renderizado.
+- El botón "Imprimir" está oculto temporalmente; se implementará de forma completa en una versión posterior.
+- ~Al pulsar "Imprimir" se muestra un skeleton con el texto "Preparando impresión...".~
+- ~El navegador abre su diálogo de impresión con el documento renderizado.~
 
 ## Reglas de Negocio
 
@@ -40,10 +40,12 @@ Permitir a los profesionales médicos crear, editar, firmar digitalmente e impri
 - El informe impreso incluye cabecera, cuerpo con el layout de la plantilla y firma digital.
 - Campos vacíos se omiten en la versión impresa.
 
-## Flujo Principal (Impresión)
+## Flujo Principal (Impresión) — Pendiente
+
+> **Nota:** La impresión está deshabilitada para la entrega del TFM. El código base (`printReport` en `useReportForm.ts`) existe pero necesita pulir edge cases de renderizado, paginación y carga de imágenes.
 
 1. El médico abre un informe firmado o archivado.
-2. Pulsa "Imprimir".
+2. Pulsa "Imprimir" (botón oculto actualmente).
 3. El sistema muestra un skeleton mientras renderiza el documento en un iframe oculto.
 4. Aparece el diálogo de impresión del navegador.
 5. El médico elige impresora, guarda como PDF o cancela.
