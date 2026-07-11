@@ -302,6 +302,7 @@ const previewVars: Record<string, string> = {
   'paciente.identificacion': '8-888-888',
   'clinica.nombre': '{clinica.nombre}',
   'clinica.direccion': 'Av. Central 123, Panamá',
+  'clinica.logo': '',
   'fecha.hoy': new Date().toLocaleDateString('es-ES'),
   'fecha.actual': new Date().toLocaleDateString('es-ES'),
   'usuario.nombre': 'Dr. Carlos Rodríguez',

@@ -28,6 +28,7 @@ export interface Clinic {
   codigo_postal: string;
   web?: string | null;
   cuit?: string | null;
+  logo?: string | null;
   created_at?: string;
   updated_at?: string;
 }

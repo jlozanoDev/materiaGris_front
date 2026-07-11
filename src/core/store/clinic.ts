@@ -40,5 +40,11 @@ export const useClinicStore = defineStore("clinic", () => {
     }
   }
 
-  return { clinic, loading, error, fetchClinic };
+  function updateLogo(url: string): void {
+    if (clinic.value) {
+      clinic.value.logo = url;
+    }
+  }
+
+  return { clinic, loading, error, fetchClinic, updateLogo };
 });

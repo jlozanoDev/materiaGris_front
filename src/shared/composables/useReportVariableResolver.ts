@@ -76,6 +76,13 @@ export function useReportVariableResolver(
     const clinicaCuit = c?.cuit ?? null;
     registry.register("clinica", "cuit", "CUIT", undefined, () => val(clinicaCuit));
 
+    // ── Clinica Logo ───────────────────────────────────────────────────
+    registry.register("clinica", "logo", "Logo de la clínica", undefined, () => {
+      const logoUrl = c?.logo ?? null;
+      if (!logoUrl) return "";
+      return `<img src="${logoUrl}" alt="Logo" style="max-width:100%">`;
+    });
+
     return (text: string): string => {
       return registry.interpolate(text);
     };
