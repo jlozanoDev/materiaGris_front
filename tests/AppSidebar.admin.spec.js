@@ -4,6 +4,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 const pushMock = vi.fn()
 const replaceMock = vi.fn()
 
+vi.mock('@/core/store/auth', () => ({
+  useAuthStore: () => ({
+    hasPermission: () => true,
+    hasPermissions: () => true,
+    user: { id: 1, name: 'Admin' },
+  }),
+}))
+
 vi.mock('vue-router', () => ({
   useRouter: () => ({ push: pushMock, replace: replaceMock }),
   useRoute: () => ({ path: '/admin/users' })

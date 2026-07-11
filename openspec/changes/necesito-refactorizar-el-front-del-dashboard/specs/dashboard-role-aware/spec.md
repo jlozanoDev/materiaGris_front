@@ -1,6 +1,6 @@
 # Dashboard Role-Aware
 
-Comportamiento distinto del dashboard según permisos del usuario. Un doctor ve KPIs de pacientes y reportes pendientes. Un admin ve métricas de sistema (usuarios totales, actividad). El sistema determina el rol por permisos: `admin.user.view` identifica admin; `patient.view` identifica doctor.
+Comportamiento distinto del dashboard según permisos del usuario. Un doctor ve KPIs de pacientes y Informes pendientes. Un admin ve métricas de sistema (usuarios totales, actividad). El sistema determina el rol por permisos: `admin.user.view` identifica admin; `patient.view` identifica doctor.
 
 ## Requirements
 

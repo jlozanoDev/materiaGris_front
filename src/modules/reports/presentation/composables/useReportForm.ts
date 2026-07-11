@@ -4,8 +4,7 @@ import {
   provideGetReportUseCase,
   provideSaveReportDraftUseCase,
   provideSignReportUseCase,
-  provideCloseReportUseCase,
-  provideDownloadReportPdfUseCase,
+  provideArchiveReportUseCase,
 } from "@/modules/reports/application/containers/reportsContainer";
 import { useAuthStore } from "@/core/store/auth";
 import type { PatientReport, Section, FieldConfig } from "@/shared/types";
@@ -17,6 +16,7 @@ export interface UseReportFormReturn {
   errors: Ref<Record<string, string>>;
   isSaving: Ref<boolean>;
   isLoading: Ref<boolean>;
+  isPrinting: Ref<boolean>;
   errorMessage: Ref<string | null>;
   autoSaveEnabled: Ref<boolean>;
   signatureValue: Ref<string | null>;
@@ -28,8 +28,8 @@ export interface UseReportFormReturn {
   validateForSignature: () => Record<string, string>;
   saveDraft: () => Promise<void>;
   sign: () => Promise<void>;
-  close: () => Promise<void>;
-  downloadPdf: () => Promise<void>;
+  archive: () => Promise<void>;
+  printReport: () => Promise<void>;
 }
 
 export function useReportForm(): UseReportFormReturn {
@@ -41,6 +41,7 @@ export function useReportForm(): UseReportFormReturn {
   const errors = ref<Record<string, string>>({});
   const isSaving = ref(false);
   const isLoading = ref(false);
+  const isPrinting = ref(false);
   const errorMessage = ref<string | null>(null);
   const autoSaveEnabled = ref(true);
   const signatureValue = ref<string | null>(null);
@@ -165,28 +166,142 @@ export function useReportForm(): UseReportFormReturn {
     report.value = { ...report.value, ...updated };
   }
 
-  // ── close ──────────────────────────────────────────────────────────────────
-  async function close(): Promise<void> {
+  // ── archive ────────────────────────────────────────────────────────────────
+  async function archive(): Promise<void> {
     if (!report.value) throw new Error("No hay informe cargado");
     if (report.value.status !== "signed") {
-      throw new Error("Solo se pueden cerrar informes firmados");
+      throw new Error("Solo se pueden archivar informes firmados");
     }
-    const useCase = provideCloseReportUseCase();
-    const updated = await useCase.execute(report.value.id);
-    report.value = { ...report.value, ...updated };
+
+    isSaving.value = true;
+    try {
+      // Generate PDF
+      const { createApp } = await import("vue");
+      const ReportPdfExport = (
+        await import(
+          "@/modules/reports/presentation/components/ReportPdfExport.vue"
+        )
+      ).default;
+
+      const container = document.createElement("div");
+      container.id = "pdf-export-container";
+      document.body.appendChild(container);
+
+      const app = createApp(ReportPdfExport, {
+        report: report.value,
+        signatureUrl: signatureValue.value,
+      });
+      const instance = app.mount(container);
+
+      // Wait for render
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      const pdfBlob = await (instance as any).generatePdf();
+
+      // Cleanup
+      app.unmount();
+      document.body.removeChild(container);
+
+      // Upload to backend
+      const useCase = provideArchiveReportUseCase();
+      const updated = await useCase.execute(report.value.id, pdfBlob);
+      report.value = { ...report.value, ...updated };
+    } catch (e: any) {
+      errorMessage.value = e?.message || "Error al archivar el informe";
+      throw e;
+    } finally {
+      isSaving.value = false;
+    }
   }
 
-  // ── downloadPdf ────────────────────────────────────────────────────────────
-  async function downloadPdf(): Promise<void> {
+  // ── printReport ────────────────────────────────────────────────────────────
+  async function printReport(): Promise<void> {
     if (!report.value) return;
-    const useCase = provideDownloadReportPdfUseCase();
-    const blob = await useCase.execute(report.value.id);
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `informe-${report.value.id}.pdf`;
-    a.click();
-    URL.revokeObjectURL(url);
+
+    isPrinting.value = true;
+    errorMessage.value = null;
+
+    let iframe: HTMLIFrameElement | null = null;
+    let app: any = null;
+
+    function copyStylesheets(targetDoc: Document): void {
+      document.querySelectorAll('style, link[rel="stylesheet"]').forEach((el) => {
+        if (el instanceof HTMLStyleElement) {
+          const clone = targetDoc.createElement('style')
+          clone.textContent = el.textContent
+          targetDoc.head.appendChild(clone)
+        } else if (el instanceof HTMLLinkElement) {
+          const clone = targetDoc.createElement('link')
+          clone.rel = 'stylesheet'
+          clone.href = el.href
+          targetDoc.head.appendChild(clone)
+        }
+      })
+    }
+
+    try {
+      const { createApp, nextTick } = await import("vue");
+      const ReportPdfExport = (
+        await import(
+          "@/modules/reports/presentation/components/ReportPdfExport.vue"
+        )
+      ).default;
+
+      iframe = document.createElement("iframe");
+      iframe.style.cssText = "position:fixed;left:-9999px;top:0;width:210mm;height:100vh;";
+      document.body.appendChild(iframe);
+
+      const iframeDoc = iframe.contentDocument!;
+      iframeDoc.body.style.margin = "0";
+      iframeDoc.body.style.padding = "0";
+
+      copyStylesheets(iframeDoc);
+
+      app = createApp(ReportPdfExport, {
+        report: report.value,
+        signatureUrl: signatureValue.value,
+      });
+      app.mount(iframeDoc.body);
+
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      await nextTick();
+
+      const root = iframeDoc.body.querySelector('.report-pdf-export') as HTMLElement | null;
+      if (root) {
+        root.style.position = 'static';
+        root.style.left = 'auto';
+        root.style.top = 'auto';
+        root.style.zIndex = 'auto';
+        root.style.visibility = 'visible';
+        root.style.margin = '0 auto';
+      }
+
+      const win = iframe.contentWindow;
+      if (!win) throw new Error("No se pudo acceder a la ventana de impresión");
+
+      isPrinting.value = false;
+
+      win.onafterprint = () => {
+        app?.unmount();
+        if (iframe?.parentNode) document.body.removeChild(iframe);
+      };
+
+      win.print();
+
+      // Fallback cleanup for browsers without onafterprint
+      setTimeout(() => {
+        app?.unmount();
+        if (iframe?.parentNode) document.body.removeChild(iframe);
+      }, 60000);
+    } catch (e: any) {
+      isPrinting.value = false;
+      if (app) app.unmount();
+      if (iframe?.parentNode) document.body.removeChild(iframe);
+      const message = e?.message || String(e) || "Error al preparar la impresión";
+      errorMessage.value = message;
+      console.error("[printReport] error:", e);
+      throw new Error(message);
+    }
   }
 
   // ── auto-save ──────────────────────────────────────────────────────────────
@@ -207,6 +322,7 @@ export function useReportForm(): UseReportFormReturn {
     errors,
     isSaving,
     isLoading,
+    isPrinting,
     errorMessage,
     autoSaveEnabled,
     signatureValue,
@@ -218,7 +334,7 @@ export function useReportForm(): UseReportFormReturn {
     validateForSignature,
     saveDraft,
     sign,
-    close,
-    downloadPdf,
+    archive,
+    printReport,
   };
 }

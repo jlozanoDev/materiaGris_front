@@ -1,7 +1,8 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import DynamicField from '../DynamicField.vue'
 import type { FieldConfig } from '@/shared/types'
+import type { FieldReview } from '@/modules/reports/domain/entities/AIProcessing'
 
 function createField(overrides: Record<string, any> = {}): FieldConfig {
   return {
@@ -251,5 +252,93 @@ describe('DynamicField', () => {
     const span = wrapper.find('.dynamic-field__readonly')
     expect(span.exists()).toBe(true)
     expect(span.text()).toBe('—')
+  })
+
+  describe('AI review inline', () => {
+    function makeReview(overrides: Partial<FieldReview> = {}): FieldReview {
+      return {
+        fieldKey: 'test_field',
+        fieldLabel: 'Test Field',
+        fieldType: 'text',
+        currentValue: '',
+        proposedValue: 'Valor sugerido IA',
+        confidence: 0.85,
+        confidenceLevel: 'high',
+        action: 'pending',
+        ...overrides,
+      }
+    }
+
+    it('renders AIReviewField when aiReview is provided and field is editable', () => {
+      const field = createField()
+      const review = makeReview()
+      const wrapper = mount(DynamicField, {
+        props: { field, modelValue: '', disabled: false, aiReview: review },
+      })
+      expect(wrapper.text()).toContain('Valor sugerido IA')
+    })
+
+    it('does not render AIReviewField when disabled', () => {
+      const field = createField()
+      const review = makeReview()
+      const wrapper = mount(DynamicField, {
+        props: { field, modelValue: '', disabled: true, aiReview: review },
+      })
+      expect(wrapper.text()).not.toContain('Valor sugerido IA')
+    })
+
+    it('does not render AIReviewField when aiReview is null', () => {
+      const field = createField()
+      const wrapper = mount(DynamicField, {
+        props: { field, modelValue: '', disabled: false, aiReview: null },
+      })
+      expect(wrapper.text()).not.toContain('Valor sugerido IA')
+    })
+
+    it('does not render AIReviewField when aiReview is undefined', () => {
+      const field = createField()
+      const wrapper = mount(DynamicField, {
+        props: { field, modelValue: '', disabled: false },
+      })
+      expect(wrapper.text()).not.toContain('Valor sugerido IA')
+    })
+
+    it('calls aiAcceptField when accept event is emitted from AIReviewField', async () => {
+      const field = createField()
+      const review = makeReview()
+      const accept = vi.fn()
+      const wrapper = mount(DynamicField, {
+        props: {
+          field,
+          modelValue: '',
+          disabled: false,
+          aiReview: review,
+          aiAcceptField: accept,
+        },
+      })
+      // AIReviewField emits accept with fieldKey
+      const reviewFieldComponent = wrapper.findComponent({ name: 'AIReviewField' })
+      expect(reviewFieldComponent.exists()).toBe(true)
+      await reviewFieldComponent.vm.$emit('accept', 'test_field')
+      expect(accept).toHaveBeenCalledWith('test_field')
+    })
+
+    it('calls aiRejectField when reject event is emitted from AIReviewField', async () => {
+      const field = createField()
+      const review = makeReview()
+      const reject = vi.fn()
+      const wrapper = mount(DynamicField, {
+        props: {
+          field,
+          modelValue: '',
+          disabled: false,
+          aiReview: review,
+          aiRejectField: reject,
+        },
+      })
+      const reviewFieldComponent = wrapper.findComponent({ name: 'AIReviewField' })
+      await reviewFieldComponent.vm.$emit('reject', 'test_field')
+      expect(reject).toHaveBeenCalledWith('test_field')
+    })
   })
 })

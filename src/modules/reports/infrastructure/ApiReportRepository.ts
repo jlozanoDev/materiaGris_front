@@ -1,5 +1,6 @@
-import type { ReportRepository } from "@/modules/reports/domain/repositories/ReportRepository";
+import type { ReportRepository, TranscribeOptions } from "@/modules/reports/domain/repositories/ReportRepository";
 import type { ReportTemplate } from "@/shared/types";
+import type { TranscriptionResult, LLMExtractionResult } from "@/modules/reports/domain/entities/AIProcessing";
 import { fetchClient } from "@/core/api/httpClient";
 
 export default class ApiReportRepository implements ReportRepository {
@@ -96,14 +97,39 @@ export default class ApiReportRepository implements ReportRepository {
     }
   }
 
-  async close(id: string | number): Promise<any> {
+  async archive(id: string | number, pdfBlob?: Blob): Promise<any> {
     try {
-      const raw = await fetchClient(`/reports/${id}/close`, {
+      if (pdfBlob) {
+        const formData = new FormData();
+        formData.append("pdf", pdfBlob, "informe.pdf");
+
+        const token = localStorage.getItem("access_token");
+        const response = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/reports/${id}/archive`,
+          {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: formData,
+          },
+        );
+        if (!response.ok) {
+          const body = await response.json().catch(() => null);
+          throw { status: response.status, body };
+        }
+        const raw = await response.json();
+        return this.normalizeReport(raw);
+      }
+
+      // Fallback: no PDF blob (legacy behavior for signed-only download)
+      const raw = await fetchClient(`/reports/${id}/archive`, {
         method: "POST",
       });
       return this.normalizeReport(raw);
     } catch (err) {
-      throw new Error("Error al cerrar el informe");
+      throw new Error("Error al archivar el informe");
     }
   }
 
@@ -125,12 +151,57 @@ export default class ApiReportRepository implements ReportRepository {
 
   async downloadPdf(id: string | number): Promise<Blob> {
     try {
-      return await fetchClient(`/reports/${id}/pdf`, {
+      const token = localStorage.getItem("access_token");
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/reports/${id}/pdf`, {
         method: "GET",
-        headers: { Accept: "application/pdf" },
+        headers: {
+          Accept: "application/pdf",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
       });
+      if (!response.ok) throw new Error("Error al generar el PDF");
+      return await response.blob();
     } catch (err) {
       throw new Error("Error al generar el PDF. Intente nuevamente.");
+    }
+  }
+
+  async transcribe(
+    reportId: string | number,
+    formData: FormData,
+    options?: TranscribeOptions,
+  ): Promise<TranscriptionResult> {
+    try {
+      const timeout = 120000; // 2 minutes for audio uploads
+      const raw = await fetchClient(`/reports/${reportId}/transcribe`, {
+        method: "POST",
+        body: formData,
+        timeout,
+      });
+      return raw.data ?? raw;
+    } catch (err: any) {
+      if (err && (err.status === 422 || err.status === 413)) throw err;
+      throw new Error("Error al transcribir el audio");
+    }
+  }
+
+  async extractData(
+    reportId: string | number,
+    transcript: string,
+    templateId: string | number,
+  ): Promise<LLMExtractionResult> {
+    try {
+      const raw = await fetchClient(`/reports/${reportId}/extract-data`, {
+        method: "POST",
+        body: JSON.stringify({
+          transcript,
+          template_id: templateId,
+        }),
+      });
+      return raw.data ?? raw;
+    } catch (err: any) {
+      if (err && err.status === 422) throw err;
+      throw new Error("Error al extraer datos del informe");
     }
   }
 }

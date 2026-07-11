@@ -42,3 +42,44 @@ const interpolatedContent = computed(() => {
   color: #1f2937;
 }
 </style>
+
+<style>
+.fixed-text-renderer h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 0.5em 0 0.25em;
+}
+
+.fixed-text-renderer h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0.5em 0 0.25em;
+}
+
+.fixed-text-renderer h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0.5em 0 0.25em;
+}
+
+.fixed-text-renderer strong {
+  font-weight: 600;
+}
+
+.fixed-text-renderer em {
+  font-style: italic;
+}
+
+.fixed-text-renderer ul,
+.fixed-text-renderer ol {
+  padding-left: 1.5rem;
+  margin: 0.25em 0;
+}
+
+.fixed-text-renderer li {
+  margin: 0.125em 0;
+}
+</style>

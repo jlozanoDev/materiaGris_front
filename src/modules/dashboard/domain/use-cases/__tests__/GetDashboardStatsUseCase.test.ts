@@ -12,6 +12,7 @@ function createMockRepo(): DashboardRepository {
     getPatientsCount: vi.fn(),
     getTemplatesCount: vi.fn(),
     getReportsByStatus: vi.fn(),
+    getWeather: vi.fn(),
   };
 }
 
@@ -75,5 +76,32 @@ describe('GetDashboardStatsUseCase', () => {
     expect(result.visits).toBe(2);
     expect(result.newPatients).toBe(1);
     expect(result.returningPatients).toBe(1);
+  });
+
+  it('returns totalPatients when getPatientsCount() resolves', async () => {
+    const range = todayRange();
+    (repo.getStats as any).mockResolvedValue({ data: [] });
+    (repo.getPatientsCount as any).mockResolvedValue(42);
+
+    const result = await useCase.execute(range);
+
+    expect(result.totalPatients).toBe(42);
+  });
+
+  it('returns totalPatients alongside non-zero stats', async () => {
+    const range = todayRange();
+    const patients = [
+      { id: 1, created_at: '2026-06-30T10:00:00', last_visit_at: '2026-06-30T10:00:00' },
+      { id: 2, created_at: '2026-06-30T11:00:00', last_visit_at: '2026-06-30T11:00:00' },
+    ];
+    (repo.getStats as any).mockResolvedValue({ data: patients });
+    (repo.getPatientsCount as any).mockResolvedValue(100);
+
+    const result = await useCase.execute(range);
+
+    expect(result.visits).toBe(2);
+    expect(result.newPatients).toBe(2);
+    expect(result.returningPatients).toBe(0);
+    expect(result.totalPatients).toBe(100);
   });
 });

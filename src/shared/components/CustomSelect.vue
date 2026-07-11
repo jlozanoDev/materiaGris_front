@@ -31,7 +31,7 @@
       <div
         v-if="open"
         ref="dropdownRef"
-        class="fixed z-[9999] bg-white rounded-xl shadow-lg border border-[rgba(124,58,237,0.10)] py-1 overflow-y-auto"
+        class="fixed z-[2147483003] bg-white rounded-xl shadow-lg border border-[rgba(124,58,237,0.10)] py-1 overflow-y-auto"
         :style="dropdownStyle"
         @mousedown.prevent
       >

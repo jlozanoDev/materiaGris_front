@@ -1,20 +1,39 @@
 <script setup lang="ts">
 import logoSvg from '@/assets/logo-materiagris.svg'
 import type { DashboardStats } from "@/modules/dashboard/domain/entities/DashboardStats";
+import type { WeatherData } from "@/modules/dashboard/domain/entities/WeatherData";
+import WeatherDisplay from "@/modules/dashboard/presentation/components/WeatherDisplay.vue";
+import CitySelector from "@/modules/dashboard/presentation/components/CitySelector.vue";
 
 interface Props {
   stats?: DashboardStats | null;
   loading?: boolean;
   error?: string | null;
   userName?: string;
+  isEmptyState?: boolean;
+  isNewProfessional?: boolean;
+  weatherData?: WeatherData | null;
+  weatherLoading?: boolean;
+  weatherError?: string | null;
+  showCitySelector?: boolean;
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   stats: null,
   loading: false,
   error: null,
   userName: "Usuario",
+  isEmptyState: false,
+  isNewProfessional: false,
+  weatherData: null,
+  weatherLoading: false,
+  weatherError: null,
+  showCitySelector: false,
 });
+
+const emit = defineEmits<{
+  (e: "select-city", payload: { lat: number; lon: number; name: string }): void;
+}>();
 </script>
 
 <template>
@@ -51,6 +70,38 @@ const props = withDefaults(defineProps<Props>(), {
           </div>
         </div>
 
+        <!-- Empty state (new professional variant) -->
+        <div v-else-if="stats && isEmptyState && isNewProfessional" class="mt-5 max-w-md">
+          <p class="text-xl font-semibold text-white/95">Comienza a construir tu consulta</p>
+          <ul class="mt-3 space-y-2 text-sm text-white/80">
+            <li class="flex items-start gap-2">
+              <span class="mt-0.5 text-white/60">•</span>
+              <span>Registra tu primer paciente — añade sus datos clínicos y antecedentes</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="mt-0.5 text-white/60">•</span>
+              <span>Crea una plantilla de informe para agilizar tu práctica diaria</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="mt-0.5 text-white/60">•</span>
+              <span>Explora el panel de administración para configurar tu consulta</span>
+            </li>
+          </ul>
+          <p class="mt-4 text-xs text-white/60">Cuando tengas actividad, aquí verás tus visitas y pacientes del día.</p>
+        </div>
+
+        <!-- Empty state (slow day variant) -->
+        <div v-else-if="stats && isEmptyState" class="mt-5 max-w-md">
+          <p class="text-xl font-semibold text-white/95">Hoy no hay actividad registrada</p>
+          <p class="mt-2 text-sm text-white/75">
+            Tienes <strong>{{ stats.totalPatients }}</strong> paciente{{ stats.totalPatients !== 1 ? 's' : '' }} registrado{{ stats.totalPatients !== 1 ? 's' : '' }}.
+            Vuelve más tarde para ver las estadísticas del día.
+          </p>
+          <p class="mt-3 text-xs text-white/60">
+            Los datos de visitas, nuevos pacientes y retornos aparecerán aquí cuando haya movimiento.
+          </p>
+        </div>
+
         <!-- Stats data -->
         <template v-else-if="stats">
           <div class="mt-5">
@@ -83,29 +134,18 @@ const props = withDefaults(defineProps<Props>(), {
         </template>
       </div>
 
-      <!-- Right: weather icon -->
-      <div class="flex flex-shrink-0 items-center justify-center h-20 w-36 relative">
-        <div class="flex items-center gap-3">
-          <!-- Sun+Cloud SVG -->
-          <svg
-            viewBox="0 0 64 64"
-            class="h-12 w-12 text-white/90"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-          >
-            <g fill="currentColor" class="text-yellow-300">
-              <circle cx="20" cy="20" r="8" />
-            </g>
-            <g fill="currentColor" class="text-white/90">
-              <path d="M44 32a10 10 0 00-9.5-9.995A8 8 0 1030 40h14a6 6 0 000-8z" />
-            </g>
-          </svg>
-          <div class="text-right">
-            <div class="text-2xl font-bold">22°C</div>
-            <div class="text-xs text-white/70">Soleado</div>
-          </div>
-        </div>
+      <!-- Right: weather -->
+      <div class="flex flex-col items-end gap-2 flex-shrink-0">
+        <WeatherDisplay
+          :weather-data="weatherData"
+          :loading="weatherLoading"
+          :error="weatherError"
+        />
+        <CitySelector
+          v-if="showCitySelector"
+          class="w-72"
+          @city-selected="(payload) => emit('select-city', payload)"
+        />
       </div>
     </div>
   </div>

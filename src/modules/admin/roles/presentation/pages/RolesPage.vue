@@ -4,7 +4,7 @@ import AppSidebar from "@/shared/components/AppSidebar.vue";
 import TopBar from "@/shared/components/TopBar.vue";
 import Breadcrumb from "@/shared/components/Breadcrumb.vue";
 import Modal from "@/shared/components/Modal.vue";
-import EditUserModal from "@/modules/admin/users/presentation/components/EditUserModal.vue";
+import ProfileEditModal from "@/modules/admin/users/presentation/components/ProfileEditModal.vue";
 import ChangePasswordModal from "@/shared/components/ChangePasswordModal.vue";
 import AddressesModal from "@/shared/components/AddressesModal.vue";
 import { useAuthStore } from "@/core/store/auth";
@@ -324,7 +324,7 @@ onMounted(async () => {
                 :columns="columns"
                 :paginator="true"
                 :rows="10"
-                :rows-per-page-options="[5, 10, 25, 50]"
+
               >
                 <template #body-name="{ data }">
                   <div class="px-3 py-2">
@@ -515,7 +515,7 @@ onMounted(async () => {
     </div>
   </div>
 
-  <EditUserModal
+  <ProfileEditModal
     :show="showProfileEditModal"
     :user="authStore.user"
     @close="showProfileEditModal = false"

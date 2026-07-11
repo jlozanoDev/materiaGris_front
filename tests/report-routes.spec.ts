@@ -24,15 +24,15 @@ describe('Report Route Definitions', () => {
     expect(r.meta.permissions).toBe('admin.reporttemplate.view')
   })
 
-  it('defines /admin/report-templates/nuevo route with admin.reporttemplate.create', () => {
-    const r = allRoutes.find((rt: any) => rt.path === '/admin/report-templates/nuevo')
+  it('defines /admin/report-templates/new route with admin.reporttemplate.create', () => {
+    const r = allRoutes.find((rt: any) => rt.path === '/admin/report-templates/new')
     expect(r).toBeDefined()
     expect(r.meta.requiresAuth).toBe(true)
     expect(r.meta.permissions).toBe('admin.reporttemplate.create')
   })
 
-  it('defines /admin/report-templates/:id/editar route with admin.reporttemplate.update', () => {
-    const r = allRoutes.find((rt: any) => rt.path === '/admin/report-templates/:id/editar')
+  it('defines /admin/report-templates/:id/edit route with admin.reporttemplate.update', () => {
+    const r = allRoutes.find((rt: any) => rt.path === '/admin/report-templates/:id/edit')
     expect(r).toBeDefined()
     expect(r.meta.requiresAuth).toBe(true)
     expect(r.meta.permissions).toBe('admin.reporttemplate.update')
@@ -52,15 +52,15 @@ describe('Report Route Definitions', () => {
     expect(r.meta.permissions).toBe('report.view')
   })
 
-  it('defines /reports/:id/editar route with report.edit permission (array)', () => {
-    const r = allRoutes.find((rt: any) => rt.path === '/reports/:id/editar')
+  it('defines /reports/:id/edit route with report.edit permission (array)', () => {
+    const r = allRoutes.find((rt: any) => rt.path === '/reports/:id/edit')
     expect(r).toBeDefined()
     expect(r.meta.requiresAuth).toBe(true)
     expect(r.meta.permissions).toEqual(['report.edit'])
   })
 
-  it('defines /pacientes/:id/informe/nuevo route with report.create', () => {
-    const r = allRoutes.find((rt: any) => rt.path === '/pacientes/:id/informe/nuevo')
+  it('defines /patients/:id/report/new route with report.create', () => {
+    const r = allRoutes.find((rt: any) => rt.path === '/patients/:id/report/new')
     expect(r).toBeDefined()
     expect(r.meta.requiresAuth).toBe(true)
     expect(r.meta.permissions).toBe('report.create')

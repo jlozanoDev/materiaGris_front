@@ -1,6 +1,6 @@
 <template>
   <header
-    class="flex items-center gap-4 px-5 py-3 bg-white/80 backdrop-blur-md rounded-2xl"
+    class="flex items-center gap-4 px-5 py-3 bg-white/80 backdrop-blur-md rounded-2xl relative z-10"
     style="box-shadow: 0 8px 32px rgba(30, 35, 80, 0.06); border: 1px solid rgba(124, 58, 237, 0.06);"
   >
     <!-- Search -->

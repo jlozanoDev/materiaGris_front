@@ -185,14 +185,14 @@ describe("ApiReportRepository — integration with fetchClient", () => {
     });
   });
 
-  describe("close", () => {
+  describe("archive", () => {
     it("returns normalized report", async () => {
       (fetchClient as any).mockResolvedValue(snakeCaseReport);
 
       const repo = createRepo();
-      const result = await repo.close("r1");
+      const result = await repo.archive("r1");
 
-      expect(fetchClient).toHaveBeenCalledWith("/reports/r1/close", expect.objectContaining({ method: "POST" }));
+      expect(fetchClient).toHaveBeenCalledWith("/reports/r1/archive", expect.objectContaining({ method: "POST" }));
       expect(result).toHaveProperty("templateStructureSnapshot");
       expect(result).toHaveProperty("patientId", 42);
     });

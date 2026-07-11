@@ -151,31 +151,6 @@ const readings = ref([
       </div>
     </div>
 
-    <!-- ── Próximos ───────────────────────────── -->
-    <div>
-      <div class="mb-3 flex items-center justify-between">
-        <h3 class="text-sm font-semibold" style="color: #0b0817;">Próximos</h3>
-        <button class="text-xs font-medium transition" style="color: #7c3aed;">
-          Ver todo
-        </button>
-      </div>
-      <div
-        class="flex items-start gap-3 p-3 rounded-2xl"
-        style="background: rgba(124, 58, 237, 0.06); border: 1px solid rgba(124, 58, 237, 0.10);"
-      >
-        <div
-          class="h-8 w-8 flex-shrink-0 rounded-full flex items-center justify-center text-white text-sm font-bold"
-          style="background: #7c3aed;"
-        >
-          M
-        </div>
-        <div>
-          <p class="text-xs font-semibold" style="color: #0b0817;">Reunión mensual de doctores</p>
-          <p class="mt-0.5 text-[11px]" style="color: #9690a8;">8 abril, 2026 · 16:00</p>
-        </div>
-      </div>
-    </div>
-
     <!-- ── Daily Reads ────────────────────────── -->
     <div>
       <h3 class="mb-3 text-sm font-semibold" style="color: #0b0817;">Lecturas diarias</h3>

@@ -23,7 +23,7 @@ Almacena el documento real e inmutable cumplimentado para un paciente específic
 * `id` (UUID / Primary Key)
 * `patient_id` (Foreign Key): Relación con el paciente.
 * `user_id` (Foreign Key): Relación con el médico / profesional autor.
-* `status` (Enum): `['borrador', 'firmado', 'cerrado']`.
+* `status` (Enum): `['borrador', 'firmado', 'archivado']`.
 * `template_structure_snapshot` (**JSON**): **Copia idéntica** del campo `structure` de la plantilla maestra en el microsegundo exacto en que el médico inició el informe.
 * `values` (**JSON**): Estructura llave-valor puramente con las respuestas dadas (`{"campo_id_1": "Valor", "campo_id_2": true}`).
 
@@ -106,11 +106,14 @@ El flujo de edición y bloqueo del informe clínico consta de tres etapas bien d
 
 ---
 
-### RF4: Motor de Impresión y Exportación a PDF
+### RF4: Motor de Impresión (Pendiente)
 
-* **Generación Servidor:** Laravel leerá la estructura clonada (`template_structure_snapshot`) y cruzará los datos con la colección de respuestas (`values`) para armar un documento HTML semántico antes de renderizar.
-* **Diseño Fluido y Adaptable:** Se evitará la maquetación mediante coordenadas fijas o absolutas. Se utilizarán reglas CSS fluidas para que las secciones y los párrafos empujen de forma orgánica el contenido. Si un campo de texto largo ocupa varias páginas, el sistema distribuirá el salto de página de manera limpia.
-* **Estructura Visual del PDF:**
+> **Estado:** La impresión cliente fue implementada parcialmente pero se deshabilitó para la entrega del TFM. Se retomará en una versión posterior.
+
+* **Generación Cliente (planeada):** El frontend renderizará el informe en un iframe oculto utilizando el componente `ReportPdfExport`, reutilizando el `template_structure_snapshot` y los `values` del informe firmado/archivado.
+* **Diálogo de Impresión del Navegador (planeado):** Al pulsar "Imprimir", el sistema mostrará un skeleton de carga mientras prepara el documento y luego invocará `window.print()` sobre el iframe, delegando la gestión de PDF al navegador del usuario.
+* **Diseño Fluido y Adaptable:** Se utilizarán reglas CSS fluidas para que las secciones y párrafos fluyan orgánicamente. Los campos opcionales vacíos se omitirán del documento impreso.
+* **Estructura Visual del Informe:**
     * **Cabecera:** Inserción automatizada del logotipo oficial de la clínica, información de contacto de la entidad y un bloque estructurado con los datos demográficos del paciente.
-    * **Cuerpo del Documento:** Secciones ordenadas cronológica y visualmente imitando el layout de columnas diseñado. Los campos opcionales que hayan quedado vacíos se omitirán del PDF para un diseño limpio.
-    * **Pie de Página:** Numeración dinámica automática (`Página X de Y`) y el área de validación con la **imagen de la firma digital** incrustada de forma clara y visible.
+    * **Cuerpo del Documento:** Secciones ordenadas cronológica y visualmente imitando el layout de columnas diseñado.
+    * **Pie de Página:** Área de validación con la **imagen de la firma digital** incrustada de forma clara y visible.

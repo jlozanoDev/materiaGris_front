@@ -8,6 +8,16 @@ Proceso completo de gestión de usuarios, roles y permisos del sistema por parte
 ```
 Administrador → Navega a /admin/
   │
+  ├── /admin/clinic — Configuración de Clínica
+  │     ├── Logo de la clínica (sección entre título y formulario)
+  │     │     ├── Drop zone + click-to-browse (PNG, JPG, SVG, WebP, máx. 5MB)
+  │     │     ├── Preview del logo actual con opción de eliminar
+  │     │     └── Al subir: validación cliente → upload → store actualizado → preview
+  │     └── Formulario de edición de datos institucionales
+  │           ├── Campos: nombre, dirección, teléfono, email, ciudad, provincia, CP, web, CUIT
+  │           ├── Validación en tiempo real (email, URL)
+  │           └── Guardar → toast de éxito → datos reflejados en informes
+  │
   ├── /admin/users — Gestión de Usuarios
   │     ├── Listado de usuarios
   │     │     └── Filtros (futuro: por rol, activo/inactivo)

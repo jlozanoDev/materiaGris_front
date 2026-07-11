@@ -217,21 +217,37 @@
         Tipo de campo no soportado: {{ field.type }}
       </div>
     </template>
+
+    <!-- AI Review inline -->
+    <div v-if="aiReview && !isDisabled" class="mt-2">
+      <AIReviewField
+        :review="aiReview"
+        @accept="aiAcceptField?.(aiReview.fieldKey)"
+        @reject="aiRejectField?.(aiReview.fieldKey)"
+        @edit="(_key: string, value: unknown) => aiEditField?.(aiReview!.fieldKey, value)"
+      />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { FieldConfig } from '@/shared/types'
+import type { FieldReview } from '@/modules/reports/domain/entities/AIProcessing'
 import CustomSelect from '@/shared/components/CustomSelect.vue'
 import DynamicTable from './DynamicTable.vue'
 import FixedTextRenderer from './FixedTextRenderer.vue'
+import AIReviewField from './AIReviewField.vue'
 
 interface Props {
   field: FieldConfig
   modelValue: unknown
   disabled: boolean
   variableResolver?: (text: string) => string
+  aiReview?: FieldReview | null
+  aiAcceptField?: (key: string) => void
+  aiRejectField?: (key: string) => void
+  aiEditField?: (key: string, value: unknown) => void
 }
 
 const props = defineProps<Props>()
@@ -362,5 +378,19 @@ function optionLabels(val: unknown): string {
 }
 .dynamic-field__unsupported {
   @apply rounded-md border border-yellow-300 bg-yellow-50 px-3 py-2 text-sm text-yellow-700;
+}
+
+/* Multi select: remove default listbox appearance so .form-input takes full effect */
+.dynamic-field select[multiple] {
+  -webkit-appearance: none;
+  appearance: none;
+  min-height: 120px;
+}
+.dynamic-field select[multiple] option {
+  padding: 6px 8px;
+}
+.dynamic-field select[multiple] option:checked {
+  background-color: rgba(124, 58, 237, 0.12);
+  color: #0b0817;
 }
 </style>

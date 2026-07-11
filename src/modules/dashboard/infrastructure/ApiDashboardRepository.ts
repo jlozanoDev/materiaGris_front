@@ -1,7 +1,9 @@
 import { fetchClient } from "@/core/api/httpClient";
 import type { DashboardRepository } from "@/modules/dashboard/domain/repositories/DashboardRepository";
 import type { DateRange } from "@/modules/dashboard/domain/entities/types";
+import type { WeatherData } from "@/modules/dashboard/domain/entities/WeatherData";
 import type { PendingReport } from "@/modules/dashboard/domain/entities/PendingReport";
+import { wmoCodeMapper } from "@/shared/utils/wmoCodeMapper";
 
 export default class ApiDashboardRepository implements DashboardRepository {
   async getStats(range: DateRange): Promise<{ data: any[] }> {
@@ -58,6 +60,36 @@ export default class ApiDashboardRepository implements DashboardRepository {
     const res = await fetchClient(`/reports?status=${status}`, { ignoreForbidden: true });
     const reports = Array.isArray(res) ? res : res?.data ?? [];
     return reports.length;
+  }
+
+  async getWeather(lat: number, lon: number): Promise<WeatherData> {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&timezone=auto`;
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+    try {
+      const response = await fetch(url, { signal: controller.signal });
+
+      if (!response.ok) {
+        throw new Error(`Open-Meteo responded with status ${response.status}`);
+      }
+
+      const data = await response.json();
+      const current = data.current;
+      const temperature = Math.round(current.temperature_2m);
+      const wmoCode = current.weather_code;
+      const mapped = wmoCodeMapper(wmoCode);
+
+      return {
+        temperature,
+        description: mapped.description,
+        wmoCode,
+        iconName: mapped.iconName,
+      };
+    } finally {
+      clearTimeout(timeoutId);
+    }
   }
 
   private async fetchPatients(range: DateRange): Promise<any[]> {

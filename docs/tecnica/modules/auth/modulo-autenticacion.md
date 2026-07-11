@@ -39,8 +39,8 @@ Las 3 páginas de autenticación (Login, ForgotPassword, ResetPassword) comparte
 
 | Propiedad/Acción | Tipo | Descripción |
 |-----------------|------|-------------|
-| `user` | `ref` | Usuario autenticado (roles, permisos). Persiste en localStorage |
-| `fetchUser()` | async | Obtiene datos del usuario via `GET /api/me` |
+| `user` | `ref` | Usuario autenticado (roles, permisos, datos profesionales). Persiste en localStorage |
+| `fetchUser()` | async | Obtiene datos del usuario via `GET /api/me`. Incluye nuevos campos: `apellido`, `num_colegiado`, `especialidad`, `telefono` (todos nullable) |
 | `clearUser()` | fn | Limpia usuario y token del store/localStorage |
 | `hasPermission(slug)` | fn | Verifica permiso individual (soporta mapa, array, objetos) |
 | `hasPermissions(slugs, mode)` | fn | Verifica múltiples permisos con modo `any`/`all` |

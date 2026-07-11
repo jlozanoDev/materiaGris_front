@@ -34,12 +34,6 @@ describe('RightPanel', () => {
     })
   })
 
-  it('renders "Próximos" section', () => {
-    const wrapper = mount(RightPanel)
-    expect(wrapper.text()).toContain('Próximos')
-    expect(wrapper.text()).toContain('Ver todo')
-    expect(wrapper.text()).toContain('Reunión mensual de doctores')
-  })
 
   it('renders "Lecturas diarias" section with multiple articles', () => {
     const wrapper = mount(RightPanel)

@@ -164,8 +164,8 @@ describe('Shared Types — Report Template Structure', () => {
     expect(template.updatedAt).toBeUndefined()
   })
 
-  it('ReportStatus union accepts draft, signed, closed', () => {
-    const statuses: ReportStatus[] = ['draft', 'signed', 'closed']
+  it('ReportStatus union accepts draft, signed, archived', () => {
+    const statuses: ReportStatus[] = ['draft', 'signed', 'archived']
     expect(statuses).toHaveLength(3)
   })
 

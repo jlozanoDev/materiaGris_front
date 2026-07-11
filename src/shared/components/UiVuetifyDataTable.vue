@@ -5,7 +5,6 @@
     v-model:sort-by="sortBy"
     :headers="vuetifyHeaders"
     :items="value"
-    :items-per-page-options="paginator ? rowsPerPageOptions : []"
     :no-data-text="emptyText"
     :class="['app-vuetify-datatable', { 'striped-rows': stripedRows }]"
     density="compact"
@@ -70,14 +69,6 @@
           density="compact"
           class="flex items-center gap-1"
         ></v-pagination>
-        <div class="flex items-center gap-3">
-          <label for="rowsPerPageSelect" class="sr-only">Filas por página</label>
-          <CustomSelect
-            v-model="internalRowsPerPage"
-            :options="rowsPerPageOptions"
-            class="w-auto"
-          />
-        </div>
       </div>
     </template>
   </v-data-table>
@@ -85,7 +76,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import CustomSelect from "@/shared/components/CustomSelect.vue";
+
 
 interface ColumnDef {
   key?: string;
@@ -111,7 +102,6 @@ interface Props {
   sortMode?: string | null;
   paginator?: boolean;
   rows?: number;
-  rowsPerPageOptions?: number[];
   emptyText?: string;
   stripedRows?: boolean;
   showGridlines?: boolean;
@@ -134,7 +124,6 @@ const props = withDefaults(defineProps<Props>(), {
   sortMode: null,
   paginator: false,
   rows: 10,
-  rowsPerPageOptions: () => [10, 25, 50],
   emptyText: "No hay datos.",
   stripedRows: true,
   showGridlines: false,

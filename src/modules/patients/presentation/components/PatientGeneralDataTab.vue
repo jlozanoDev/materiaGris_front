@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, reactive, watch } from "vue";
 import CustomSelect from "@/shared/components/CustomSelect.vue";
 
 interface PatientFormData {
@@ -40,6 +40,16 @@ const emit = defineEmits<{
 
 const contactOpen = ref(false);
 const addressOpen = ref(false);
+
+const form = reactive<PatientFormData>({ ...props.patient });
+
+watch(
+  () => props.patient,
+  (newVal) => {
+    Object.assign(form, newVal);
+  },
+  { deep: true }
+);
 </script>
 
 <template>
@@ -49,7 +59,7 @@ const addressOpen = ref(false);
       <form
         id="patient-form"
         class="space-y-4"
-        @submit.prevent="emit('save', { ...patient })"
+        @submit.prevent="emit('save', { ...form })"
       >
         <!-- Identificación -->
         <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
@@ -62,7 +72,7 @@ const addressOpen = ref(false);
                 >NHC</label
               >
               <input
-                v-model="patient.medical_record_number"
+                v-model="form.medical_record_number"
                 placeholder="NHC"
                 class="w-full rounded-xl bg-slate-50 pl-4 pr-4 py-2 text-sm text-slate-700 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition"
               />
@@ -72,7 +82,7 @@ const addressOpen = ref(false);
                 >DNI</label
               >
               <input
-                v-model="patient.national_id"
+                v-model="form.national_id"
                 placeholder="DNI"
                 class="w-full rounded-xl bg-slate-50 pl-4 pr-4 py-2 text-sm text-slate-700 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition"
               />
@@ -82,7 +92,7 @@ const addressOpen = ref(false);
                 >Aseguradora (ID)</label
               >
               <input
-                v-model="patient.insurance_id"
+                v-model="form.insurance_id"
                 type="number"
                 placeholder="ID"
                 class="w-full rounded-xl bg-slate-50 pl-3 pr-3 py-2 text-sm text-slate-700 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition"
@@ -100,7 +110,7 @@ const addressOpen = ref(false);
                 >Nombre</label
               >
               <input
-                v-model="patient.first_name"
+                v-model="form.first_name"
                 required
                 placeholder="Nombre"
                 class="w-full rounded-xl bg-slate-50 pl-4 pr-4 py-2 text-sm text-slate-700 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition"
@@ -111,7 +121,7 @@ const addressOpen = ref(false);
                 >Primer apellido</label
               >
               <input
-                v-model="patient.last_name"
+                v-model="form.last_name"
                 required
                 placeholder="Primer apellido"
                 class="w-full rounded-xl bg-slate-50 pl-4 pr-4 py-2 text-sm text-slate-700 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition"
@@ -122,7 +132,7 @@ const addressOpen = ref(false);
                 >Segundo apellido</label
               >
               <input
-                v-model="patient.second_last_name"
+                v-model="form.second_last_name"
                 placeholder="Segundo apellido"
                 class="w-full rounded-xl bg-slate-50 pl-4 pr-4 py-2 text-sm text-slate-700 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition"
               />
@@ -133,7 +143,7 @@ const addressOpen = ref(false);
                 >Género</label
               >
               <CustomSelect
-                v-model="patient.gender"
+                v-model="form.gender"
                 :options="[
                   { value: '', label: 'Todos' },
                   { value: 'M', label: 'M' },
@@ -147,7 +157,7 @@ const addressOpen = ref(false);
                 >Fecha de nacimiento</label
               >
               <input
-                v-model="patient.date_of_birth"
+                v-model="form.date_of_birth"
                 type="date"
                 class="w-full rounded-xl bg-slate-50 pl-3 pr-3 py-2 text-sm text-slate-700 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition"
               />
@@ -157,7 +167,7 @@ const addressOpen = ref(false);
                 >Última visita</label
               >
               <input
-                v-model="patient.last_visit_at"
+                v-model="form.last_visit_at"
                 type="date"
                 class="w-full rounded-xl bg-slate-50 pl-3 pr-3 py-2 text-sm text-slate-700 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition"
               />
@@ -194,7 +204,7 @@ const addressOpen = ref(false);
                   >Email</label
                 >
                 <input
-                  v-model="patient.email"
+                  v-model="form.email"
                   type="email"
                   placeholder="email@ejemplo.test"
                   class="w-full rounded-xl bg-slate-50 pl-4 pr-4 py-2 text-sm text-slate-700 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition"
@@ -205,7 +215,7 @@ const addressOpen = ref(false);
                   >Teléfono</label
                 >
                 <input
-                  v-model="patient.phone"
+                  v-model="form.phone"
                   placeholder="Teléfono"
                   class="w-full rounded-xl bg-slate-50 pl-4 pr-4 py-2 text-sm text-slate-700 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition"
                 />
@@ -215,7 +225,7 @@ const addressOpen = ref(false);
                   >Móvil</label
                 >
                 <input
-                  v-model="patient.mobile"
+                  v-model="form.mobile"
                   placeholder="Móvil"
                   class="w-full rounded-xl bg-slate-50 pl-4 pr-4 py-2 text-sm text-slate-700 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition"
                 />
@@ -225,7 +235,7 @@ const addressOpen = ref(false);
                   >Contacto de emergencia</label
                 >
                 <input
-                  v-model="patient.contact_name"
+                  v-model="form.contact_name"
                   placeholder="Nombre contacto"
                   class="w-full rounded-xl bg-slate-50 pl-4 pr-4 py-2 text-sm text-slate-700 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition"
                 />
@@ -235,7 +245,7 @@ const addressOpen = ref(false);
                   >Teléfono contacto</label
                 >
                 <input
-                  v-model="patient.contact_phone"
+                  v-model="form.contact_phone"
                   placeholder="Teléfono contacto"
                   class="w-full rounded-xl bg-slate-50 pl-4 pr-4 py-2 text-sm text-slate-700 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition"
                 />
@@ -273,7 +283,7 @@ const addressOpen = ref(false);
                   >Dirección (línea 1)</label
                 >
                 <input
-                  v-model="patient.address_line1"
+                  v-model="form.address_line1"
                   placeholder="Calle, número"
                   class="w-full rounded-xl bg-slate-50 pl-4 pr-4 py-2 text-sm text-slate-700 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition"
                 />
@@ -283,7 +293,7 @@ const addressOpen = ref(false);
                   >Dirección (línea 2)</label
                 >
                 <input
-                  v-model="patient.address_line2"
+                  v-model="form.address_line2"
                   placeholder="Piso, puerta, etc."
                   class="w-full rounded-xl bg-slate-50 pl-4 pr-4 py-2 text-sm text-slate-700 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition"
                 />
@@ -293,7 +303,7 @@ const addressOpen = ref(false);
                   >Ciudad</label
                 >
                 <input
-                  v-model="patient.city"
+                  v-model="form.city"
                   placeholder="Ciudad"
                   class="w-full rounded-xl bg-slate-50 pl-4 pr-4 py-2 text-sm text-slate-700 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition"
                 />
@@ -303,7 +313,7 @@ const addressOpen = ref(false);
                   >Provincia/Estado</label
                 >
                 <input
-                  v-model="patient.state"
+                  v-model="form.state"
                   placeholder="Provincia/Estado"
                   class="w-full rounded-xl bg-slate-50 pl-4 pr-4 py-2 text-sm text-slate-700 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition"
                 />
@@ -313,7 +323,7 @@ const addressOpen = ref(false);
                   >Código postal</label
                 >
                 <input
-                  v-model="patient.postal_code"
+                  v-model="form.postal_code"
                   placeholder="Código postal"
                   class="w-full rounded-xl bg-slate-50 pl-4 pr-4 py-2 text-sm text-slate-700 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition"
                 />
@@ -323,7 +333,7 @@ const addressOpen = ref(false);
                   >Barrio</label
                 >
                 <input
-                  v-model="patient.neighborhood"
+                  v-model="form.neighborhood"
                   placeholder="Barrio"
                   class="w-full rounded-xl bg-slate-50 pl-4 pr-4 py-2 text-sm text-slate-700 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition"
                 />
@@ -333,7 +343,7 @@ const addressOpen = ref(false);
                   >País</label
                 >
                 <input
-                  v-model="patient.country"
+                  v-model="form.country"
                   placeholder="País"
                   class="w-full rounded-xl bg-slate-50 pl-4 pr-4 py-2 text-sm text-slate-700 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition"
                 />

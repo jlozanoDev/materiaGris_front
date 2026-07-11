@@ -207,6 +207,14 @@
         </template>
       </div>
     </div>
+
+    <!-- Signature image -->
+    <div
+      v-if="props.signatureUrl && hasFooter"
+      class="report-document__signature"
+    >
+      <img :src="props.signatureUrl" alt="Firma" class="report-document__signature-img" />
+    </div>
   </div>
 </template>
 
@@ -221,6 +229,8 @@ interface Props {
   headerEnabled?: boolean
   footerEnabled?: boolean
   values: Record<string, any>
+  variableResolver?: (text: string) => string
+  signatureUrl?: string | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -228,12 +238,6 @@ const props = withDefaults(defineProps<Props>(), {
   footerSections: () => [],
   headerEnabled: false,
   footerEnabled: false,
-})
-
-const today = new Date().toLocaleDateString('es-ES', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
 })
 
 const hasHeader = computed(() => props.headerEnabled && props.headerSections.length > 0)
@@ -265,11 +269,18 @@ function formatCellValue(val: unknown, type: string): string {
 }
 
 function interpolateContent(text: string): string {
-  // First substitute variables
-  const resolved = text.replace(/\{([^}]+)\}/g, (_match, path: string) => {
-    const value = previewResolve(path.trim())
-    return value ?? `{${path}}`
-  })
+  let resolved: string
+
+  if (props.variableResolver) {
+    // Variable resolver expects full text with {category.key} patterns
+    resolved = props.variableResolver(text)
+  } else {
+    // Fallback: resolve variables one by one using previewResolve
+    resolved = text.replace(/\{([^}]+)\}/g, (_match, path: string) => {
+      const value = previewResolve(path.trim())
+      return value ?? `{${path}}`
+    })
+  }
 
   // If content contains HTML tags (WYSIWYG output), render as rich text
   if (/<[a-zA-Z][^>]*>/.test(resolved)) {
@@ -295,8 +306,9 @@ const previewVars: Record<string, string> = {
   'paciente.edad': '42',
   'paciente.genero': 'Masculino',
   'paciente.identificacion': '8-888-888',
-  'clinica.nombre': 'Clínica Materia Gris',
+  'clinica.nombre': '{clinica.nombre}',
   'clinica.direccion': 'Av. Central 123, Panamá',
+  'clinica.logo': '',
   'fecha.hoy': new Date().toLocaleDateString('es-ES'),
   'fecha.actual': new Date().toLocaleDateString('es-ES'),
   'usuario.nombre': 'Dr. Carlos Rodríguez',
@@ -454,4 +466,54 @@ function rowStyle(row: { columns: { width?: number }[] }): Record<string, string
   @apply mt-4;
 }
 
+.report-document__signature {
+  @apply mt-6 flex justify-end;
+}
+
+.report-document__signature-img {
+  max-height: 80px;
+  max-width: 200px;
+}
+
+</style>
+
+<style>
+.report-document__fixed-text h1 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 0.5em 0 0.25em;
+}
+
+.report-document__fixed-text h2 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0.5em 0 0.25em;
+}
+
+.report-document__fixed-text h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0.5em 0 0.25em;
+}
+
+.report-document__fixed-text strong {
+  font-weight: 600;
+}
+
+.report-document__fixed-text em {
+  font-style: italic;
+}
+
+.report-document__fixed-text ul,
+.report-document__fixed-text ol {
+  padding-left: 1.5rem;
+  margin: 0.25em 0;
+}
+
+.report-document__fixed-text li {
+  margin: 0.125em 0;
+}
 </style>

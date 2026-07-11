@@ -4,7 +4,7 @@ import GetReportsUseCase from "@/modules/reports/domain/use-cases/GetReportsUseC
 import GetReportUseCase from "@/modules/reports/domain/use-cases/GetReportUseCase";
 import SaveReportDraftUseCase from "@/modules/reports/domain/use-cases/SaveReportDraftUseCase";
 import SignReportUseCase from "@/modules/reports/domain/use-cases/SignReportUseCase";
-import CloseReportUseCase from "@/modules/reports/domain/use-cases/CloseReportUseCase";
+import ArchiveReportUseCase from "@/modules/reports/domain/use-cases/ArchiveReportUseCase";
 import DownloadReportPdfUseCase from "@/modules/reports/domain/use-cases/DownloadReportPdfUseCase";
 import type { ReportRepository } from "@/modules/reports/domain/repositories/ReportRepository";
 
@@ -19,10 +19,12 @@ function createMockRepo(): ReportRepository {
     getById: vi.fn(),
     saveDraft: vi.fn(),
     sign: vi.fn(),
-    close: vi.fn(),
+    archive: vi.fn(),
     delete: vi.fn(),
     downloadPdf: vi.fn(),
     getActiveTemplates: vi.fn(),
+    transcribe: vi.fn(),
+    extractData: vi.fn(),
   };
 }
 
@@ -199,28 +201,28 @@ describe("SignReportUseCase", () => {
 });
 
 // ============================================================================
-// CloseReportUseCase
+// ArchiveReportUseCase
 // ============================================================================
 
-describe("CloseReportUseCase", () => {
-  it("calls repository.close() with the given id", async () => {
+describe("ArchiveReportUseCase", () => {
+  it("calls repository.archive() with the given id", async () => {
     const repo = createMockRepo();
-    const expected = { id: "1", status: "closed" };
-    (repo.close as any).mockResolvedValue(expected);
+    const expected = { id: "1", status: "archived" };
+    (repo.archive as any).mockResolvedValue(expected);
 
-    const useCase = new CloseReportUseCase(repo);
+    const useCase = new ArchiveReportUseCase(repo);
     const result = await useCase.execute("1");
 
-    expect(repo.close).toHaveBeenCalledWith("1");
+    expect(repo.archive).toHaveBeenCalledWith("1", undefined);
     expect(result).toEqual(expected);
   });
 
   it("propagates repository error", async () => {
     const repo = createMockRepo();
-    (repo.close as any).mockRejectedValue(new Error("Close failed"));
+    (repo.archive as any).mockRejectedValue(new Error("Archive failed"));
 
-    const useCase = new CloseReportUseCase(repo);
-    await expect(useCase.execute("1")).rejects.toThrow("Close failed");
+    const useCase = new ArchiveReportUseCase(repo);
+    await expect(useCase.execute("1")).rejects.toThrow("Archive failed");
   });
 });
 

@@ -11,6 +11,7 @@ function createMockRepo(): DashboardRepository {
     getPatientsCount: vi.fn(),
     getTemplatesCount: vi.fn(),
     getReportsByStatus: vi.fn(),
+    getWeather: vi.fn(),
   };
 }
 
@@ -30,7 +31,7 @@ describe('GetSystemMetricsUseCase', () => {
     (repo.getReportsByStatus as any).mockImplementation(async (status: string) => {
       if (status === 'draft') return 3;
       if (status === 'signed') return 12;
-      if (status === 'closed') return 8;
+      if (status === 'archived') return 8;
       return 0;
     });
 
@@ -41,7 +42,7 @@ describe('GetSystemMetricsUseCase', () => {
       totalPatients: 120,
       totalPendingReports: 3,
       totalSignedReports: 12,
-      totalClosedReports: 8,
+      totalArchivedReports: 8,
       totalTemplates: 5,
     });
   });
@@ -59,7 +60,7 @@ describe('GetSystemMetricsUseCase', () => {
       totalPatients: null,
       totalPendingReports: null,
       totalSignedReports: null,
-      totalClosedReports: null,
+      totalArchivedReports: null,
       totalTemplates: null,
     });
   });

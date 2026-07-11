@@ -18,6 +18,17 @@
                   {{ title }}
                 </h3>
               </div>
+              <button
+                type="button"
+                class="modal-close-btn"
+                aria-label="Cerrar"
+                @click="emit('close')"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
             </div>
           </div>
 
@@ -27,6 +38,9 @@
 
           <div v-if="$slots.footer" class="modal-footer">
             <slot name="footer" />
+          </div>
+          <div v-else class="modal-footer">
+            <button type="button" class="btn btn-ghost" @click="emit('close')">Cerrar</button>
           </div>
         </div>
       </div>
@@ -132,5 +146,23 @@ onUnmounted(() => {
 }
 .modal-header {
   padding-bottom: 0.25rem;
+}
+.modal-close-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  color: #9690a8;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.modal-close-btn:hover {
+  background: #f5f3ff;
+  color: #7c3aed;
 }
 </style>

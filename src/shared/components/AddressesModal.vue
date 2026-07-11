@@ -50,7 +50,7 @@
       :columns="columns"
       :paginator="true"
       :rows="10"
-      :rows-per-page-options="[5, 10, 25, 50]"
+
     >
       <template #body-alias="{ data }">
         <div class="px-3 py-2 text-sm font-medium text-[#0b0817]">

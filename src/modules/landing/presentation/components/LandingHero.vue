@@ -64,24 +64,6 @@ useParticleNetwork(canvasRef)
           <p class="leading-[1.625]" style="font-size: 18px; line-height: 1.6; color: #9690a8; max-width: 56ch; margin-bottom: 32px;">
             Diagnóstico asistido, informes inteligentes y gestión integral del paciente en una sola plataforma.
           </p>
-
-          <!-- CTAs -->
-          <div class="flex flex-wrap gap-3">
-            <button
-              class="inline-flex items-center gap-2 font-semibold text-white transition"
-              style="padding: 12px 24px; border-radius: 10px; font-size: 15px; letter-spacing: -0.005em; background: #7c3aed; box-shadow: 0 1px 12px rgba(124, 58, 237, 0.30);"
-              @click="emit('demo')"
-            >
-              Solicitar demo gratuita
-            </button>
-            <button
-              class="inline-flex items-center gap-2 font-medium transition hover:bg-white/5"
-              style="padding: 12px 24px; border-radius: 10px; font-size: 15px; letter-spacing: -0.005em; background: transparent; color: #e8e4f0; border: 1px solid rgba(255, 255, 255, 0.10);"
-              @click="emit('viewPlatform')"
-            >
-              Ver plataforma
-            </button>
-          </div>
         </div>
       </div>
     </div>

@@ -32,7 +32,7 @@ function formatDate(iso: string): string {
     <!-- Header with badge -->
     <div class="flex items-center justify-between mb-4">
       <div class="flex items-center gap-2">
-        <h3 class="text-base font-semibold text-slate-800">Reportes pendientes</h3>
+        <h3 class="text-base font-semibold text-slate-800">Informes pendientes</h3>
         <span
           v-if="!loading && reports.length > 0"
           class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700"
@@ -60,7 +60,7 @@ function formatDate(iso: string): string {
       v-else-if="reports.length === 0"
       class="py-8 text-center text-sm text-slate-400"
     >
-      Sin reportes pendientes
+      Sin Informes pendientes
     </div>
 
     <!-- Report list -->

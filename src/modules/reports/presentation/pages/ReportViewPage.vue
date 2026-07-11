@@ -50,15 +50,15 @@
                   Editar
                 </button>
 
-                <!-- Descargar PDF (solo si signed/closed + permiso) -->
+                <!-- Imprimir (deshabilitado temporalmente) -->
                 <button
-                  v-if="canDownloadPdf && (report.status === 'signed' || report.status === 'closed')"
+                  v-if="false"
                   type="button"
                   class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                  @click="handleDownloadPdf"
+                  @click="handlePrint"
                 >
-                  <i class="pi pi-download text-xs"></i>
-                  Descargar PDF
+                  <i class="pi pi-print text-xs"></i>
+                  Imprimir
                 </button>
 
                 <!-- Volver -->
@@ -88,6 +88,15 @@
       </main>
     </div>
   </div>
+
+  <!-- Printing skeleton overlay -->
+  <div
+    v-if="isPrinting"
+    class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/90 backdrop-blur-sm"
+  >
+    <div class="h-12 w-12 rounded-full border-4 border-slate-200 border-t-indigo-600 animate-spin" />
+    <p class="mt-4 text-sm font-medium text-slate-700">Preparando impresión...</p>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -106,16 +115,16 @@ const router = useRouter();
 const authStore = useAuthStore();
 const { logout } = useLogout();
 
-const { report, loadReport, downloadPdf } = useReportForm();
+const { report, loadReport, printReport, isPrinting } = useReportForm();
 
-const canDownloadPdf = computed(() => authStore.hasPermission("report.download-pdf"));
+const canPrint = computed(() => authStore.hasPermission("report.download-pdf"));
 const canEdit = computed(() => authStore.hasPermission("report.edit"));
 
-async function handleDownloadPdf(): Promise<void> {
+async function handlePrint(): Promise<void> {
   try {
-    await downloadPdf();
+    await printReport();
   } catch (e: any) {
-    alert(e.message || "Error al generar el PDF");
+    alert(e.message || "Error al preparar la impresión");
   }
 }
 

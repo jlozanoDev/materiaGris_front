@@ -105,6 +105,13 @@ Emits: `update:enabled`, `update:pageDisplay`
 - Cabecera y Pie muestran `HeaderFooterEditor` cuando están activos
 - `activeSections` reemplaza a `sections` en el renderizado del canvas
 - Los botones de preview/print pasan `headerSections`/`footerSections` a los modales
+- **Splitter redimensionable**: canvas ↔ panel de propiedades usa `<Splitpanes>` + `<Pane>`
+  - Paleta izquierda: `w-56` fijo, fuera del Splitpanes
+  - Canvas: `min-size="30"` (30% del espacio disponible)
+  - Propiedades: `min-size="20"` (~200px), `size` persistido en localStorage
+  - localStorage key: `report-template-builder-properties-width` (percentaje 20–50)
+  - Fallback: 25% cuando no hay valor almacenado o es inválido
+  - Barra divisora: 10px, transparente con hover púrpura (`rgba(124,58,237,0.2)`)
 
 ### ReportDocumentRenderer.vue
 

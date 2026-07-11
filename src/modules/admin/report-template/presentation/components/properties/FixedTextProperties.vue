@@ -11,9 +11,6 @@ import type { SystemVarDef } from '@/shared/types/SystemVariableRegistry'
 import {
   Bold,
   Italic,
-  Heading1,
-  Heading2,
-  Heading3,
   List,
   ListOrdered,
 } from 'lucide-vue-next'

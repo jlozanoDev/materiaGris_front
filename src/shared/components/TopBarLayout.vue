@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import TopBar from "@/shared/components/TopBar.vue";
 import EditUserModal from "@/modules/admin/users/presentation/components/EditUserModal.vue";
 import ChangePasswordModal from "@/shared/components/ChangePasswordModal.vue";
@@ -32,6 +32,7 @@ const showEditModal = ref<boolean>(false);
 const showChangePasswordModal = ref<boolean>(false);
 const showAddressesModal = ref<boolean>(false);
 const addresses = ref<Address[]>(loadAddresses());
+const userForEditModal = computed(() => authStore.user as unknown as Record<string, unknown>);
 
 function loadAddresses(): Address[] {
   try {
@@ -82,7 +83,7 @@ function onSaveAddresses(newAddresses: Address[]): void {
 
   <EditUserModal
     :show="showEditModal"
-    :user="authStore.user"
+    :user="userForEditModal"
     @close="showEditModal = false"
     @save="onSaveEdited"
   />

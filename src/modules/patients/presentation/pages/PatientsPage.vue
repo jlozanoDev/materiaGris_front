@@ -532,7 +532,7 @@ onMounted(async () => {
                   :columns="columns"
                   :paginator="true"
                   :rows="rows"
-                  :rows-per-page-options="[10, 25, 50, 100]"
+
                 >
                   <template #body-medical_record_number="{ data }">
                     <div class="px-3 py-2 text-sm">{{ data.medical_record_number }}</div>

@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
-import { useAuthStore } from '@/core/store/auth'
 import DynamicFormRenderer from '../DynamicFormRenderer.vue'
 import type { Section } from '@/shared/types'
+import type { FieldReview } from '@/modules/reports/domain/entities/AIProcessing'
 
 const mockSections: Section[] = [
   {
@@ -284,9 +284,6 @@ describe('DynamicFormRenderer', () => {
         props: { sections: mockSections, headerSections, modelValue: { ...mockValues, hdr_medico: 'Dr. Test' }, isEditable: true },
       })
       // The DynamicField in header zone receives disabled=true
-      const inputs = wrapper.findAll('input')
-      const medicoInput = inputs.find(i => i.attributes('aria-label') === undefined)
-      // Check that header zone inputs are among the disabled ones
       // All header/footer inputs are disabled even when isEditable is true
       expect(wrapper.html()).toContain('Médico')
     })
@@ -430,6 +427,186 @@ describe('DynamicFormRenderer', () => {
         },
       })
       expect(wrapper.text()).toContain('{hospital} Body')
+    })
+  })
+
+  describe('AI review integration', () => {
+    function makeReview(overrides: Partial<FieldReview> = {}): FieldReview {
+      return {
+        fieldKey: 'nombre',
+        fieldLabel: 'Nombre',
+        fieldType: 'text',
+        currentValue: '',
+        proposedValue: 'Juan Pérez',
+        confidence: 0.9,
+        confidenceLevel: 'high',
+        action: 'pending',
+        ...overrides,
+      }
+    }
+
+    it('renders AI warnings banner when aiHasWarnings is true', () => {
+      const wrapper = mount(DynamicFormRenderer, {
+        props: {
+          sections: mockSections,
+          modelValue: mockValues,
+          isEditable: true,
+          aiHasWarnings: true,
+          aiWarnings: ['Campo "Diagnóstico" no encontrado'],
+        },
+      })
+      expect(wrapper.text()).toContain('Advertencias de la IA')
+      expect(wrapper.text()).toContain('Campo "Diagnóstico" no encontrado')
+    })
+
+    it('does not render AI warnings banner when aiHasWarnings is false', () => {
+      const wrapper = mount(DynamicFormRenderer, {
+        props: {
+          sections: mockSections,
+          modelValue: mockValues,
+          isEditable: true,
+          aiHasWarnings: false,
+          aiWarnings: ['warning'],
+        },
+      })
+      expect(wrapper.text()).not.toContain('Advertencias de la IA')
+    })
+
+    it('renders Apply All toolbar when aiReviews and aiApplyAll are provided', () => {
+      const reviews = [makeReview()]
+      const applyAll = vi.fn()
+      const wrapper = mount(DynamicFormRenderer, {
+        props: {
+          sections: mockSections,
+          modelValue: mockValues,
+          isEditable: true,
+          aiReviews: reviews,
+          aiApplyAll: applyAll,
+        },
+      })
+      expect(wrapper.text()).toContain('campo pendiente de revisión')
+      const btn = wrapper.findAll('button').find((b) => b.text().includes('Aplicar todo'))
+      expect(btn).toBeDefined()
+    })
+
+    it('does not render Apply All toolbar when aiApplyAll is not provided', () => {
+      const reviews = [makeReview()]
+      const wrapper = mount(DynamicFormRenderer, {
+        props: {
+          sections: mockSections,
+          modelValue: mockValues,
+          isEditable: true,
+          aiReviews: reviews,
+        },
+      })
+      const btn = wrapper.findAll('button').find((b) => b.text().includes('Aplicar todo'))
+      expect(btn).toBeUndefined()
+    })
+
+    it('calls aiApplyAll when Apply All button is clicked', async () => {
+      const reviews = [makeReview()]
+      const applyAll = vi.fn()
+      const wrapper = mount(DynamicFormRenderer, {
+        props: {
+          sections: mockSections,
+          modelValue: mockValues,
+          isEditable: true,
+          aiReviews: reviews,
+          aiApplyAll: applyAll,
+        },
+      })
+      const btn = wrapper.findAll('button').find((b) => b.text().includes('Aplicar todo'))!
+      await btn.trigger('click')
+      expect(applyAll).toHaveBeenCalledTimes(1)
+    })
+
+    it('disables Apply All button when no pending fields', async () => {
+      const reviews = [makeReview({ action: 'accepted' })]
+      const applyAll = vi.fn()
+      const wrapper = mount(DynamicFormRenderer, {
+        props: {
+          sections: mockSections,
+          modelValue: mockValues,
+          isEditable: true,
+          aiReviews: reviews,
+          aiApplyAll: applyAll,
+        },
+      })
+      const btn = wrapper.findAll('button').find((b) => b.text().includes('Aplicar todo'))!
+      expect(btn.attributes('disabled')).toBeDefined()
+    })
+
+    it('renders AIReviewField inline for the matching form field', () => {
+      const reviews = [makeReview({ fieldKey: 'nombre', proposedValue: 'AI Proposed Name' })]
+      const wrapper = mount(DynamicFormRenderer, {
+        props: {
+          sections: mockSections,
+          modelValue: mockValues,
+          isEditable: true,
+          aiReviews: reviews,
+          aiAcceptField: vi.fn(),
+          aiRejectField: vi.fn(),
+          aiEditField: vi.fn(),
+        },
+      })
+      // AIReviewField renders proposed value
+      expect(wrapper.text()).toContain('AI Proposed Name')
+    })
+
+    it('does not render AIReviewField inline when isEditable is false', () => {
+      const reviews = [makeReview({ fieldKey: 'nombre', proposedValue: 'AI Proposed Name' })]
+      const wrapper = mount(DynamicFormRenderer, {
+        props: {
+          sections: mockSections,
+          modelValue: mockValues,
+          isEditable: false,
+          aiReviews: reviews,
+          aiAcceptField: vi.fn(),
+          aiRejectField: vi.fn(),
+          aiEditField: vi.fn(),
+        },
+      })
+      // Proposed AI value should NOT appear in disabled mode
+      expect(wrapper.text()).not.toContain('AI Proposed Name')
+    })
+
+    it('does not pass aiReview to header/footer read-only fields', () => {
+      const headerSections: Section[] = [
+        {
+          id: 'hdr-sec1',
+          label: 'Cabecera',
+          display: 'default',
+          rows: [
+            {
+              id: 'hdr-row1',
+              columns: [
+                {
+                  id: 'hdr-col1',
+                  label: 'hdr-col1',
+                  fields: [
+                    { id: 'hdr-f1', type: 'text', label: 'Médico', key: 'hdr_medico', required: false },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ]
+      const reviews = [makeReview({ fieldKey: 'hdr_medico', proposedValue: 'Dra. House' })]
+      const wrapper = mount(DynamicFormRenderer, {
+        props: {
+          sections: mockSections,
+          headerSections,
+          modelValue: { ...mockValues, hdr_medico: '' },
+          isEditable: true,
+          aiReviews: reviews,
+          aiAcceptField: vi.fn(),
+          aiRejectField: vi.fn(),
+          aiEditField: vi.fn(),
+        },
+      })
+      // Header zone is read-only even when isEditable is true, so no inline review
+      expect(wrapper.text()).not.toContain('Dra. House')
     })
   })
 })

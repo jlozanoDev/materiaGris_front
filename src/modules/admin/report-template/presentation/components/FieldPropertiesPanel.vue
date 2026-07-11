@@ -3,7 +3,6 @@ import { inject, computed, defineAsyncComponent, type Component } from 'vue'
 import { BUILDER_KEY } from '../composables/useTemplateBuilder'
 import type { FieldConfig } from '@/shared/types'
 import type { UseTemplateBuilderReturn } from '../composables/useTemplateBuilder'
-import CustomSelect from '@/shared/components/CustomSelect.vue'
 
 // Dynamic property panel components
 const PROPERTY_PANELS: Record<string, Component> = {
