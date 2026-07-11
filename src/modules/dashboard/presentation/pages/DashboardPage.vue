@@ -8,7 +8,8 @@ import PatientList from "@/modules/dashboard/presentation/components/PatientList
 import PendingReportsWidget from "@/modules/dashboard/presentation/components/PendingReportsWidget.vue";
 import QuickActions from "@/modules/dashboard/presentation/components/QuickActions.vue";
 import RightPanel from "@/modules/dashboard/presentation/components/RightPanel.vue";
-import EditUserModal from "@/modules/admin/users/presentation/components/EditUserModal.vue";
+import UiSkeleton from "@/shared/components/UiSkeleton.vue";
+import ProfileEditModal from "@/modules/admin/users/presentation/components/ProfileEditModal.vue";
 import ChangePasswordModal from "@/shared/components/ChangePasswordModal.vue";
 import AddressesModal from "@/shared/components/AddressesModal.vue";
 
@@ -88,6 +89,9 @@ const breadcrumb = [{ text: "Dashboard", icon: "pi pi-objects-column", to: "/" }
 onMounted(async () => {
   await authStore.fetchUser();
   await dashboard.fetchDashboard();
+  if (dashboard.role.value === "doctor") {
+    await dashboard.fetchWeather();
+  }
 });
 </script>
 
@@ -120,14 +124,27 @@ onMounted(async () => {
 
         <!-- Admin layout -->
         <template v-if="dashboard.role.value === 'admin'">
-          <div class="flex flex-wrap gap-4">
+          <div v-if="dashboard.loading.value" class="flex flex-wrap gap-4">
+            <div
+              v-for="n in 6"
+              :key="n"
+              class="card flex flex-1 items-center gap-4 p-5 min-w-[180px]"
+            >
+              <UiSkeleton variant="circle" width="48px" height="48px" />
+              <div class="min-w-0 flex-1 space-y-2">
+                <UiSkeleton width="40px" height="28px" />
+                <UiSkeleton width="80px" height="14px" />
+              </div>
+            </div>
+          </div>
+          <div v-else class="flex flex-wrap gap-4">
             <template
               v-for="m in [
                 { label: 'Usuarios', value: dashboard.systemMetrics.value?.totalUsers, icon: 'pi pi-users', color: '#7c3aed' },
                 { label: 'Pacientes', value: dashboard.systemMetrics.value?.totalPatients, icon: 'pi pi-user', color: '#60a5fa' },
                 { label: 'Pendientes', value: dashboard.systemMetrics.value?.totalPendingReports, icon: 'pi pi-file', color: '#f59e0b' },
                 { label: 'Firmados', value: dashboard.systemMetrics.value?.totalSignedReports, icon: 'pi pi-check-circle', color: '#10b981' },
-                { label: 'Cerrados', value: dashboard.systemMetrics.value?.totalClosedReports, icon: 'pi pi-times-circle', color: '#ef4444' },
+                { label: 'Archivados', value: dashboard.systemMetrics.value?.totalArchivedReports, icon: 'pi pi-archive', color: '#ef4444' },
                 { label: 'Plantillas', value: dashboard.systemMetrics.value?.totalTemplates, icon: 'pi pi-palette', color: '#06b6d4' },
               ]"
               :key="m.label"
@@ -161,7 +178,12 @@ onMounted(async () => {
               :loading="dashboard.loading.value"
               :error="dashboard.error.value instanceof Error ? dashboard.error.value.message : null"
               :user-name="authStore.user?.name || 'Usuario'"
+              :weather-data="dashboard.weather.value"
+              :weather-loading="dashboard.weatherLoading.value"
+              :weather-error="dashboard.weatherError.value"
+              :show-city-selector="dashboard.showCitySelector.value"
               class="flex-1"
+              @select-city="(payload) => dashboard.selectCity(payload.lat, payload.lon)"
             />
             <div class="w-80">
               <PendingReportsWidget
@@ -189,7 +211,7 @@ onMounted(async () => {
     </div>
   </div>
 
-  <EditUserModal
+  <ProfileEditModal
     :show="showEditModal"
     :user="authStore.user"
     @close="showEditModal = false"

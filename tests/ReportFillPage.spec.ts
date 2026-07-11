@@ -29,6 +29,23 @@ vi.mock("@/core/store/auth", () => ({
   }),
 }));
 
+// ── Clinic store mock ─────────────────────────────────────────────────────────
+vi.mock("@/core/store/clinic", () => ({
+  useClinicStore: () => ({
+    clinic: ref(null),
+    loading: ref(false),
+    error: ref(null),
+    fetchClinic: vi.fn(),
+  }),
+}));
+
+// ── ReportVariableResolver mock ───────────────────────────────────────────────
+vi.mock("@/shared/composables/useReportVariableResolver", () => ({
+  useReportVariableResolver: () => ({
+    resolve: (text: string) => text,
+  }),
+}));
+
 // ── Composable mocks ──────────────────────────────────────────────────────────
 const mockReport = ref<any>(null);
 const mockValues = ref<Record<string, any>>({});
@@ -39,10 +56,11 @@ const mockTypedSignatureValue = ref("");
 const mockInit = vi.fn();
 const mockLoadReport = vi.fn();
 const mockSetValue = vi.fn();
+const mockValidateFormFields = vi.fn(() => ({}));
 const mockValidateForSignature = vi.fn(() => ({}));
 const mockSaveDraft = vi.fn();
 const mockSign = vi.fn();
-const mockClose = vi.fn();
+const mockArchive = vi.fn();
 const mockDownloadPdf = vi.fn();
 
 vi.mock("@/modules/reports/presentation/composables/useReportForm", () => ({
@@ -56,10 +74,11 @@ vi.mock("@/modules/reports/presentation/composables/useReportForm", () => ({
     init: mockInit,
     loadReport: mockLoadReport,
     setValue: mockSetValue,
+    validateFormFields: mockValidateFormFields,
     validateForSignature: mockValidateForSignature,
     saveDraft: mockSaveDraft,
     sign: mockSign,
-    close: mockClose,
+    archive: mockArchive,
     downloadPdf: mockDownloadPdf,
   }),
 }));
@@ -255,8 +274,8 @@ describe("ReportFillPage", () => {
     expect(wrapper.text()).not.toContain("Firmar");
   });
 
-  it("shows Cerrar button when report is signed and user has report.close", async () => {
-    permMap = { "report.edit": true, "report.close": true };
+  it("shows Archivar button when report is signed and user has report.archive", async () => {
+    permMap = { "report.edit": true, "report.archive": true };
     mockReport.value = { id: "r1", status: "signed", userId: 1, templateStructureSnapshot: { sections: [] } };
     mockRoute.params = { id: "r1" };
     mockRoute.name = "ReportEdit";
@@ -266,11 +285,11 @@ describe("ReportFillPage", () => {
     });
     await flushPromises();
 
-    expect(wrapper.text()).toContain("Cerrar");
+    expect(wrapper.text()).toContain("Archivar");
   });
 
-  it("hides Cerrar button for draft reports", async () => {
-    permMap = { "report.edit": true, "report.close": true };
+  it("hides Archivar button for draft reports", async () => {
+    permMap = { "report.edit": true, "report.archive": true };
     mockReport.value = { id: "r1", status: "draft", userId: 1, templateStructureSnapshot: { sections: [] } };
     mockRoute.params = { id: "r1" };
     mockRoute.name = "ReportEdit";
@@ -280,7 +299,7 @@ describe("ReportFillPage", () => {
     });
     await flushPromises();
 
-    expect(wrapper.text()).not.toContain("Cerrar");
+    expect(wrapper.text()).not.toContain("Archivar");
   });
 
   it("shows Descargar PDF when report is signed and user has report.download-pdf", async () => {
@@ -311,8 +330,8 @@ describe("ReportFillPage", () => {
     expect(wrapper.text()).not.toContain("Descargar PDF");
   });
 
-  // ── Integration: draft → sign → close flow ─────────────────────────────────
-  describe("draft → sign → close lifecycle", () => {
+  // ── Integration: draft → sign → archive flow ──────────────────────────────
+  describe("draft → sign → archive lifecycle", () => {
     function mountWithModalStub() {
       return mount(ReportFillPage, {
         global: {
@@ -334,6 +353,9 @@ describe("ReportFillPage", () => {
       mockRoute.name = "ReportEdit";
       mockSign.mockResolvedValue(undefined);
 
+      // Set signature so confirm button is not disabled
+      mockSignatureValue.value = "data:image/png;base64,sig";
+
       const wrapper = mountWithModalStub();
       await flushPromises();
 
@@ -344,8 +366,8 @@ describe("ReportFillPage", () => {
         await flushPromises();
       }
 
-      // Click "Firmar" inside the modal
-      const confirmBtn = wrapper.findAll("button").find((b) => b.text() === "Firmar");
+      // Click "Confirmar firma" inside the modal
+      const confirmBtn = wrapper.findAll("button").find((b) => b.text() === "Confirmar firma");
       if (confirmBtn) {
         await confirmBtn.trigger("click");
         await flushPromises();
@@ -380,38 +402,38 @@ describe("ReportFillPage", () => {
       expect(mockSign).not.toHaveBeenCalled();
     });
 
-    it("calls close when user confirms close modal on signed report", async () => {
-      permMap = { "report.edit": true, "report.close": true };
+    it("calls archive when user confirms archive modal on signed report", async () => {
+      permMap = { "report.edit": true, "report.archive": true };
       mockReport.value = { id: "r1", status: "signed", userId: 1, templateStructureSnapshot: { sections: [] } };
       mockRoute.params = { id: "r1" };
       mockRoute.name = "ReportEdit";
-      mockClose.mockResolvedValue(undefined);
+      mockArchive.mockResolvedValue(undefined);
 
       const wrapper = mountWithModalStub();
       await flushPromises();
 
-      // Open close modal
-      const cerrarBtn = wrapper.findAll("button").find((b) => b.text().includes("Cerrar informe"));
-      if (cerrarBtn) {
-        await cerrarBtn.trigger("click");
+      // Open archive modal
+      const archivarBtn = wrapper.findAll("button").find((b) => b.text().includes("Archivar informe"));
+      if (archivarBtn) {
+        await archivarBtn.trigger("click");
         await flushPromises();
       }
 
-      // Click "Cerrar" inside the modal
-      const confirmBtn = wrapper.findAll("button").find((b) => b.text() === "Cerrar");
+      // Click "Archivar" inside the modal
+      const confirmBtn = wrapper.findAll("button").find((b) => b.text() === "Archivar");
       if (confirmBtn) {
         await confirmBtn.trigger("click");
         await flushPromises();
       }
 
-      expect(mockClose).toHaveBeenCalled();
+      expect(mockArchive).toHaveBeenCalled();
     });
 
     it("shows all buttons when user has all permissions on draft", async () => {
       permMap = {
         "report.edit": true,
         "report.sign": true,
-        "report.close": true,
+        "report.archive": true,
         "report.download-pdf": true,
       };
       mockReport.value = { id: "r1", status: "draft", userId: 1, templateStructureSnapshot: { sections: [] } };
@@ -425,7 +447,7 @@ describe("ReportFillPage", () => {
 
       expect(wrapper.text()).toContain("Guardar");
       expect(wrapper.text()).toContain("Firmar");
-      expect(wrapper.text()).not.toContain("Cerrar");
+      expect(wrapper.text()).not.toContain("Archivar");
       expect(wrapper.text()).not.toContain("Descargar PDF");
     });
 
@@ -442,7 +464,7 @@ describe("ReportFillPage", () => {
 
       expect(wrapper.text()).not.toContain("Guardar");
       expect(wrapper.text()).not.toContain("Firmar");
-      expect(wrapper.text()).not.toContain("Cerrar");
+      expect(wrapper.text()).not.toContain("Archivar");
       expect(wrapper.text()).not.toContain("Descargar PDF");
     });
   });

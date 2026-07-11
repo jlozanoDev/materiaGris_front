@@ -26,7 +26,7 @@
               :class="{ 'signature-pad__canvas--disabled': disabled }"
               :width="canvasWidth"
               :height="canvasHeight"
-              @pointerdown.prevent="onPointerDown"
+              @pointerdown="onPointerDown"
               @pointermove.prevent="onPointerMove"
               @pointerup.prevent="onPointerUp"
               @pointerleave.prevent="onPointerUp"
@@ -123,23 +123,32 @@ function getCtx(): CanvasRenderingContext2D | null {
   return canvasRef.value?.getContext('2d') ?? null
 }
 
+function scaleCoords(clientX: number, clientY: number): { x: number; y: number } {
+  const canvas = canvasRef.value!
+  const rect = canvas.getBoundingClientRect()
+  const scaleX = canvas.width / rect.width
+  const scaleY = canvas.height / rect.height
+  return {
+    x: (clientX - rect.left) * scaleX,
+    y: (clientY - rect.top) * scaleY,
+  }
+}
+
 function onPointerDown(e: PointerEvent): void {
   if (props.disabled) return
   isDrawing.value = true
-  const rect = canvasRef.value!.getBoundingClientRect()
-  lastX = e.clientX - rect.left
-  lastY = e.clientY - rect.top
+  const { x, y } = scaleCoords(e.clientX, e.clientY)
+  lastX = x
+  lastY = y
   const ctx = getCtx()
   if (!ctx) return
   ctx.beginPath()
-  ctx.moveTo(lastX, lastY)
+  ctx.moveTo(x, y)
 }
 
 function onPointerMove(e: PointerEvent): void {
   if (!isDrawing.value || props.disabled) return
-  const rect = canvasRef.value!.getBoundingClientRect()
-  const x = e.clientX - rect.left
-  const y = e.clientY - rect.top
+  const { x, y } = scaleCoords(e.clientX, e.clientY)
   const ctx = getCtx()
   if (!ctx) return
   ctx.strokeStyle = '#7c3aed'
@@ -161,6 +170,7 @@ function onPointerUp(): void {
   const canvas = canvasRef.value
   if (!canvas) return
   const dataUrl = canvas.toDataURL('image/png')
+  console.log('[SignaturePad] pointerup', { dataUrl: dataUrl?.substring(0, 50) })
   emit('update:modelValue', dataUrl)
 }
 
@@ -250,6 +260,8 @@ onMounted(() => {
 }
 .signature-pad__canvas {
   @apply block w-full h-auto;
+  position: relative;
+  z-index: 1;
   touch-action: none;
   cursor: crosshair;
 }
@@ -258,6 +270,7 @@ onMounted(() => {
 }
 .signature-pad__watermark {
   @apply pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1.5 text-sm select-none;
+  pointer-events: none !important;
   color: #aca4c0;
 }
 .signature-pad__watermark-icon {

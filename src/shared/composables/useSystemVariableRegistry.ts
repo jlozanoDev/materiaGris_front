@@ -80,6 +80,15 @@ function registerFallbackVariables(): void {
   registry.register('medico', 'nombre', 'Nombre del médico', 'Nombre completo del médico tratante')
   registry.register('medico', 'matricula', 'Matrícula', 'Número de matrícula del médico')
   registry.register('medico', 'especialidad', 'Especialidad', 'Especialidad del médico')
+  registry.register('medico', 'apellido', 'Apellido', 'Apellido del médico')
+  registry.register('medico', 'num_colegiado', 'Nro. Colegiado', 'Número de colegiado/matrícula')
+  registry.register('medico', 'telefono', 'Teléfono', 'Teléfono del médico')
+  registry.register('clinica', 'email', 'Email', 'Email de la clínica')
+  registry.register('clinica', 'web', 'Web', 'Sitio web de la clínica')
+  registry.register('clinica', 'ciudad', 'Ciudad', 'Ciudad de la clínica')
+  registry.register('clinica', 'provincia', 'Provincia', 'Provincia de la clínica')
+  registry.register('clinica', 'codigo_postal', 'Código Postal', 'Código postal de la clínica')
+  registry.register('clinica', 'cuit', 'CUIT', 'CUIT de la clínica')
 }
 
 function search(prefix: string): SystemVarDef[] {

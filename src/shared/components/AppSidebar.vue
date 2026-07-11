@@ -16,6 +16,7 @@ const { logout, loading } = useLogout();
 const hasAnySettingsPermission = computed(() =>
   authStore.hasPermissions(
     [
+      "admin.clinic.update",
       "admin.user.view",
       "admin.users.view",
       "admin.role.view",
@@ -161,6 +162,26 @@ watch(
             <p class="text-xs font-semibold uppercase tracking-wider" style="color: #7c3aed;">Ajustes</p>
           </div>
           <ul class="py-2">
+            <!-- Gestión de Clínica -->
+            <li v-if="authStore.hasPermission('admin.clinic.update')">
+              <button
+                title="Clínica"
+                aria-label="Clínica"
+                class="sidebar-dropdown-item w-full text-left px-4 py-2 text-sm flex items-center gap-3 justify-start whitespace-nowrap transition"
+                style="color: #0b0817;"
+                @click.prevent="openAdminRoute({ name: 'AdminClinic' })"
+              >
+                <i
+                  class="pi pi-building text-base transition-transform duration-150 group-hover:scale-110"
+                  style="color: #9690a8; width: 20px; text-align: center;"
+                ></i>
+                <span>Clínica</span>
+              </button>
+            </li>
+            <li v-if="authStore.hasPermission('admin.clinic.update')" aria-hidden="true">
+              <div class="mx-4 my-1" style="border-top: 1px solid rgba(124, 58, 237, 0.06);"></div>
+            </li>
+
             <!-- Gestión de Usuarios: plural y singular -->
             <li
               v-if="

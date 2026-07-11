@@ -7,6 +7,7 @@ Panel de administración del sistema con gestión completa de usuarios, roles y 
 
 | Ruta | Vista | Permiso Requerido |
 |------|-------|-------------------|
+| `/admin/clinic` | `ClinicEditPage.vue` | `admin.clinic.update` |
 | `/admin/users` | `UsersPage.vue` | `admin.user.view` |
 | `/admin/roles` | `RolesPage.vue` | `admin.role.view` |
 | `/admin/permissions` | `PermissionsPage.vue` | `admin.permission.view` |
@@ -15,6 +16,7 @@ Panel de administración del sistema con gestión completa de usuarios, roles y 
 
 | Módulo | Documentación |
 |--------|--------------|
+| Clínica | [clinica-config.md](../clinica-config/clinica-config.md) |
 | Usuarios | [users.md](./users.md) |
 | Roles | [roles.md](./roles.md) |
 | Permisos | [permissions.md](./permissions.md) |

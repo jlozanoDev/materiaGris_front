@@ -5,10 +5,13 @@ import {
   provideGetRecentPatientsUseCase,
   provideGetPendingReportsUseCase,
   provideGetSystemMetricsUseCase,
+  provideGetWeatherUseCase,
 } from "@/modules/dashboard/application/containers/dashboardContainer";
+import { BrowserGeolocationProvider } from "@/shared/providers/GeolocationProvider";
 import type { DashboardStats } from "@/modules/dashboard/domain/entities/DashboardStats";
 import type { PatientSummary } from "@/modules/dashboard/domain/entities/PatientSummary";
 import type { PendingReport } from "@/modules/dashboard/domain/entities/PendingReport";
+import type { WeatherData } from "@/modules/dashboard/domain/entities/WeatherData";
 import type { DashboardRole, DateRange } from "@/modules/dashboard/domain/entities/types";
 import type { SystemMetrics } from "@/modules/dashboard/domain/use-cases/GetSystemMetricsUseCase";
 
@@ -21,6 +24,13 @@ export interface UseDashboardReturn {
   error: Ref<unknown>;
   role: Ref<DashboardRole>;
   fetchDashboard: () => Promise<void>;
+  // Weather
+  weather: Ref<WeatherData | null>;
+  weatherLoading: Ref<boolean>;
+  weatherError: Ref<string | null>;
+  showCitySelector: Ref<boolean>;
+  fetchWeather: () => Promise<void>;
+  selectCity: (lat: number, lon: number) => Promise<void>;
 }
 
 function todayRange(): DateRange {
@@ -43,11 +53,62 @@ export function useDashboard(): UseDashboardReturn {
   const loading: Ref<boolean> = ref(false);
   const error: Ref<unknown> = ref(null);
 
+  // Weather state
+  const weather: Ref<WeatherData | null> = ref(null);
+  const weatherLoading: Ref<boolean> = ref(false);
+  const weatherError: Ref<string | null> = ref(null);
+  const showCitySelector: Ref<boolean> = ref(false);
+
   const role = computed<DashboardRole>(() => {
     if (authStore.hasPermission("report.edit")) return "doctor";
     if (authStore.hasPermission("admin.user.view")) return "admin";
     return "none";
   });
+
+  async function fetchWeather(): Promise<void> {
+    weatherLoading.value = true;
+    weatherError.value = null;
+    showCitySelector.value = false;
+
+    try {
+      const geoProvider = new BrowserGeolocationProvider();
+      let lat: number;
+      let lon: number;
+
+      try {
+        const pos = await geoProvider.getCurrentPosition();
+        lat = pos.lat;
+        lon = pos.lon;
+      } catch {
+        // Geolocation denied or unavailable — fall back to env defaults
+        lat = parseFloat(import.meta.env.VITE_WEATHER_DEFAULT_LAT ?? "40.4168");
+        lon = parseFloat(import.meta.env.VITE_WEATHER_DEFAULT_LON ?? "-3.7038");
+        showCitySelector.value = true;
+      }
+
+      const useCase = provideGetWeatherUseCase();
+      weather.value = await useCase.execute(lat, lon);
+    } catch (e) {
+      weatherError.value = "No disponible";
+    } finally {
+      weatherLoading.value = false;
+    }
+  }
+
+  async function selectCity(lat: number, lon: number): Promise<void> {
+    weatherLoading.value = true;
+    weatherError.value = null;
+    showCitySelector.value = false;
+
+    try {
+      const useCase = provideGetWeatherUseCase();
+      weather.value = await useCase.execute(lat, lon);
+    } catch {
+      weatherError.value = "No disponible";
+    } finally {
+      weatherLoading.value = false;
+    }
+  }
 
   async function fetchDashboard(): Promise<void> {
     loading.value = true;
@@ -73,6 +134,8 @@ export function useDashboard(): UseDashboardReturn {
       } else if (role.value === "admin") {
         const metricsUseCase = provideGetSystemMetricsUseCase();
         systemMetrics.value = await metricsUseCase.execute();
+      } else {
+        throw new Error("No tienes permisos para ver el dashboard");
       }
     } catch (e) {
       error.value = e;
@@ -90,5 +153,11 @@ export function useDashboard(): UseDashboardReturn {
     error,
     role,
     fetchDashboard,
+    weather,
+    weatherLoading,
+    weatherError,
+    showCitySelector,
+    fetchWeather,
+    selectCity,
   };
 }

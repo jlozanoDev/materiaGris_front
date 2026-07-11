@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SelectionField, FieldOption } from '@/shared/types'
+import type { SelectionField } from '@/shared/types'
 
 interface Props {
   field: SelectionField

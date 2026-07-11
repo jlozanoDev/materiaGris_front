@@ -68,9 +68,21 @@
               </div>
 
               <div class="flex gap-3">
-                <!-- Guardar borrador -->
+                <!-- Asistente IA -->
                 <button
-                  v-if="canEdit"
+                  v-if="canEdit && report.status === 'draft' && report.id && report.templateId"
+                  type="button"
+                  class="inline-flex items-center gap-2 rounded-2xl border border-indigo-300 bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 disabled:opacity-50"
+                  :disabled="isSaving"
+                  @click="showAIPanel = !showAIPanel"
+                >
+                  <i class="pi pi-sparkles text-xs text-indigo-500"></i>
+                  {{ showAIPanel ? "Cerrar asistente" : "Asistente de dictado IA" }}
+                </button>
+
+                <!-- Guardar borrador (solo draft) -->
+                <button
+                  v-if="canEdit && report.status === 'draft'"
                   type="button"
                   class="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
                   :disabled="isSaving"
@@ -91,20 +103,20 @@
                   Firmar informe
                 </button>
 
-                <!-- Cerrar -->
+                <!-- Archivar -->
                 <button
-                  v-if="canClose && report.status === 'signed'"
+                  v-if="canArchive && report.status === 'signed'"
                   type="button"
                   class="inline-flex items-center gap-2 rounded-2xl bg-slate-600 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
-                  @click="handleClose"
+                  @click="handleArchive"
                 >
-                  <i class="pi pi-lock text-xs"></i>
-                  Cerrar informe
+                  <i class="pi pi-archive text-xs"></i>
+                  Archivar informe
                 </button>
 
                 <!-- Descargar PDF -->
                 <button
-                  v-if="canDownloadPdf && (report.status === 'signed' || report.status === 'closed')"
+                  v-if="canDownloadPdf && (report.status === 'signed' || report.status === 'archived')"
                   type="button"
                   class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
                   @click="handleDownloadPdf"
@@ -126,6 +138,41 @@
               </ul>
             </div>
 
+            <!-- AI Assistant Dropdown -->
+            <div
+              v-if="showAIPanel && canEdit && report.status === 'draft' && report.id && report.templateId"
+              class="relative mb-6"
+            >
+              <div class="absolute right-0 top-0 z-50 w-full max-w-2xl">
+                <div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+                  <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-white">
+                    <h3 class="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                      <i class="pi pi-sparkles text-indigo-500"></i>
+                      Asistente de dictado IA
+                    </h3>
+                    <button
+                      type="button"
+                      class="text-slate-400 hover:text-slate-600 transition-colors"
+                      @click="showAIPanel = false"
+                    >
+                      <i class="pi pi-times"></i>
+                    </button>
+                  </div>
+                  <div class="p-4 bg-white">
+                    <AIAssistantPanel
+                      :report-id="report.id"
+                      :template-id="report.templateId"
+                      :field-configs="fieldConfigs"
+                      :form-values="values"
+                      :form-set-value="setValue"
+                      @llm-result="handleLLMResult"
+                      @done="handleAIDone"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- Dynamic form -->
             <DynamicFormRenderer
               v-if="report.templateStructureSnapshot"
@@ -133,8 +180,14 @@
               :header-sections="report.templateStructureSnapshot.header?.enabled ? report.templateStructureSnapshot.header.sections : undefined"
               :footer-sections="report.templateStructureSnapshot.footer?.enabled ? report.templateStructureSnapshot.footer.sections : undefined"
               :model-value="values"
-              :is-editable="canEdit"
+              :is-editable="canEdit && report.status === 'draft'"
               :variable-resolver="variableResolver"
+              :ai-reviews="aiReviews"
+              :ai-warnings="aiWarnings"
+              :ai-has-warnings="aiHasWarnings"
+              :ai-accept-field="aiAcceptField"
+              :ai-reject-field="aiRejectField"
+              :ai-edit-field="aiEditField"
               @update:model-value="handleUpdate"
               @auto-save="handleSave"
             />
@@ -271,40 +324,40 @@
     </template>
   </Modal>
 
-  <!-- Close confirmation modal -->
+  <!-- Archive confirmation modal -->
   <Modal
-    :show="showCloseModal"
-    title="Cerrar informe"
+    :show="showArchiveModal"
+    title="Archivar informe"
     size="sm"
     :close-on-backdrop="false"
-    @close="cancelClose"
+    @close="cancelArchive"
   >
     <p class="text-[#6b6b7b] text-sm">
-      ¿Confirmar cierre del informe?
+      ¿Confirmar archivado del informe?
     </p>
 
     <div
-      v-if="closeError"
+      v-if="archiveError"
       class="mt-3 rounded-xl bg-red-50 p-3"
     >
-      <p class="text-sm text-red-700">{{ closeError }}</p>
+      <p class="text-sm text-red-700">{{ archiveError }}</p>
     </div>
 
     <template #footer>
       <div class="flex justify-end gap-3">
         <button
           class="btn btn-outline btn-sm"
-          :disabled="isClosing"
-          @click="cancelClose"
+          :disabled="isArchiving"
+          @click="cancelArchive"
         >
           Cancelar
         </button>
         <button
           class="btn bg-slate-600 hover:bg-slate-700 text-white btn-sm"
-          :disabled="isClosing"
-          @click="confirmClose"
+          :disabled="isArchiving"
+          @click="confirmArchive"
         >
-          {{ isClosing ? "Cerrando..." : "Cerrar" }}
+          {{ isArchiving ? "Archivando..." : "Archivar" }}
         </button>
       </div>
     </template>
@@ -319,29 +372,35 @@ import TopBarLayout from "@/shared/components/TopBarLayout.vue";
 import Breadcrumb from "@/shared/components/Breadcrumb.vue";
 import DynamicFormRenderer from "@/modules/reports/presentation/components/DynamicFormRenderer.vue";
 import SignaturePad from "@/modules/reports/presentation/components/SignaturePad.vue";
+import AIAssistantPanel from "@/modules/reports/presentation/components/AIAssistantPanel.vue";
 import Modal from "@/shared/components/Modal.vue";
 import { useReportForm } from "@/modules/reports/presentation/composables/useReportForm";
 import { useTemplateList } from "@/modules/reports/presentation/composables/useTemplateList";
+import { useAIReview } from "@/modules/reports/presentation/composables/useAIReview";
 import { useAuthStore } from "@/core/store/auth";
 import { useLogout } from "@/shared/composables/useLogout";
 import { provideGetPatientUseCase } from "@/modules/patients/application/containers/patientsContainer";
-import { SystemVariableRegistry } from "@/shared/types/SystemVariableRegistry";
-import type { Patient } from "@/shared/types";
+import { useClinicStore } from "@/core/store/clinic";
+import { useReportVariableResolver } from "@/shared/composables/useReportVariableResolver";
+import type { Patient, FieldConfig, Section } from "@/shared/types";
+import type { LLMExtractionResult } from "@/modules/reports/domain/entities/AIProcessing";
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
+const clinicStore = useClinicStore();
 const { logout } = useLogout();
 
 const patientData = ref<Patient | null>(null);
 
 // Modals
 const showSignModal = ref(false);
-const showCloseModal = ref(false);
+const showArchiveModal = ref(false);
+const showAIPanel = ref(false);
 const signError = ref("");
-const closeError = ref("");
+const archiveError = ref("");
 const isSigning = ref(false);
-const isClosing = ref(false);
+const isArchiving = ref(false);
 
 // Computed property to check if signature is provided
 const hasSignature = computed(() => {
@@ -363,7 +422,7 @@ const {
   validateFormFields,
   saveDraft,
   sign,
-  close,
+  archive,
   downloadPdf,
 } = useReportForm();
 
@@ -390,64 +449,50 @@ function calcAge(dob?: string): string {
   return String(age);
 }
 
-// Variable resolver — chains SystemVariableRegistry + legacy flat keys
+// Variable resolver — composable for medico.*/usuario.*/clinica.* + local fallbacks
+const { resolve: composableResolve } = useReportVariableResolver(
+  computed(() => authStore.user),
+  computed(() => clinicStore.clinic),
+);
+
 const variableResolver = computed<((text: string) => string) | undefined>(() => {
   if (!report.value) return undefined;
 
-  const registry = new SystemVariableRegistry();
   const today = new Date();
   const todayStr = today.toLocaleDateString("es-ES");
   const longDateStr = today.toLocaleDateString("es-ES", {
-    weekday: "long", year: "numeric", month: "long", day: "numeric"
+    weekday: "long", year: "numeric", month: "long", day: "numeric",
   });
 
-  // ── Fecha ───────────────────────────────────────────────────────────
-  registry.register("fecha", "hoy", "Fecha actual", undefined, () => todayStr);
-  registry.register("fecha", "actual", "Fecha actual", undefined, () => todayStr);
-  registry.register("fecha", "formato_largo", "Fecha larga", undefined, () => longDateStr);
-
-  // ── Paciente ────────────────────────────────────────────────────────
   const p = patientData.value;
   const fullName = p
     ? `${p.first_name || ""} ${p.last_name || ""} ${p.second_last_name || ""}`.trim()
     : (report.value.patient_name ?? "");
-  if (fullName) registry.register("paciente", "nombre", "Nombre", undefined, () => fullName);
-  if (p?.medical_record_number) registry.register("paciente", "nro_historia", "Nro Historia", undefined, () => String(p.medical_record_number));
-  if (p?.national_id) registry.register("paciente", "identificacion", "Identificación", undefined, () => String(p.national_id));
-  if (p?.gender) registry.register("paciente", "sexo", "Sexo", undefined, () => String(p.gender));
-  if (p?.date_of_birth) registry.register("paciente", "edad", "Edad", undefined, () => calcAge(p.date_of_birth));
-  if (p?.date_of_birth) registry.register("paciente", "fecha_nacimiento", "Fecha nacimiento", undefined, () => String(p.date_of_birth));
-  if (p?.city) registry.register("paciente", "ciudad", "Ciudad", undefined, () => String(p.city));
-  if (p?.phone) registry.register("paciente", "telefono", "Teléfono", undefined, () => String(p.phone));
-  if (p?.email) registry.register("paciente", "email", "Email", undefined, () => String(p.email));
-  if (p?.address_line1) registry.register("paciente", "direccion", "Dirección", undefined, () => String(p.address_line1));
 
-  // ── Clínica ─────────────────────────────────────────────────────────
-  registry.register("clinica", "nombre", "Clínica", undefined, () => "Materia Gris"); // TODO: backend
-
-  // ── Médico / Usuario ────────────────────────────────────────────────
-  const u = authStore.user;
-  const authorName = report.value.author_name ?? u?.name ?? "";
-  if (authorName) {
-    registry.register("medico", "nombre", "Médico", undefined, () => String(authorName));
-    registry.register("usuario", "nombre", "Usuario", undefined, () => String(authorName));
-    registry.register("usuario", "nombre_completo", "Usuario", undefined, () => String(authorName));
-  }
-  if (u?.email) registry.register("medico", "matricula", "Matrícula", undefined, () => String(u.email));
-
-  // ── Legacy flat variable fallback ───────────────────────────────────
-  const legacyMap: Record<string, string> = {
+  const localVars: Record<string, string> = {
+    "fecha.hoy": todayStr,
+    "fecha.actual": todayStr,
+    "fecha.formato_largo": longDateStr,
     patient_name: report.value.patient_name ?? fullName,
     author_name: report.value.author_name ?? "",
     date: todayStr,
     fecha: todayStr,
   };
+  if (fullName) localVars["paciente.nombre"] = fullName;
+  if (p?.medical_record_number) localVars["paciente.nro_historia"] = String(p.medical_record_number);
+  if (p?.national_id) localVars["paciente.identificacion"] = String(p.national_id);
+  if (p?.gender) localVars["paciente.sexo"] = String(p.gender);
+  if (p?.date_of_birth) localVars["paciente.edad"] = calcAge(p.date_of_birth);
+  if (p?.date_of_birth) localVars["paciente.fecha_nacimiento"] = String(p.date_of_birth);
+  if (p?.city) localVars["paciente.ciudad"] = String(p.city);
+  if (p?.phone) localVars["paciente.telefono"] = String(p.phone);
+  if (p?.email) localVars["paciente.email"] = String(p.email);
+  if (p?.address_line1) localVars["paciente.direccion"] = String(p.address_line1);
 
   return (text: string): string => {
-    const systemResolved = registry.interpolate(text);
-    return systemResolved.replace(/\{([^}]+)\}/g, (_match, key: string) => {
-      const val = legacyMap[key.trim()];
-      return val ?? _match;
+    const resolved = composableResolve(text);
+    return resolved.replace(/\{([^}]+)\}/g, (_match, key: string) => {
+      return localVars[key.trim()] ?? _match;
     });
   };
 });
@@ -484,6 +529,41 @@ const templateName = computed(() => {
   return "";
 });
 
+/** Flattened field configs from the report template structure */
+const fieldConfigs = computed<FieldConfig[]>(() => {
+  if (!report.value?.templateStructureSnapshot?.sections) return [];
+  return report.value.templateStructureSnapshot.sections.flatMap(
+    (s: Section) =>
+      s.rows.flatMap((r: any) =>
+        r.columns.flatMap((c: any) => c.fields as FieldConfig[]),
+      ),
+  );
+});
+
+// AI Review — inline field-by-field review
+const llmResultForReview = ref<LLMExtractionResult | null>(null);
+const {
+  reviews: aiReviews,
+  warnings: aiWarnings,
+  hasWarnings: aiHasWarnings,
+  acceptField: aiAcceptField,
+  rejectField: aiRejectField,
+  editField: aiEditField,
+  applyAll: aiApplyAll,
+} = useAIReview(llmResultForReview, fieldConfigs, values, setValue);
+
+function handleLLMResult(result: any): void {
+  const inner = result?.data?.extracted_data !== undefined ? result.data : result;
+  llmResultForReview.value = inner;
+  showAIPanel.value = false;
+}
+
+function handleAIDone(): void {
+  aiApplyAll();
+  llmResultForReview.value = null;
+  showAIPanel.value = false;
+}
+
 const breadcrumbText = computed(() => {
   if (!report.value) return "Nuevo";
   const template = templateName.value;
@@ -515,7 +595,7 @@ function retry(): void {
 // Permissions
 const canEdit = computed(() => authStore.hasPermission("report.edit"));
 const canSign = computed(() => authStore.hasPermission("report.sign"));
-const canClose = computed(() => authStore.hasPermission("report.close"));
+const canArchive = computed(() => authStore.hasPermission("report.archive"));
 const canDownloadPdf = computed(() => authStore.hasPermission("report.download-pdf"));
 
 // Handlers
@@ -570,28 +650,28 @@ function cancelSign(): void {
   signError.value = "";
 }
 
-async function handleClose(): Promise<void> {
-  closeError.value = "";
-  showCloseModal.value = true;
+async function handleArchive(): Promise<void> {
+  archiveError.value = "";
+  showArchiveModal.value = true;
 }
 
-async function confirmClose(): Promise<void> {
-  isClosing.value = true;
-  closeError.value = "";
+async function confirmArchive(): Promise<void> {
+  isArchiving.value = true;
+  archiveError.value = "";
   try {
-    await close();
-    showCloseModal.value = false;
+    await archive();
+    showArchiveModal.value = false;
   } catch (e: any) {
-    closeError.value = e.message || "Error al cerrar el informe";
+    archiveError.value = e.message || "Error al archivar el informe";
   } finally {
-    isClosing.value = false;
+    isArchiving.value = false;
   }
 }
 
-function cancelClose(): void {
-  if (isClosing.value) return;
-  showCloseModal.value = false;
-  closeError.value = "";
+function cancelArchive(): void {
+  if (isArchiving.value) return;
+  showArchiveModal.value = false;
+  archiveError.value = "";
 }
 
 async function handleDownloadPdf(): Promise<void> {

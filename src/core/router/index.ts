@@ -4,6 +4,7 @@ import { useAuthStore } from "@/core/store/auth";
 const routes: RouteRecordRaw[] = [
   { path: "/", name: "Dashboard", component: () => import("@/modules/dashboard/presentation/pages/DashboardPage.vue"), meta: { requiresAuth: true } },
   { path: "/admin/users", name: "AdminUsers", component: () => import("@/modules/admin/users/presentation/pages/UsersPage.vue"), meta: { requiresAuth: true, permissions: ['admin.user.view', 'admin.users.view'] } },
+  { path: "/admin/clinic", name: "AdminClinic", component: () => import("@/modules/admin/clinic/presentation/pages/ClinicEditPage.vue"), meta: { requiresAuth: true, permissions: 'admin.clinic.update' } },
   { path: "/admin/roles", name: "AdminRoles", component: () => import("@/modules/admin/roles/presentation/pages/RolesPage.vue"), meta: { requiresAuth: true, permissions: ['admin.role.view', 'admin.roles.view'] } },
   {
     path: "/admin/permissions",

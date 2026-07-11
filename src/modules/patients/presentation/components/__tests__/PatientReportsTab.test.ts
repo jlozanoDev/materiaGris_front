@@ -133,16 +133,15 @@ describe("PatientReportsTab", () => {
   it("navigates to ReportView when a report item is clicked", async () => {
     permMap = { "report.create": true };
     mockReports.value = [
-      { id: "r1", status: "draft", template_name: "T1", createdAt: "2026-01-01" },
+      { id: "r1", status: "draft", template_name: "T1", author_name: "Dr. A", createdAt: "2026-01-01" },
     ];
     const wrapper = createWrapper();
     await flushPromises();
 
-    // The reports list renders items with cursor-pointer
-    const reportItem = wrapper.find(".cursor-pointer");
-    expect(reportItem.exists()).toBe(true);
+    const viewBtn = wrapper.findAll("button").find((b) => b.attributes("title") === "Ver");
+    expect(viewBtn).toBeDefined();
+    await viewBtn!.trigger("click");
 
-    await reportItem.trigger("click");
     expect(mockPush).toHaveBeenCalledWith({
       name: "ReportView",
       params: { id: "r1" },
@@ -164,12 +163,12 @@ describe("PatientReportsTab", () => {
   it('shows Editar button for draft reports when user has report.edit', async () => {
     permMap = { "report.create": true, "report.edit": true };
     mockReports.value = [
-      { id: "r1", status: "draft", template_name: "T1", createdAt: "2026-01-01" },
+      { id: "r1", status: "draft", template_name: "T1", author_name: "Dr. A", createdAt: "2026-01-01" },
     ];
     const wrapper = createWrapper();
     await flushPromises();
 
-    const editBtn = wrapper.findAll("button").find((b) => b.text() === "Editar");
+    const editBtn = wrapper.findAll("button").find((b) => b.attributes("title") === "Editar");
     expect(editBtn).toBeDefined();
   });
 
@@ -187,12 +186,12 @@ describe("PatientReportsTab", () => {
   it('navigates to ReportEdit when Editar is clicked, not ReportView', async () => {
     permMap = { "report.create": true, "report.edit": true };
     mockReports.value = [
-      { id: "r1", status: "draft", template_name: "T1", createdAt: "2026-01-01" },
+      { id: "r1", status: "draft", template_name: "T1", author_name: "Dr. A", createdAt: "2026-01-01" },
     ];
     const wrapper = createWrapper();
     await flushPromises();
 
-    const editBtn = wrapper.findAll("button").find((b) => b.text() === "Editar");
+    const editBtn = wrapper.findAll("button").find((b) => b.attributes("title") === "Editar");
     expect(editBtn).toBeDefined();
     await editBtn!.trigger("click");
 

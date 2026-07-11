@@ -6,16 +6,15 @@ import LandingTagline from '@/modules/landing/presentation/components/LandingTag
 import LandingModules from '@/modules/landing/presentation/components/LandingModules.vue'
 import LandingMetrics from '@/modules/landing/presentation/components/LandingMetrics.vue'
 import LandingSecurity from '@/modules/landing/presentation/components/LandingSecurity.vue'
-import LandingPricing from '@/modules/landing/presentation/components/LandingPricing.vue'
 import LandingCta from '@/modules/landing/presentation/components/LandingCta.vue'
 import LandingFooter from '@/modules/landing/presentation/components/LandingFooter.vue'
+import LandingWorkflow from '@/modules/landing/presentation/components/LandingWorkflow.vue'
+import LandingFaq from '@/modules/landing/presentation/components/LandingFaq.vue'
 
 const router = useRouter()
 
 const goLogin = () => router.push('/login')
 const goDemo = () => {} // placeholder — integrar después
-const goSales = () => {} // placeholder
-const selectPlan = (_plan: string) => {} // placeholder
 </script>
 
 <template>
@@ -26,8 +25,9 @@ const selectPlan = (_plan: string) => {} // placeholder
     <LandingModules />
     <LandingMetrics />
     <LandingSecurity />
-    <LandingPricing @select-plan="selectPlan" />
-    <LandingCta @demo="goDemo" @sales="goSales" />
+    <LandingWorkflow />
+    <LandingFaq />
+    <LandingCta />
     <LandingFooter />
   </div>
 </template>

@@ -5,6 +5,7 @@ import vuetify from "./plugins/vuetify";
 import "@/assets/primeicons/primeicons.css";
 
 import "./style.css";
+import 'splitpanes/dist/splitpanes.css'
 import App from "./App.vue";
 import router from "@/core/router/index";
 import toastPlugin from "@/shared/plugins/toastPlugin";
@@ -13,6 +14,7 @@ import { provideAuthService } from "@/modules/auth/application/containers/authCo
 import { setAuthService, setStorageGateway } from "@/core/services/serviceRegistry";
 import { useToast } from "@/shared/composables/useToast";
 import { useAuthStore } from "@/core/store/auth";
+import { useClinicStore } from "@/core/store/clinic";
 import vHasPermission from "@/shared/directives/v-has-permission";
 
 (async () => {
@@ -56,4 +58,8 @@ import vHasPermission from "@/shared/directives/v-has-permission";
   if (!isValid && router.currentRoute.value.meta?.requiresAuth) {
     router.replace({ name: "Login", query: { redirect: router.currentRoute.value.fullPath } });
   }
+
+  // Fetch clinic data asynchronously (no await — non-blocking)
+  const clinicStore = useClinicStore();
+  clinicStore.fetchClinic();
 })();

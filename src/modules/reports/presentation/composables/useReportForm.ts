@@ -4,7 +4,7 @@ import {
   provideGetReportUseCase,
   provideSaveReportDraftUseCase,
   provideSignReportUseCase,
-  provideCloseReportUseCase,
+  provideArchiveReportUseCase,
   provideDownloadReportPdfUseCase,
 } from "@/modules/reports/application/containers/reportsContainer";
 import { useAuthStore } from "@/core/store/auth";
@@ -28,7 +28,7 @@ export interface UseReportFormReturn {
   validateForSignature: () => Record<string, string>;
   saveDraft: () => Promise<void>;
   sign: () => Promise<void>;
-  close: () => Promise<void>;
+  archive: () => Promise<void>;
   downloadPdf: () => Promise<void>;
 }
 
@@ -165,28 +165,114 @@ export function useReportForm(): UseReportFormReturn {
     report.value = { ...report.value, ...updated };
   }
 
-  // ── close ──────────────────────────────────────────────────────────────────
-  async function close(): Promise<void> {
+  // ── archive ────────────────────────────────────────────────────────────────
+  async function archive(): Promise<void> {
     if (!report.value) throw new Error("No hay informe cargado");
     if (report.value.status !== "signed") {
-      throw new Error("Solo se pueden cerrar informes firmados");
+      throw new Error("Solo se pueden archivar informes firmados");
     }
-    const useCase = provideCloseReportUseCase();
-    const updated = await useCase.execute(report.value.id);
-    report.value = { ...report.value, ...updated };
+
+    isSaving.value = true;
+    try {
+      // Generate PDF
+      const { createApp } = await import("vue");
+      const ReportPdfExport = (
+        await import(
+          "@/modules/reports/presentation/components/ReportPdfExport.vue"
+        )
+      ).default;
+
+      const container = document.createElement("div");
+      container.id = "pdf-export-container";
+      document.body.appendChild(container);
+
+      const app = createApp(ReportPdfExport, {
+        report: report.value,
+        signatureUrl: signatureValue.value,
+      });
+      const instance = app.mount(container);
+
+      // Wait for render
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      const pdfBlob = await (instance as any).generatePdf();
+
+      // Cleanup
+      app.unmount();
+      document.body.removeChild(container);
+
+      // Upload to backend
+      const useCase = provideArchiveReportUseCase();
+      const updated = await useCase.execute(report.value.id, pdfBlob);
+      report.value = { ...report.value, ...updated };
+    } catch (e: any) {
+      errorMessage.value = e?.message || "Error al archivar el informe";
+      throw e;
+    } finally {
+      isSaving.value = false;
+    }
   }
 
   // ── downloadPdf ────────────────────────────────────────────────────────────
   async function downloadPdf(): Promise<void> {
     if (!report.value) return;
-    const useCase = provideDownloadReportPdfUseCase();
-    const blob = await useCase.execute(report.value.id);
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `informe-${report.value.id}.pdf`;
-    a.click();
-    URL.revokeObjectURL(url);
+
+    // For signed reports without pdf_path, generate client-side
+    if (report.value.status === "signed" && !report.value.pdf_path) {
+      try {
+        const { createApp, h } = await import("vue");
+        const ReportPdfExport = (
+          await import(
+            "@/modules/reports/presentation/components/ReportPdfExport.vue"
+          )
+        ).default;
+
+        const container = document.createElement("div");
+        container.id = "pdf-export-container";
+        document.body.appendChild(container);
+
+        const app = createApp({
+          render() {
+            return h(ReportPdfExport as any, {
+              report: report.value,
+              signatureUrl: signatureValue.value,
+            });
+          },
+        });
+
+        const instance = app.mount(container);
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        const pdfBlob = await (instance as any).generatePdf();
+
+        app.unmount();
+        document.body.removeChild(container);
+
+        const url = URL.createObjectURL(pdfBlob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `informe-${report.value.id}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+        return;
+      } catch (e: any) {
+        errorMessage.value = e?.message || "Error al generar el PDF";
+        return;
+      }
+    }
+
+    // For archived reports, download from backend
+    try {
+      const useCase = provideDownloadReportPdfUseCase();
+      const blob = await useCase.execute(report.value.id);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `informe-${report.value.id}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e: any) {
+      errorMessage.value = e?.message || "Error al descargar el PDF";
+    }
   }
 
   // ── auto-save ──────────────────────────────────────────────────────────────
@@ -218,7 +304,7 @@ export function useReportForm(): UseReportFormReturn {
     validateForSignature,
     saveDraft,
     sign,
-    close,
+    archive,
     downloadPdf,
   };
 }

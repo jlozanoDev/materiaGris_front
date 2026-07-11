@@ -12,6 +12,7 @@ function createMockRepo(): DashboardRepository {
     getPatientsCount: vi.fn(),
     getTemplatesCount: vi.fn(),
     getReportsByStatus: vi.fn(),
+    getWeather: vi.fn(),
   };
 }
 

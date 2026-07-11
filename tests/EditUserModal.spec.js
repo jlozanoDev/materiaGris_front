@@ -1,7 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ref } from 'vue'
 import { mount } from '@vue/test-utils'
-import EditUserModal from '@/modules/admin/users/presentation/components/EditUserModal.vue'
+
+vi.mock('@/core/store/auth', () => ({
+  useAuthStore: () => ({
+    hasPermission: () => true,
+    user: { permissions: [] },
+  }),
+}))
+
+vi.mock('@/core/api/httpClient', () => ({
+  fetchClient: vi.fn().mockResolvedValue([]),
+}))
 
 vi.mock('@/modules/admin/roles/presentation/composables/useRoles', () => ({
   useRoles: () => ({
@@ -12,6 +22,8 @@ vi.mock('@/modules/admin/roles/presentation/composables/useRoles', () => ({
     ])
   })
 }))
+
+import EditUserModal from '@/modules/admin/users/presentation/components/EditUserModal.vue'
 
 describe('EditUserModal', () => {
   const mockClose = vi.fn()

@@ -152,6 +152,14 @@ function createWrapper(
         DroppableColumn: true,
         DroppableField: true,
         draggable: true,
+        Splitpanes: {
+          template: '<div><slot /></div>',
+          props: { class: String },
+        },
+        Pane: {
+          template: '<div :data-size="size" :data-min-size="minSize"><slot /></div>',
+          props: ['size', 'minSize'],
+        },
       },
     },
   })
@@ -249,6 +257,73 @@ describe('ReportTemplateBuilderPage', () => {
         await bodyBtn.trigger('click')
         // switchZone should have been called
       }
+    })
+  })
+
+  describe('resizable splitter localStorage', () => {
+    const STORAGE_KEY = 'report-template-builder-properties-width'
+
+    beforeEach(() => {
+      localStorage.clear()
+      vi.restoreAllMocks()
+    })
+
+    describe('reading persisted width on mount', () => {
+      function getPaneSize(wrapper: any): number {
+        // Pane stub renders as <div data-size="N">...
+        const el = wrapper.find('[data-size]')
+        if (!el.exists()) return -1
+        return Number(el.attributes('data-size'))
+      }
+
+      it('restores stored width when valid value exists', async () => {
+        localStorage.setItem(STORAGE_KEY, '35')
+        resetStore({ selectedFieldId: 'field-1' })
+        const wrapper = createWrapper()
+        await flushPromises()
+        expect(getPaneSize(wrapper)).toBe(35)
+      })
+
+      it.each([
+        { stored: null, label: 'no stored value' },
+        { stored: 'NaN', label: 'NaN string' },
+        { stored: 'abc', label: 'non-numeric string' },
+      ])('falls back to default 25% when $label', async ({ stored }) => {
+        if (stored !== null) {
+          localStorage.setItem(STORAGE_KEY, stored)
+        }
+        resetStore({ selectedFieldId: 'field-1' })
+        const wrapper = createWrapper()
+        await flushPromises()
+        expect(getPaneSize(wrapper)).toBe(25)
+      })
+
+      it('clamps negative stored value to 20', async () => {
+        localStorage.setItem(STORAGE_KEY, '-5')
+        resetStore({ selectedFieldId: 'field-1' })
+        const wrapper = createWrapper()
+        await flushPromises()
+        expect(getPaneSize(wrapper)).toBe(20)
+      })
+
+      it('clamps stored value over 50 to 50', async () => {
+        localStorage.setItem(STORAGE_KEY, '60')
+        resetStore({ selectedFieldId: 'field-1' })
+        const wrapper = createWrapper()
+        await flushPromises()
+        expect(getPaneSize(wrapper)).toBe(50)
+      })
+    })
+
+    describe('persisting width on resize', () => {
+      it('reads from localStorage on mount without writing', async () => {
+        const setItemSpy = vi.spyOn(Storage.prototype, 'setItem')
+        resetStore({ selectedFieldId: 'field-1' })
+        createWrapper()
+        await flushPromises()
+        // Mount should only read, never write to localStorage
+        expect(setItemSpy).not.toHaveBeenCalled()
+      })
     })
   })
 

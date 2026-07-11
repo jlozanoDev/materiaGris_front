@@ -7,7 +7,7 @@ import { useAuthStore } from "@/core/store/auth";
 import { useLogout } from "@/shared/composables/useLogout";
 import UiVuetifyDataTable from "@/shared/components/UiVuetifyDataTable.vue";
 import { usePermissions } from "@/modules/admin/permissions/presentation/composables/usePermissions";
-import EditUserModal from "@/modules/admin/users/presentation/components/EditUserModal.vue";
+import ProfileEditModal from "@/modules/admin/users/presentation/components/ProfileEditModal.vue";
 import ChangePasswordModal from "@/shared/components/ChangePasswordModal.vue";
 import AddressesModal from "@/shared/components/AddressesModal.vue";
 import type { PermissionShape } from "@/shared/types";
@@ -203,7 +203,7 @@ onMounted(async () => {
                 :columns="columns"
                 :paginator="true"
                 :rows="10"
-                :rows-per-page-options="[5, 10, 25, 50]"
+
               >
                 <template #body-slug="{ data }">
                   <div class="px-3 py-2 text-sm font-mono text-indigo-600">{{ data.slug }}</div>
@@ -243,7 +243,7 @@ onMounted(async () => {
     </div>
   </div>
 
-  <EditUserModal
+  <ProfileEditModal
     :show="showProfileEditModal"
     :user="authStore.user"
     @close="showProfileEditModal = false"

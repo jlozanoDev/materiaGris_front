@@ -23,7 +23,7 @@ Almacena el documento real e inmutable cumplimentado para un paciente específic
 * `id` (UUID / Primary Key)
 * `patient_id` (Foreign Key): Relación con el paciente.
 * `user_id` (Foreign Key): Relación con el médico / profesional autor.
-* `status` (Enum): `['borrador', 'firmado', 'cerrado']`.
+* `status` (Enum): `['borrador', 'firmado', 'archivado']`.
 * `template_structure_snapshot` (**JSON**): **Copia idéntica** del campo `structure` de la plantilla maestra en el microsegundo exacto en que el médico inició el informe.
 * `values` (**JSON**): Estructura llave-valor puramente con las respuestas dadas (`{"campo_id_1": "Valor", "campo_id_2": true}`).
 
