@@ -31,6 +31,7 @@
         :footer-sections="footerSections"
         :model-value="exampleData"
         :is-editable="false"
+        :variable-resolver="variableResolver"
       />
     </div>
 
@@ -57,6 +58,7 @@ interface Props {
   headerSections?: Section[]
   footerSections?: Section[]
   templateName?: string
+  variableResolver?: (text: string) => string
 }
 
 const props = withDefaults(defineProps<Props>(), {

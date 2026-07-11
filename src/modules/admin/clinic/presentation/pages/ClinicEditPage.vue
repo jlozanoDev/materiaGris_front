@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import { useClinicStore } from "@/core/store/clinic";
@@ -12,6 +12,8 @@ import Breadcrumb from "@/shared/components/Breadcrumb.vue";
 import ProfileEditModal from "@/modules/admin/users/presentation/components/ProfileEditModal.vue";
 import ChangePasswordModal from "@/shared/components/ChangePasswordModal.vue";
 import AddressesModal from "@/shared/components/AddressesModal.vue";
+import ClinicLogoUpload from "@/modules/admin/clinic/presentation/components/ClinicLogoUpload.vue";
+import { useClinicLogo } from "@/modules/admin/clinic/presentation/composables/useClinicLogo";
 
 // ---------------------------------------------------------------------------
 // Composables
@@ -41,6 +43,35 @@ const {
   submit,
   clearFieldError,
 } = useClinicForm(clinicRef);
+
+// ---------------------------------------------------------------------------
+// Logo upload
+// ---------------------------------------------------------------------------
+
+const {
+  uploading,
+  uploadError,
+  upload: uploadLogo,
+  setExistingLogo,
+  clear: clearLogo,
+} = useClinicLogo();
+
+// Set existing logo once clinic data is available
+watch(clinicRef, (clinicData) => {
+  if (clinicData?.logo) {
+    setExistingLogo(clinicData.logo);
+  }
+}, { immediate: true });
+
+async function handleLogoUpload(file: File): Promise<void> {
+  await uploadLogo(file);
+  // useClinicLogo.upload() already calls clinicStore.updateLogo internally
+}
+
+function handleLogoRemove(): void {
+  clearLogo();
+  clinicStore.updateLogo("");
+}
 
 // ---------------------------------------------------------------------------
 // Breadcrumb
@@ -125,8 +156,20 @@ function onFieldInput(key: string): void {
               {{ clinicStore.error }}
             </div>
 
-            <!-- Form -->
-            <div v-else>
+            <!-- Data loaded — logo upload + form -->
+            <template v-else>
+              <!-- Logo upload -->
+              <div class="mb-6">
+                <ClinicLogoUpload
+                  :logo-url="clinicRef?.logo ?? null"
+                  :uploading="uploading"
+                  :upload-error="uploadError"
+                  @upload="handleLogoUpload"
+                  @remove="handleLogoRemove"
+                />
+              </div>
+
+              <!-- Form -->
               <form @submit.prevent="handleSave">
                 <h4 class="text-xs font-semibold uppercase tracking-wider text-[#7c3aed] mb-3">
                   Información institucional
@@ -312,7 +355,7 @@ function onFieldInput(key: string): void {
                   </button>
                 </div>
               </form>
-            </div>
+            </template>
           </div>
         </div>
       </main>

@@ -16,6 +16,12 @@ Permitir al administrador configurar los datos institucionales de la clínica (n
 | Edición de todos los campos institucionales | ✅ Implementado |
 | Validación de formato (email, URL, longitudes máx.) | ✅ Implementado |
 | Los datos se reflejan automáticamente en informes | ✅ Implementado |
+| Subida de logo de la clínica (PNG, JPG, SVG, WebP, máx. 5MB) | ✅ Implementado |
+| Vista previa del logo en la página de edición | ✅ Implementado |
+| Reemplazo y eliminación de logo | ✅ Implementado |
+| Variable `{clinica.logo}` en plantillas de informe | ✅ Implementado |
+| Resolución de `{clinica.logo}` en vistas previas (modal + impresión) | ✅ Implementado |
+| Registro de `clinica.logo` en selector de variables del builder | ✅ Implementado |
 | Carga automática al iniciar la aplicación | ✅ Implementado |
 | Acceso restringido por permiso `admin.clinic.update` | ✅ Implementado |
 
@@ -30,6 +36,12 @@ Permitir al administrador configurar los datos institucionales de la clínica (n
   - Encabezados de informes médicos
   - Variables de sistema `{clinica.*}`
   - Vista previa de plantillas de informes
+- La sección de logo se muestra entre el título y el formulario
+- El logo se puede subir mediante drag-drop o click-to-browse
+- Validación cliente: solo PNG, JPG, SVG, WebP; máx. 5MB
+- Al subir exitosamente, el logo se actualiza en el store y en la preview
+- `{clinica.logo}` resuelve a `<img>` HTML o `""` en plantillas
+- El builder de plantillas puede seleccionar `clinica.logo` en el selector de variables
 - Si la clínica no existe en backend (404), se muestra mensaje informativo
 - Si el usuario no es admin (403), se redirige al dashboard
 
@@ -87,17 +99,22 @@ Permitir al administrador configurar los datos institucionales de la clínica (n
 
 - API `GET /admin/clinic` — obtener datos de clínica
 - API `PUT /admin/clinic` — actualizar datos
+- API `POST /admin/clinic/logo` — subir logo (multipart, campo `logo`)
 - API `GET /me` — campos del profesional (`apellido`, `num_colegiado`, `especialidad`, `telefono`)
 - Store `useClinicStore` — caché reactiva de datos de clínica
 - Composable `useReportVariableResolver` — resuelve variables para informes
+- Composable `useClinicLogo` — validación y subida de logo
+- Componente `ClinicLogoUpload` — UI de drag-drop + preview
+- `PreviewModal` / `PrintPreviewModal` — reciben `variableResolver` para resolver `{clinica.logo}`
+- `useSystemVariableRegistry` — registro de `clinica.logo` en selector de variables del builder
 - Permiso `admin.clinic.update` — control de acceso
 
 ## Estado
 
-✅ **Completo.** Página, formulario, validación, store, integración con informes y sidebar — todo implementado.
+✅ **Completo.** Página, formulario, validación, store, logo upload, integración con informes, variables de sistema y sidebar — todo implementado.
 
 ## Pendientes (Roadmap)
 
-- [ ] Subida de logo de la clínica (requiere endpoint en backend)
+- [ ] Foto de portada / imágenes institucionales
 - [ ] Vista previa de cómo se ven los datos en un informe real
 - [ ] Historial de cambios (quién modificó qué y cuándo)

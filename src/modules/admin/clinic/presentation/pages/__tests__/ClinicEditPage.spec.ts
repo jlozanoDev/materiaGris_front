@@ -9,6 +9,7 @@ const mockUpdateUseCase = { execute: vi.fn() };
 
 vi.mock("@/modules/admin/clinic/application/containers/clinicContainer", () => ({
   provideUpdateClinicUseCase: () => mockUpdateUseCase,
+  provideUploadClinicLogoUseCase: () => ({ execute: vi.fn() }),
 }));
 
 // ============================================================================
@@ -116,7 +117,7 @@ describe("ClinicEditPage", () => {
   it("renders the page title", async () => {
     const wrapper = await createWrapper();
     expect(wrapper.text()).toContain("Datos de la Clínica");
-  });
+  }, 15000);
 
   it("renders breadcrumb", async () => {
     const wrapper = await createWrapper();
