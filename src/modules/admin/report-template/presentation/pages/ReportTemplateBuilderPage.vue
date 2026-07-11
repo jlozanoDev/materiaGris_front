@@ -19,6 +19,8 @@ import PrintPreviewModal from '../components/PrintPreviewModal.vue'
 import Modal from '@/shared/components/Modal.vue'
 import { createDefaultFieldTypeRegistry } from '@/shared/types/defaultFieldTypeRegistry'
 import { useSystemVariableRegistry, SYSTEM_VARIABLES_KEY } from '@/shared/composables/useSystemVariableRegistry'
+import { useClinicStore } from '@/core/store/clinic'
+import { useReportVariableResolver } from '@/shared/composables/useReportVariableResolver'
 
 const fieldRegistry = createDefaultFieldTypeRegistry()
 
@@ -58,6 +60,12 @@ const route = useRoute()
 const authStore = useAuthStore()
 const { logout } = useLogout()
 const builder = useTemplateBuilder()
+const clinicStore = useClinicStore()
+
+// ── Variable resolver for preview ────────────────────────────────────────
+const userRef = computed(() => authStore.user)
+const clinicRef = computed(() => clinicStore.clinic)
+const { resolve: variableResolver } = useReportVariableResolver(userRef, clinicRef)
 provide(BUILDER_KEY, builder)
 
 const isEditMode = computed(() => route.name === 'AdminReportTemplateEdit')
@@ -447,6 +455,7 @@ onMounted(async () => {
       :header-sections="builder.headerEnabled ? builder.headerSections : undefined"
       :footer-sections="builder.footerEnabled ? builder.footerSections : undefined"
       :template-name="builder.templateName"
+      :variable-resolver="variableResolver"
       @close="showPreview = false"
     />
     <PrintPreviewModal
@@ -455,6 +464,7 @@ onMounted(async () => {
       :header-sections="builder.headerEnabled ? builder.headerSections : []"
       :footer-sections="builder.footerEnabled ? builder.footerSections : []"
       :template-name="builder.templateName"
+      :variable-resolver="variableResolver"
       @close="showPrintPreview = false"
     />
 

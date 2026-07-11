@@ -89,6 +89,7 @@ function registerFallbackVariables(): void {
   registry.register('clinica', 'provincia', 'Provincia', 'Provincia de la clínica')
   registry.register('clinica', 'codigo_postal', 'Código Postal', 'Código postal de la clínica')
   registry.register('clinica', 'cuit', 'CUIT', 'CUIT de la clínica')
+  registry.register('clinica', 'logo', 'Logo de la clínica', 'URL del logo de la clínica')
 }
 
 function search(prefix: string): SystemVarDef[] {

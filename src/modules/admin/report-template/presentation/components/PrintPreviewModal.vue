@@ -29,6 +29,7 @@
       :header-enabled="headerSections.length > 0"
       :footer-enabled="footerSections.length > 0"
       :values="exampleData"
+      :variable-resolver="variableResolver"
     />
 
     <template #footer>
@@ -54,6 +55,7 @@ interface Props {
   headerSections?: Section[]
   footerSections?: Section[]
   templateName?: string
+  variableResolver?: (text: string) => string
 }
 
 const props = withDefaults(defineProps<Props>(), {
