@@ -23,6 +23,8 @@ export interface UseDashboardReturn {
   loading: Ref<boolean>;
   error: Ref<unknown>;
   role: Ref<DashboardRole>;
+  isEmptyState: ReturnType<typeof computed<boolean>>;
+  isNewProfessional: ReturnType<typeof computed<boolean>>;
   fetchDashboard: () => Promise<void>;
   // Weather
   weather: Ref<WeatherData | null>;
@@ -63,6 +65,17 @@ export function useDashboard(): UseDashboardReturn {
     if (authStore.hasPermission("report.edit")) return "doctor";
     if (authStore.hasPermission("admin.user.view")) return "admin";
     return "none";
+  });
+
+  const isEmptyState = computed(() => {
+    if (!stats.value) return false;
+    return stats.value.visits === 0
+      && stats.value.newPatients === 0
+      && stats.value.returningPatients === 0;
+  });
+
+  const isNewProfessional = computed(() => {
+    return isEmptyState.value && stats.value !== null && stats.value.totalPatients === 0;
   });
 
   async function fetchWeather(): Promise<void> {
@@ -152,6 +165,8 @@ export function useDashboard(): UseDashboardReturn {
     loading,
     error,
     role,
+    isEmptyState,
+    isNewProfessional,
     fetchDashboard,
     weather,
     weatherLoading,

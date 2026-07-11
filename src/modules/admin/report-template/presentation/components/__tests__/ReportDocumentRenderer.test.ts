@@ -61,8 +61,9 @@ describe('ReportDocumentRenderer — clinica.logo preview', () => {
         sections,
         values: {},
         variableResolver: (text: string) => {
-          if (text === 'clinica.logo') {
-            return '<img src="https://example.com/logo.png" alt="Logo" style="max-width:100%">'
+          // Variable resolver receives full text with {category.key} patterns
+          if (text.includes('{clinica.logo}')) {
+            return text.replace('{clinica.logo}', '<img src="https://example.com/logo.png" alt="Logo" style="max-width:100%">')
           }
           return text
         },

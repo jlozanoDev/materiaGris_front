@@ -172,36 +172,76 @@ onMounted(async () => {
 
         <!-- Doctor layout -->
         <template v-if="dashboard.role.value === 'doctor'">
-          <div class="flex gap-5">
-            <HeroCard
-              :stats="dashboard.stats.value"
-              :loading="dashboard.loading.value"
-              :error="dashboard.error.value instanceof Error ? dashboard.error.value.message : null"
-              :user-name="authStore.user?.name || 'Usuario'"
-              :weather-data="dashboard.weather.value"
-              :weather-loading="dashboard.weatherLoading.value"
-              :weather-error="dashboard.weatherError.value"
-              :show-city-selector="dashboard.showCitySelector.value"
-              class="flex-1"
-              @select-city="(payload) => dashboard.selectCity(payload.lat, payload.lon)"
-            />
-            <div class="w-80">
-              <PendingReportsWidget
-                :reports="dashboard.pendingReports.value"
+          <template v-if="dashboard.isEmptyState.value">
+            <!-- Empty-state layout: HeroCard + QuickActions side by side -->
+            <div class="flex gap-5">
+              <HeroCard
+                :stats="dashboard.stats.value"
                 :loading="dashboard.loading.value"
-                :role="dashboard.role.value"
+                :error="dashboard.error.value instanceof Error ? dashboard.error.value.message : null"
+                :user-name="authStore.user?.name || 'Usuario'"
+                :is-empty-state="dashboard.isEmptyState.value"
+                :is-new-professional="dashboard.isNewProfessional.value"
+                :weather-data="dashboard.weather.value"
+                :weather-loading="dashboard.weatherLoading.value"
+                :weather-error="dashboard.weatherError.value"
+                :show-city-selector="dashboard.showCitySelector.value"
+                class="flex-1"
+                @select-city="(payload) => dashboard.selectCity(payload.lat, payload.lon)"
               />
+              <QuickActions class="w-80" />
             </div>
-          </div>
-          <div class="mt-5 flex gap-5">
-            <QuickActions class="flex-1" />
-            <div class="w-160">
-              <PatientList
-                :patients="dashboard.patients.value"
+            <div class="mt-5 flex gap-5">
+              <div class="flex-1">
+                <PendingReportsWidget
+                  :reports="dashboard.pendingReports.value"
+                  :loading="dashboard.loading.value"
+                  :role="dashboard.role.value"
+                />
+              </div>
+              <div class="flex-1">
+                <PatientList
+                  :patients="dashboard.patients.value"
+                  :loading="dashboard.loading.value"
+                />
+              </div>
+            </div>
+          </template>
+          <template v-else>
+            <!-- Normal layout: HeroCard + PendingReports side by side -->
+            <div class="flex gap-5">
+              <HeroCard
+                :stats="dashboard.stats.value"
                 :loading="dashboard.loading.value"
+                :error="dashboard.error.value instanceof Error ? dashboard.error.value.message : null"
+                :user-name="authStore.user?.name || 'Usuario'"
+                :is-empty-state="false"
+                :is-new-professional="false"
+                :weather-data="dashboard.weather.value"
+                :weather-loading="dashboard.weatherLoading.value"
+                :weather-error="dashboard.weatherError.value"
+                :show-city-selector="dashboard.showCitySelector.value"
+                class="flex-1"
+                @select-city="(payload) => dashboard.selectCity(payload.lat, payload.lon)"
               />
+              <div class="w-80">
+                <PendingReportsWidget
+                  :reports="dashboard.pendingReports.value"
+                  :loading="dashboard.loading.value"
+                  :role="dashboard.role.value"
+                />
+              </div>
             </div>
-          </div>
+            <div class="mt-5 flex gap-5">
+              <QuickActions class="flex-1" />
+              <div class="w-160">
+                <PatientList
+                  :patients="dashboard.patients.value"
+                  :loading="dashboard.loading.value"
+                />
+              </div>
+            </div>
+          </template>
         </template>
 
         </div>

@@ -50,7 +50,7 @@ describe("useDashboard", () => {
     it("loads stats, patients, and pending reports for doctor role", async () => {
       setupDoctor();
 
-      const mockStats = { visits: 10, newPatients: 5, returningPatients: 5 };
+      const mockStats = { visits: 10, newPatients: 5, returningPatients: 5, totalPatients: 100 };
       const mockPatients = [
         { id: 1, name: "Ana García", visitTime: "10:30", initials: "AG" },
       ];
@@ -98,10 +98,113 @@ describe("useDashboard", () => {
 
       expect(dashboard.loading.value).toBe(true);
 
-      resolveStats({ visits: 0, newPatients: 0, returningPatients: 0 });
+      resolveStats({ visits: 0, newPatients: 0, returningPatients: 0, totalPatients: 0 });
       await fetchP;
 
       expect(dashboard.loading.value).toBe(false);
+    });
+  });
+
+  describe("empty-state computed refs", () => {
+    function setupDoctor() {
+      const authStore = useAuthStore();
+      authStore.user = {
+        id: 1,
+        name: "Dr. Test",
+        email: "dr@test.com",
+        permissions: { "report.edit": 1 },
+      };
+    }
+
+    it("isEmptyState is true when stats are all-zero", async () => {
+      setupDoctor();
+
+      const mockStats = { visits: 0, newPatients: 0, returningPatients: 0, totalPatients: 0 };
+      (provideGetDashboardStatsUseCase as any).mockReturnValue({
+        execute: vi.fn().mockResolvedValue(mockStats),
+      });
+      (provideGetRecentPatientsUseCase as any).mockReturnValue({
+        execute: vi.fn().mockResolvedValue([]),
+      });
+      (provideGetPendingReportsUseCase as any).mockReturnValue({
+        execute: vi.fn().mockResolvedValue([]),
+      });
+
+      const dashboard = useDashboard();
+      await dashboard.fetchDashboard();
+
+      expect(dashboard.isEmptyState.value).toBe(true);
+    });
+
+    it("isEmptyState is false when stats is null (loading)", async () => {
+      setupDoctor();
+
+      const dashboard = useDashboard();
+
+      // stats is null initially — before fetchDashboard resolves
+      expect(dashboard.stats.value).toBeNull();
+      expect(dashboard.isEmptyState.value).toBe(false);
+    });
+
+    it("isEmptyState is false when stats have non-zero values", async () => {
+      setupDoctor();
+
+      const mockStats = { visits: 5, newPatients: 0, returningPatients: 0, totalPatients: 10 };
+      (provideGetDashboardStatsUseCase as any).mockReturnValue({
+        execute: vi.fn().mockResolvedValue(mockStats),
+      });
+      (provideGetRecentPatientsUseCase as any).mockReturnValue({
+        execute: vi.fn().mockResolvedValue([]),
+      });
+      (provideGetPendingReportsUseCase as any).mockReturnValue({
+        execute: vi.fn().mockResolvedValue([]),
+      });
+
+      const dashboard = useDashboard();
+      await dashboard.fetchDashboard();
+
+      expect(dashboard.isEmptyState.value).toBe(false);
+    });
+
+    it("isNewProfessional is true when isEmptyState and totalPatients === 0", async () => {
+      setupDoctor();
+
+      const mockStats = { visits: 0, newPatients: 0, returningPatients: 0, totalPatients: 0 };
+      (provideGetDashboardStatsUseCase as any).mockReturnValue({
+        execute: vi.fn().mockResolvedValue(mockStats),
+      });
+      (provideGetRecentPatientsUseCase as any).mockReturnValue({
+        execute: vi.fn().mockResolvedValue([]),
+      });
+      (provideGetPendingReportsUseCase as any).mockReturnValue({
+        execute: vi.fn().mockResolvedValue([]),
+      });
+
+      const dashboard = useDashboard();
+      await dashboard.fetchDashboard();
+
+      expect(dashboard.isNewProfessional.value).toBe(true);
+    });
+
+    it("isNewProfessional is false when isEmptyState and totalPatients > 0", async () => {
+      setupDoctor();
+
+      const mockStats = { visits: 0, newPatients: 0, returningPatients: 0, totalPatients: 5 };
+      (provideGetDashboardStatsUseCase as any).mockReturnValue({
+        execute: vi.fn().mockResolvedValue(mockStats),
+      });
+      (provideGetRecentPatientsUseCase as any).mockReturnValue({
+        execute: vi.fn().mockResolvedValue([]),
+      });
+      (provideGetPendingReportsUseCase as any).mockReturnValue({
+        execute: vi.fn().mockResolvedValue([]),
+      });
+
+      const dashboard = useDashboard();
+      await dashboard.fetchDashboard();
+
+      expect(dashboard.isEmptyState.value).toBe(true);
+      expect(dashboard.isNewProfessional.value).toBe(false);
     });
   });
 

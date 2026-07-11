@@ -42,4 +42,32 @@ describe('HeroCard', () => {
     const wrapper = mount(HeroCard)
     expect(wrapper.text()).toContain('Usuario!')
   })
+
+  it('muestra onboarding para nuevo profesional cuando isEmptyState y isNewProfessional', () => {
+    const wrapper = mount(HeroCard, {
+      props: {
+        stats: { visits: 0, newPatients: 0, returningPatients: 0, totalPatients: 0 },
+        loading: false,
+        isEmptyState: true,
+        isNewProfessional: true,
+      },
+    })
+    expect(wrapper.text()).toContain('Comienza a construir')
+    expect(wrapper.text()).toContain('Registra tu primer paciente')
+    expect(wrapper.text()).not.toContain('Visitas hoy')
+  })
+
+  it('muestra mensaje de día lento cuando isEmptyState y !isNewProfessional', () => {
+    const wrapper = mount(HeroCard, {
+      props: {
+        stats: { visits: 0, newPatients: 0, returningPatients: 0, totalPatients: 12 },
+        loading: false,
+        isEmptyState: true,
+        isNewProfessional: false,
+      },
+    })
+    expect(wrapper.text()).toContain('Hoy no hay actividad')
+    expect(wrapper.text()).toContain('12')
+    expect(wrapper.text()).not.toContain('Visitas hoy')
+  })
 })

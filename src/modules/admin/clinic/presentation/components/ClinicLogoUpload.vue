@@ -124,13 +124,13 @@ function openFilePicker(): void {
 
     <!-- Existing logo preview -->
     <div
-      v-if="logoUrl && !uploading"
-      class="mb-4 flex items-center gap-4"
+      v-if="logoUrl"
+      class="mb-4 flex flex-col items-start gap-2"
     >
       <img
         :src="logoUrl"
         alt="Logo de la clínica"
-        class="max-h-20 max-w-40 rounded-lg border border-slate-200 object-contain"
+        class="max-h-64 w-full rounded-lg border border-slate-200 object-contain"
       />
       <button
         v-if="!disabled"

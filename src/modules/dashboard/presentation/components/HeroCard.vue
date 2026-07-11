@@ -10,6 +10,8 @@ interface Props {
   loading?: boolean;
   error?: string | null;
   userName?: string;
+  isEmptyState?: boolean;
+  isNewProfessional?: boolean;
   weatherData?: WeatherData | null;
   weatherLoading?: boolean;
   weatherError?: string | null;
@@ -21,6 +23,8 @@ withDefaults(defineProps<Props>(), {
   loading: false,
   error: null,
   userName: "Usuario",
+  isEmptyState: false,
+  isNewProfessional: false,
   weatherData: null,
   weatherLoading: false,
   weatherError: null,
@@ -64,6 +68,38 @@ const emit = defineEmits<{
             <div class="h-20 w-36 bg-white/20 rounded-2xl animate-pulse" />
             <div class="h-20 w-36 bg-white/20 rounded-2xl animate-pulse" />
           </div>
+        </div>
+
+        <!-- Empty state (new professional variant) -->
+        <div v-else-if="stats && isEmptyState && isNewProfessional" class="mt-5 max-w-md">
+          <p class="text-xl font-semibold text-white/95">Comienza a construir tu consulta</p>
+          <ul class="mt-3 space-y-2 text-sm text-white/80">
+            <li class="flex items-start gap-2">
+              <span class="mt-0.5 text-white/60">•</span>
+              <span>Registra tu primer paciente — añade sus datos clínicos y antecedentes</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="mt-0.5 text-white/60">•</span>
+              <span>Crea una plantilla de informe para agilizar tu práctica diaria</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="mt-0.5 text-white/60">•</span>
+              <span>Explora el panel de administración para configurar tu consulta</span>
+            </li>
+          </ul>
+          <p class="mt-4 text-xs text-white/60">Cuando tengas actividad, aquí verás tus visitas y pacientes del día.</p>
+        </div>
+
+        <!-- Empty state (slow day variant) -->
+        <div v-else-if="stats && isEmptyState" class="mt-5 max-w-md">
+          <p class="text-xl font-semibold text-white/95">Hoy no hay actividad registrada</p>
+          <p class="mt-2 text-sm text-white/75">
+            Tienes <strong>{{ stats.totalPatients }}</strong> paciente{{ stats.totalPatients !== 1 ? 's' : '' }} registrado{{ stats.totalPatients !== 1 ? 's' : '' }}.
+            Vuelve más tarde para ver las estadísticas del día.
+          </p>
+          <p class="mt-3 text-xs text-white/60">
+            Los datos de visitas, nuevos pacientes y retornos aparecerán aquí cuando haya movimiento.
+          </p>
         </div>
 
         <!-- Stats data -->

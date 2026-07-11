@@ -6,7 +6,10 @@ export default class GetDashboardStatsUseCase {
   constructor(private readonly dashboardRepository: DashboardRepository) {}
 
   async execute(range: DateRange): Promise<DashboardStats> {
-    const response = await this.dashboardRepository.getStats(range);
+    const [response, totalPatients] = await Promise.all([
+      this.dashboardRepository.getStats(range),
+      this.dashboardRepository.getPatientsCount(),
+    ]);
     const patients = response.data ?? [];
 
     const rangeStart = new Date(range.from);
@@ -32,6 +35,7 @@ export default class GetDashboardStatsUseCase {
       visits: patients.length,
       newPatients,
       returningPatients,
+      totalPatients,
     };
   }
 }

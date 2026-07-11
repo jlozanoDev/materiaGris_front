@@ -269,12 +269,18 @@ function formatCellValue(val: unknown, type: string): string {
 }
 
 function interpolateContent(text: string): string {
-  // First substitute variables
-  const resolved = text.replace(/\{([^}]+)\}/g, (_match, path: string) => {
-    const resolveFn = props.variableResolver ?? previewResolve
-    const value = resolveFn(path.trim())
-    return value ?? `{${path}}`
-  })
+  let resolved: string
+
+  if (props.variableResolver) {
+    // Variable resolver expects full text with {category.key} patterns
+    resolved = props.variableResolver(text)
+  } else {
+    // Fallback: resolve variables one by one using previewResolve
+    resolved = text.replace(/\{([^}]+)\}/g, (_match, path: string) => {
+      const value = previewResolve(path.trim())
+      return value ?? `{${path}}`
+    })
+  }
 
   // If content contains HTML tags (WYSIWYG output), render as rich text
   if (/<[a-zA-Z][^>]*>/.test(resolved)) {

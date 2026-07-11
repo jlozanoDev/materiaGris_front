@@ -64,7 +64,7 @@ const CHILD_STUBS = {
   HeroCard: {
     name: 'HeroCard',
     template: '<section class="stub-herocard">{{ userName }}</section>',
-    props: ['userName', 'stats', 'loading', 'error'],
+    props: ['userName', 'stats', 'loading', 'error', 'isEmptyState', 'isNewProfessional'],
   },
   PatientList: { name: 'PatientList', template: '<ul class="stub-patientlist" />' },
   PendingReportsWidget: { name: 'PendingReportsWidget', template: '<div class="stub-pending-reports" />' },

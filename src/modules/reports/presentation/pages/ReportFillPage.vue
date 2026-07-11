@@ -188,6 +188,7 @@
               :ai-accept-field="aiAcceptField"
               :ai-reject-field="aiRejectField"
               :ai-edit-field="aiEditField"
+              :ai-apply-all="aiApplyAll"
               @update:model-value="handleUpdate"
               @auto-save="handleSave"
             />

@@ -75,4 +75,65 @@ describe('HeroCard with weather', () => {
 
     expect(wrapper.text()).toContain('Error al cargar estadísticas');
   });
+
+  it('renders new-professional onboarding tips when isEmptyState && isNewProfessional', () => {
+    const wrapper = mount(HeroCard, {
+      props: {
+        stats: { visits: 0, newPatients: 0, returningPatients: 0, totalPatients: 0 },
+        loading: false,
+        isEmptyState: true,
+        isNewProfessional: true,
+      },
+    });
+
+    expect(wrapper.text()).toContain('Comienza a construir');
+    expect(wrapper.text()).toContain('Registra tu primer paciente');
+    expect(wrapper.text()).toContain('Crea una plantilla');
+    // Zero stat cards should NOT render
+    expect(wrapper.text()).not.toContain('Visitas hoy');
+  });
+
+  it('renders slow-day variant when isEmptyState && !isNewProfessional', () => {
+    const wrapper = mount(HeroCard, {
+      props: {
+        stats: { visits: 0, newPatients: 0, returningPatients: 0, totalPatients: 12 },
+        loading: false,
+        isEmptyState: true,
+        isNewProfessional: false,
+      },
+    });
+
+    expect(wrapper.text()).toContain('Hoy no hay actividad');
+    expect(wrapper.text()).toContain('12');
+    // Zero stat cards should NOT render
+    expect(wrapper.text()).not.toContain('Visitas hoy');
+  });
+
+  it('renders stats normally when isEmptyState is false', () => {
+    const wrapper = mount(HeroCard, {
+      props: {
+        stats: { visits: 10, newPatients: 3, returningPatients: 7, totalPatients: 100 },
+        loading: false,
+        isEmptyState: false,
+        isNewProfessional: false,
+      },
+    });
+
+    expect(wrapper.text()).toContain('10');
+    expect(wrapper.text()).toContain('Visitas hoy');
+    expect(wrapper.text()).toContain('3');
+    expect(wrapper.text()).toContain('7');
+  });
+
+  it('renders stats when isEmptyState and isNewProfessional props are omitted (backward compat)', () => {
+    const wrapper = mount(HeroCard, {
+      props: {
+        stats: { visits: 5, newPatients: 2, returningPatients: 3, totalPatients: 50 },
+        loading: false,
+      },
+    });
+
+    expect(wrapper.text()).toContain('5');
+    expect(wrapper.text()).toContain('Visitas hoy');
+  });
 });

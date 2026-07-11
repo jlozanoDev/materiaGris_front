@@ -156,26 +156,17 @@ function onFieldInput(key: string): void {
               {{ clinicStore.error }}
             </div>
 
-            <!-- Data loaded — logo upload + form -->
+            <!-- Data loaded — two-column layout -->
             <template v-else>
-              <!-- Logo upload -->
-              <div class="mb-6">
-                <ClinicLogoUpload
-                  :logo-url="clinicRef?.logo ?? null"
-                  :uploading="uploading"
-                  :upload-error="uploadError"
-                  @upload="handleLogoUpload"
-                  @remove="handleLogoRemove"
-                />
-              </div>
+              <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Left column: Form -->
+                <div class="lg:col-span-2">
+                  <form @submit.prevent="handleSave">
+                    <h4 class="text-xs font-semibold uppercase tracking-wider text-[#7c3aed] mb-3">
+                      Información institucional
+                    </h4>
 
-              <!-- Form -->
-              <form @submit.prevent="handleSave">
-                <h4 class="text-xs font-semibold uppercase tracking-wider text-[#7c3aed] mb-3">
-                  Información institucional
-                </h4>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <!-- Nombre — full width -->
                   <div class="md:col-span-2">
                     <label for="field-nombre" class="block text-sm font-medium text-[#6b6b7b] mb-1">
@@ -355,6 +346,19 @@ function onFieldInput(key: string): void {
                   </button>
                 </div>
               </form>
+            </div>
+
+            <!-- Right column: Logo -->
+            <div class="lg:col-span-1">
+              <ClinicLogoUpload
+                :logo-url="clinicRef?.logo ?? null"
+                :uploading="uploading"
+                :upload-error="uploadError"
+                @upload="handleLogoUpload"
+                @remove="handleLogoRemove"
+              />
+            </div>
+          </div>
             </template>
           </div>
         </div>
