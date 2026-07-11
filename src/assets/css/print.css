@@ -1,0 +1,16 @@
+@media print {
+  .app-sidebar,
+  .topbar,
+  .modal-backdrop,
+  .modal-header,
+  .modal-footer,
+  [class*="breadcrumb"],
+  .ds-modal-root {
+    display: none !important;
+  }
+
+  .pagedjs_page {
+    display: block !important;
+    visibility: visible !important;
+  }
+}
