@@ -27,10 +27,10 @@ Chain strategy: pending
 
 ## Phase 1: Dependency & Print CSS
 
-- [ ] 1.1 Install `pagedjs` via `npm install pagedjs` — add to `package.json`
-- [ ] 1.2 Create `src/assets/css/print.css` with `@media print { .app-sidebar, .topbar, .modal-backdrop, .modal-header, .modal-footer, [class*="breadcrumb"], .ds-modal-root { display: none !important; } .pagedjs_page { display: block !important; visibility: visible !important; } }`
-- [ ] 1.3 Import `@/assets/css/print.css` in `src/main.ts` after `./style.css`
-- [ ] 1.4 Run `npm run build` to verify CSS compiles and app bundles without errors
+- [x] 1.1 Install `pagedjs` via `npm install pagedjs` — added to `package.json`
+- [x] 1.2 Create `src/assets/css/print.css` with `@media print { .app-sidebar, .topbar, .modal-backdrop, .modal-header, .modal-footer, [class*="breadcrumb"], .ds-modal-root { display: none !important; } .pagedjs_page { display: block !important; visibility: visible !important; } }`
+- [x] 1.3 Import `@/assets/css/print.css` in `src/main.ts` after `./style.css`
+- [x] 1.4 Run `npm run build` to verify CSS compiles and app bundles without errors
 
 ## Phase 2: usePrintReport Composable
 
