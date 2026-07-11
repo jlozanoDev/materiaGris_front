@@ -15,6 +15,7 @@ function createSectionWithFixedText(textContent: string): { sections: Section[] 
             columns: [
               {
                 id: 'col-1',
+                label: 'Column 1',
                 fields: [
                   {
                     id: 'fld-1',

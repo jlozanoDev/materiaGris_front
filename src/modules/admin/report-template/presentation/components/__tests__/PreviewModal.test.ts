@@ -14,6 +14,7 @@ describe('PreviewModal', () => {
           columns: [
             {
               id: 'c1',
+              label: 'Column 1',
               fields: [
                 {
                   id: 'f1',

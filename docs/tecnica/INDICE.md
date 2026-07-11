@@ -30,6 +30,7 @@
 | **Admin — Informes: Menú** | [`modules/admin/report-templates-menu/report-templates-menu.md`](./modules/admin/report-templates-menu/report-templates-menu.md) |
 | **Admin — Clínica** | [`modules/admin/clinica-config/clinica-config.md`](./modules/admin/clinica-config/clinica-config.md) |
 | **Admin — Informes: Cabecera/Pie** | [`modulos/admin-report-template.md`](./modulos/admin-report-template.md) |
+| **Reports (Informes)** | [`modulos/reports.md`](./modulos/reports.md) |
 
 ## Referencia cruzada con funcional
 
@@ -45,3 +46,4 @@
 | admin — report templates menu | `tecnica/modules/admin/report-templates-menu/` | [`funcional/modulos/administracion/informes.md`](../funcional/modulos/administracion/informes.md) |
 | admin — clinic | `tecnica/modules/admin/clinica-config/` | [`funcional/modulos/administracion/clinica.md`](../funcional/modulos/administracion/clinica.md) |
 | admin — report header/footer | `tecnica/modulos/admin-report-template.md` | [`funcional/modulos/admin-report-template.md`](../funcional/modulos/admin-report-template.md) |
+| reports | `tecnica/modulos/reports.md` | [`funcional/modulos/reports.md`](../funcional/modulos/reports.md) |

@@ -40,7 +40,7 @@ export const useClinicStore = defineStore("clinic", () => {
     }
   }
 
-  function updateLogo(url: string): void {
+  function updateLogo(url: string | null): void {
     if (clinic.value) {
       clinic.value.logo = url;
     }

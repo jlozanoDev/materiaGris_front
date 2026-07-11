@@ -9,7 +9,7 @@ function createMockRepo(): ReportRepository {
     getById: vi.fn(),
     saveDraft: vi.fn(),
     sign: vi.fn(),
-    close: vi.fn(),
+    archive: vi.fn(),
     downloadPdf: vi.fn(),
     getActiveTemplates: vi.fn(),
     delete: vi.fn(),

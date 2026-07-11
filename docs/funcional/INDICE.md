@@ -27,6 +27,7 @@
 | Admin — Clínica | [`modulos/administracion/clinica.md`](./modulos/administracion/clinica.md) | Datos institucionales: nombre, dirección, contacto, CUIT |
 | Admin — Informes | [`modulos/administracion/informes.md`](./modulos/administracion/informes.md) | Configuración de campos de plantillas de informes |
 | Admin — Cabecera/Pie informes | [`modulos/admin-report-template.md`](./modulos/admin-report-template.md) | Cabecera y pie configurables en plantillas |
+| Reports (Informes) | [`modulos/reports.md`](./modulos/reports.md) | Creación, edición, firma, archivado e impresión de informes |
 
 ## Flujos de usuario
 
@@ -35,6 +36,7 @@
 | Login y acceso | [`flujos/login.md`](./flujos/login.md) | Desde que el usuario llega hasta que accede al sistema |
 | Gestión de pacientes | [`flujos/gestion-pacientes.md`](./flujos/gestion-pacientes.md) | Buscar, crear y editar pacientes |
 | Administración del sistema | [`flujos/administracion-sistema.md`](./flujos/administracion-sistema.md) | Crear usuario, asignar rol, gestionar permisos |
+| Firma e impresión de informes | Pendiente | Crear, firmar e imprimir un informe clínico |
 
 ## Estado de cobertura
 
@@ -49,6 +51,7 @@
 | Admin — Informes (campos) | ✅ Documentado | ✅ Completo | Alta |
 | Admin — Clínica | ✅ Documentado | ✅ Completo | Alta |
 | Admin — Cabecera/Pie informes | ✅ Documentado | ✅ Completo | Media |
+| Reports (Informes) | ✅ Documentado | ⚠️ Parcial | Alta |
 | Consultas médicas | ❌ Pendiente | ❌ No implementado | Futura |
 
 ✅ Documentado / Implementado · ⚠️ Parcial / En progreso · ❌ No existe / No implementado

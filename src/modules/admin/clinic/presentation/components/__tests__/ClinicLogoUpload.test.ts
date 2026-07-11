@@ -47,7 +47,7 @@ describe("ClinicLogoUpload", () => {
     });
 
     const input = wrapper.find('input[type="file"]');
-    const clickSpy = vi.spyOn(input.element, "click");
+    const clickSpy = vi.spyOn(input.element as HTMLInputElement, "click");
 
     await wrapper.find('[data-testid="drop-zone"]').trigger("click");
 
@@ -111,7 +111,7 @@ describe("ClinicLogoUpload", () => {
     });
 
     const input = wrapper.find('input[type="file"]');
-    const clickSpy = vi.spyOn(input.element, "click");
+    const clickSpy = vi.spyOn(input.element as HTMLInputElement, "click");
 
     await wrapper.find('[data-testid="drop-zone"]').trigger("click");
 

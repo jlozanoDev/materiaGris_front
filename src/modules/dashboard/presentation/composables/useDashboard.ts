@@ -1,4 +1,4 @@
-import { ref, computed, type Ref } from "vue";
+import { ref, computed, type Ref, type ComputedRef } from "vue";
 import { useAuthStore } from "@/core/store/auth";
 import {
   provideGetDashboardStatsUseCase,
@@ -23,8 +23,8 @@ export interface UseDashboardReturn {
   loading: Ref<boolean>;
   error: Ref<unknown>;
   role: Ref<DashboardRole>;
-  isEmptyState: ReturnType<typeof computed<boolean>>;
-  isNewProfessional: ReturnType<typeof computed<boolean>>;
+  isEmptyState: ComputedRef<boolean>;
+  isNewProfessional: ComputedRef<boolean>;
   fetchDashboard: () => Promise<void>;
   // Weather
   weather: Ref<WeatherData | null>;

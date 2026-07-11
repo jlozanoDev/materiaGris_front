@@ -23,6 +23,8 @@ function createMockRepo(): ReportRepository {
     delete: vi.fn(),
     downloadPdf: vi.fn(),
     getActiveTemplates: vi.fn(),
+    transcribe: vi.fn(),
+    extractData: vi.fn(),
   };
 }
 

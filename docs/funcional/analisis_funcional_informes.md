@@ -106,11 +106,12 @@ El flujo de edición y bloqueo del informe clínico consta de tres etapas bien d
 
 ---
 
-### RF4: Motor de Impresión y Exportación a PDF
+### RF4: Motor de Impresión
 
-* **Generación Servidor:** Laravel leerá la estructura clonada (`template_structure_snapshot`) y cruzará los datos con la colección de respuestas (`values`) para armar un documento HTML semántico antes de renderizar.
-* **Diseño Fluido y Adaptable:** Se evitará la maquetación mediante coordenadas fijas o absolutas. Se utilizarán reglas CSS fluidas para que las secciones y los párrafos empujen de forma orgánica el contenido. Si un campo de texto largo ocupa varias páginas, el sistema distribuirá el salto de página de manera limpia.
-* **Estructura Visual del PDF:**
+* **Generación Cliente:** El frontend renderiza el informe en un iframe oculto utilizando el componente `ReportPdfExport`, reutilizando el `template_structure_snapshot` y los `values` del informe firmado/archivado.
+* **Diálogo de Impresión del Navegador:** Al pulsar "Imprimir", el sistema muestra un skeleton de carga mientras prepara el documento y luego invoca `window.print()` sobre el iframe, delegando la gestión de PDF al navegador del usuario.
+* **Diseño Fluido y Adaptable:** Se utilizan reglas CSS fluidas (Tailwind + estilos scoped del componente de impresión) para que las secciones y párrafos fluyan orgánicamente. Los campos opcionales vacíos se omiten del documento impreso.
+* **Estructura Visual del Informe:**
     * **Cabecera:** Inserción automatizada del logotipo oficial de la clínica, información de contacto de la entidad y un bloque estructurado con los datos demográficos del paciente.
-    * **Cuerpo del Documento:** Secciones ordenadas cronológica y visualmente imitando el layout de columnas diseñado. Los campos opcionales que hayan quedado vacíos se omitirán del PDF para un diseño limpio.
-    * **Pie de Página:** Numeración dinámica automática (`Página X de Y`) y el área de validación con la **imagen de la firma digital** incrustada de forma clara y visible.
+    * **Cuerpo del Documento:** Secciones ordenadas cronológica y visualmente imitando el layout de columnas diseñado.
+    * **Pie de Página:** Área de validación con la **imagen de la firma digital** incrustada de forma clara y visible.

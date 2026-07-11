@@ -5,7 +5,6 @@ import {
   provideSaveReportDraftUseCase,
   provideSignReportUseCase,
   provideArchiveReportUseCase,
-  provideDownloadReportPdfUseCase,
 } from "@/modules/reports/application/containers/reportsContainer";
 import { useAuthStore } from "@/core/store/auth";
 import type { PatientReport, Section, FieldConfig } from "@/shared/types";
@@ -17,6 +16,7 @@ export interface UseReportFormReturn {
   errors: Ref<Record<string, string>>;
   isSaving: Ref<boolean>;
   isLoading: Ref<boolean>;
+  isPrinting: Ref<boolean>;
   errorMessage: Ref<string | null>;
   autoSaveEnabled: Ref<boolean>;
   signatureValue: Ref<string | null>;
@@ -29,7 +29,7 @@ export interface UseReportFormReturn {
   saveDraft: () => Promise<void>;
   sign: () => Promise<void>;
   archive: () => Promise<void>;
-  downloadPdf: () => Promise<void>;
+  printReport: () => Promise<void>;
 }
 
 export function useReportForm(): UseReportFormReturn {
@@ -41,6 +41,7 @@ export function useReportForm(): UseReportFormReturn {
   const errors = ref<Record<string, string>>({});
   const isSaving = ref(false);
   const isLoading = ref(false);
+  const isPrinting = ref(false);
   const errorMessage = ref<string | null>(null);
   const autoSaveEnabled = ref(true);
   const signatureValue = ref<string | null>(null);
@@ -213,65 +214,93 @@ export function useReportForm(): UseReportFormReturn {
     }
   }
 
-  // ── downloadPdf ────────────────────────────────────────────────────────────
-  async function downloadPdf(): Promise<void> {
+  // ── printReport ────────────────────────────────────────────────────────────
+  async function printReport(): Promise<void> {
     if (!report.value) return;
 
-    // For signed reports without pdf_path, generate client-side
-    if (report.value.status === "signed" && !report.value.pdf_path) {
-      try {
-        const { createApp, h } = await import("vue");
-        const ReportPdfExport = (
-          await import(
-            "@/modules/reports/presentation/components/ReportPdfExport.vue"
-          )
-        ).default;
+    isPrinting.value = true;
+    errorMessage.value = null;
 
-        const container = document.createElement("div");
-        container.id = "pdf-export-container";
-        document.body.appendChild(container);
+    let iframe: HTMLIFrameElement | null = null;
+    let app: any = null;
 
-        const app = createApp({
-          render() {
-            return h(ReportPdfExport as any, {
-              report: report.value,
-              signatureUrl: signatureValue.value,
-            });
-          },
-        });
-
-        const instance = app.mount(container);
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        const pdfBlob = await (instance as any).generatePdf();
-
-        app.unmount();
-        document.body.removeChild(container);
-
-        const url = URL.createObjectURL(pdfBlob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `informe-${report.value.id}.pdf`;
-        a.click();
-        URL.revokeObjectURL(url);
-        return;
-      } catch (e: any) {
-        errorMessage.value = e?.message || "Error al generar el PDF";
-        return;
-      }
+    function copyStylesheets(targetDoc: Document): void {
+      document.querySelectorAll('style, link[rel="stylesheet"]').forEach((el) => {
+        if (el instanceof HTMLStyleElement) {
+          const clone = targetDoc.createElement('style')
+          clone.textContent = el.textContent
+          targetDoc.head.appendChild(clone)
+        } else if (el instanceof HTMLLinkElement) {
+          const clone = targetDoc.createElement('link')
+          clone.rel = 'stylesheet'
+          clone.href = el.href
+          targetDoc.head.appendChild(clone)
+        }
+      })
     }
 
-    // For archived reports, download from backend
     try {
-      const useCase = provideDownloadReportPdfUseCase();
-      const blob = await useCase.execute(report.value.id);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `informe-${report.value.id}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
+      const { createApp, nextTick } = await import("vue");
+      const ReportPdfExport = (
+        await import(
+          "@/modules/reports/presentation/components/ReportPdfExport.vue"
+        )
+      ).default;
+
+      iframe = document.createElement("iframe");
+      iframe.style.cssText = "position:fixed;left:-9999px;top:0;width:210mm;height:100vh;";
+      document.body.appendChild(iframe);
+
+      const iframeDoc = iframe.contentDocument!;
+      iframeDoc.body.style.margin = "0";
+      iframeDoc.body.style.padding = "0";
+
+      copyStylesheets(iframeDoc);
+
+      app = createApp(ReportPdfExport, {
+        report: report.value,
+        signatureUrl: signatureValue.value,
+      });
+      app.mount(iframeDoc.body);
+
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      await nextTick();
+
+      const root = iframeDoc.body.querySelector('.report-pdf-export') as HTMLElement | null;
+      if (root) {
+        root.style.position = 'static';
+        root.style.left = 'auto';
+        root.style.top = 'auto';
+        root.style.zIndex = 'auto';
+        root.style.visibility = 'visible';
+        root.style.margin = '0 auto';
+      }
+
+      const win = iframe.contentWindow;
+      if (!win) throw new Error("No se pudo acceder a la ventana de impresión");
+
+      isPrinting.value = false;
+
+      win.onafterprint = () => {
+        app?.unmount();
+        if (iframe?.parentNode) document.body.removeChild(iframe);
+      };
+
+      win.print();
+
+      // Fallback cleanup for browsers without onafterprint
+      setTimeout(() => {
+        app?.unmount();
+        if (iframe?.parentNode) document.body.removeChild(iframe);
+      }, 60000);
     } catch (e: any) {
-      errorMessage.value = e?.message || "Error al descargar el PDF";
+      isPrinting.value = false;
+      if (app) app.unmount();
+      if (iframe?.parentNode) document.body.removeChild(iframe);
+      const message = e?.message || String(e) || "Error al preparar la impresión";
+      errorMessage.value = message;
+      console.error("[printReport] error:", e);
+      throw new Error(message);
     }
   }
 
@@ -293,6 +322,7 @@ export function useReportForm(): UseReportFormReturn {
     errors,
     isSaving,
     isLoading,
+    isPrinting,
     errorMessage,
     autoSaveEnabled,
     signatureValue,
@@ -305,6 +335,6 @@ export function useReportForm(): UseReportFormReturn {
     saveDraft,
     sign,
     archive,
-    downloadPdf,
+    printReport,
   };
 }
