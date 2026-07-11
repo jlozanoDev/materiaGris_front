@@ -9,11 +9,11 @@
 | Chained PRs recommended | Yes |
 | Suggested split | PR 1: Foundation + API Contract (~165 lines) → PR 2: Core Upload (~295 lines) → PR 3: Integration Wiring (~108 lines) |
 | Delivery strategy | ask-on-risk |
-| Chain strategy | pending |
+| Chain strategy | feature-branch-chain |
 
-Decision needed before apply: Yes
+Decision needed before apply: No (resolved)
 Chained PRs recommended: Yes
-Chain strategy: pending
+Chain strategy: feature-branch-chain
 400-line budget risk: Medium
 
 ### Suggested Work Units
@@ -32,31 +32,31 @@ Chain strategy: pending
 - [x] 1.4 Add `updateLogo(url: string)` action to `src/core/store/clinic.ts`
 - [x] 1.5 Add `provideUploadClinicLogoUseCase()` to `clinicContainer.ts`
 - [x] 1.6 Register `clinica.logo` resolver in `useReportVariableResolver.ts` — returns `<img>` HTML or `""`
-- [ ] 1.7 Add `clinica.logo` to `registerFallbackVariables()` in `useSystemVariableRegistry.ts`
+- [x] 1.7 Add `clinica.logo` to `registerFallbackVariables()` in `useSystemVariableRegistry.ts`
 
 ## Phase 2: Core Implementation
 
-- [ ] 2.1 Create `UploadClinicLogoUseCase.ts` — wraps `repository.uploadLogo(file)`
-- [ ] 2.2 Implement `uploadLogo()` in `ApiClinicRepository.ts` — multipart FormData via `fetchClient`
-- [ ] 2.3 Create `useClinicLogo.ts` composable — file validation (MIME: png/jpeg/webp/svg+xml, max 5MB), upload, reactive state
-- [ ] 2.4 Create `ClinicLogoUpload.vue` — drop zone, file picker, `<img>` preview, inline errors, progress bar
+- [x] 2.1 Create `UploadClinicLogoUseCase.ts` — wraps `repository.uploadLogo(file)`
+- [x] 2.2 Implement `uploadLogo()` in `ApiClinicRepository.ts` — multipart FormData via `fetchClient`
+- [x] 2.3 Create `useClinicLogo.ts` composable — file validation (MIME: png/jpeg/webp/svg+xml, max 5MB), upload, reactive state
+- [x] 2.4 Create `ClinicLogoUpload.vue` — drop zone, file picker, `<img>` preview, inline errors, uploading indicator
 
 ## Phase 3: Integration
 
-- [ ] 3.1 Add `<ClinicLogoUpload>` section above form in `ClinicEditPage.vue`
-- [ ] 3.2 Add `variableResolver` prop to `PreviewModal.vue` and pass to `DynamicFormRenderer`
-- [ ] 3.3 Add `variableResolver` prop to `PrintPreviewModal.vue` and pass to `ReportDocumentRenderer`
+- [x] 3.1 Add `<ClinicLogoUpload>` section above form in `ClinicEditPage.vue`
+- [x] 3.2 Add `variableResolver` prop to `PreviewModal.vue` and pass to `DynamicFormRenderer`
+- [x] 3.3 Add `variableResolver` prop to `PrintPreviewModal.vue` and pass to `ReportDocumentRenderer`
 - [x] 3.4 Add `clinica.logo` entry to `previewVars` in `ReportDocumentRenderer.vue`
-- [ ] 3.5 Wire `useClinicStore` + `useReportVariableResolver` in `ReportTemplateBuilderPage.vue`; pass to previews
+- [x] 3.5 Wire `useClinicStore` + `useReportVariableResolver` in `ReportTemplateBuilderPage.vue`; pass to previews
 
 ## Phase 4: Tests
 
-- [ ] 4.1 Unit test `UploadClinicLogoUseCase` — delegates to mock repository
-- [ ] 4.2 Unit test `useClinicLogo` — valid/invalid MIME, size limits, error states, upload success
+- [x] 4.1 Unit test `UploadClinicLogoUseCase` — delegates to mock repository
+- [x] 4.2 Unit test `useClinicLogo` — valid/invalid MIME, size limits, error states, upload success
 - [x] 4.3 Unit test `useReportVariableResolver` — `clinica.logo` null returns `""`, URL returns `<img>` HTML
-- [ ] 4.4 Integration test `ClinicEditPage` — logo section renders, file selection triggers upload
+- [x] 4.4 Integration test `ClinicEditPage` — logo section renders, file selection triggers upload
 
 ## Phase 5: Cleanup
 
-- [ ] 5.1 Update `docs/tecnica/modulos/clinic.md` with logo upload documentation
-- [ ] 5.2 Update `docs/funcional/modulos/clinic.md` with logo upload feature description
+- [x] 5.1 Update `docs/tecnica/modulos/admin/clinica-config/clinica-config.md` with logo upload architecture
+- [x] 5.2 Update `docs/funcional/modulos/administracion/clinica.md` with logo upload feature description

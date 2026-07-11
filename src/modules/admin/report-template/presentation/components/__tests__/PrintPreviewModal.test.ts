@@ -51,10 +51,11 @@ describe('PrintPreviewModal', () => {
     })
   }
 
-  it('renders without variableResolver when prop is not passed', () => {
+  it('passes undefined variableResolver to ReportDocumentRenderer when prop is not provided', () => {
     const wrapper = createWrapper()
-    const renderer = wrapper.find('.renderer-stub')
+    const renderer = wrapper.findComponent({ name: 'ReportDocumentRenderer' })
     expect(renderer.exists()).toBe(true)
+    expect(renderer.props('variableResolver')).toBeUndefined()
   })
 
   it('forwards variableResolver prop to ReportDocumentRenderer', () => {

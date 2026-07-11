@@ -51,10 +51,11 @@ describe('PreviewModal', () => {
     })
   }
 
-  it('renders without variableResolver when prop is not passed', () => {
+  it('passes undefined variableResolver to DynamicFormRenderer when prop is not provided', () => {
     const wrapper = createWrapper()
-    const formRenderer = wrapper.find('.dynamic-form-stub')
+    const formRenderer = wrapper.findComponent({ name: 'DynamicFormRenderer' })
     expect(formRenderer.exists()).toBe(true)
+    expect(formRenderer.props('variableResolver')).toBeUndefined()
   })
 
   it('forwards variableResolver prop to DynamicFormRenderer', () => {
