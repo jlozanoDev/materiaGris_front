@@ -43,6 +43,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true, permissions: 'report.view' },
   },
   {
+    path: "/reports/:id/print",
+    name: "ReportPrint",
+    component: () => import("@/modules/reports/presentation/pages/ReportPrintPage.vue"),
+    meta: { requiresAuth: true, permissions: "report.download-pdf" },
+  },
+  {
     path: "/reports/:id/edit",
     name: "ReportEdit",
     component: () => import("@/modules/reports/presentation/pages/ReportFillPage.vue"),

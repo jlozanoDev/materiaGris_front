@@ -5,6 +5,7 @@ import vuetify from "./plugins/vuetify";
 import "@/assets/primeicons/primeicons.css";
 
 import "./style.css";
+import "@/assets/css/print.css";
 import 'splitpanes/dist/splitpanes.css'
 import App from "./App.vue";
 import router from "@/core/router/index";

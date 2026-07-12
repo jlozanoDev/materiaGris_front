@@ -50,12 +50,12 @@
                   Editar
                 </button>
 
-                <!-- Imprimir (deshabilitado temporalmente) -->
+                <!-- Imprimir -->
                 <button
-                  v-if="false"
+                  v-if="canPrint && report?.status !== 'draft'"
                   type="button"
                   class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                  @click="handlePrint"
+                  @click="openPrintTab"
                 >
                   <i class="pi pi-print text-xs"></i>
                   Imprimir
@@ -89,14 +89,6 @@
     </div>
   </div>
 
-  <!-- Printing skeleton overlay -->
-  <div
-    v-if="isPrinting"
-    class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/90 backdrop-blur-sm"
-  >
-    <div class="h-12 w-12 rounded-full border-4 border-slate-200 border-t-indigo-600 animate-spin" />
-    <p class="mt-4 text-sm font-medium text-slate-700">Preparando impresión...</p>
-  </div>
 </template>
 
 <script setup lang="ts">
@@ -109,24 +101,19 @@ import DynamicFormRenderer from "@/modules/reports/presentation/components/Dynam
 import { useReportForm } from "@/modules/reports/presentation/composables/useReportForm";
 import { useAuthStore } from "@/core/store/auth";
 import { useLogout } from "@/shared/composables/useLogout";
-
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const { logout } = useLogout();
 
-const { report, loadReport, printReport, isPrinting } = useReportForm();
+const {
+  report,
+  loadReport,
+  signatureValue,
+} = useReportForm();
 
 const canPrint = computed(() => authStore.hasPermission("report.download-pdf"));
 const canEdit = computed(() => authStore.hasPermission("report.edit"));
-
-async function handlePrint(): Promise<void> {
-  try {
-    await printReport();
-  } catch (e: any) {
-    alert(e.message || "Error al preparar la impresión");
-  }
-}
 
 function formatDateShort(dateStr?: string): string {
   if (!dateStr) return "";
@@ -152,6 +139,11 @@ const breadcrumbText = computed(() => {
   if (patientStr) return patientStr;
   return "Ver";
 });
+
+function openPrintTab(): void {
+  const href = router.resolve({ name: "ReportPrint", params: { id: route.params.id } }).href;
+  window.open(href, "_blank", "noopener,noreferrer");
+}
 
 function goBack(): void {
   if (route.query.from === "patient") {
