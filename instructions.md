@@ -3,6 +3,8 @@
 Este repositorio contiene el **Frontend de Materia Gris** construido con Vue 3 y Vite.
 Hablame siempre en español.
 
+> Consulta el [README.md](README.md) para una visión general del proyecto, stack tecnológico, instalación y comandos.
+
 ## 🚀 Ejecución Local
 
 A diferencia del backend, el frontend se ejecuta directamente con Node.js en tu máquina host:
