@@ -114,12 +114,12 @@
                   Archivar informe
                 </button>
 
-                <!-- Imprimir (deshabilitado temporalmente) -->
+                <!-- Imprimir -->
                 <button
-                  v-if="false"
+                  v-if="canPrint && report?.status !== 'draft'"
                   type="button"
                   class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                  @click="handlePrint"
+                  @click="openPrintTab"
                 >
                   <i class="pi pi-print text-xs"></i>
                   Imprimir
@@ -364,14 +364,6 @@
     </template>
   </Modal>
 
-  <!-- Printing skeleton overlay -->
-  <div
-    v-if="isPrinting"
-    class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/90 backdrop-blur-sm"
-  >
-    <div class="h-12 w-12 rounded-full border-4 border-slate-200 border-t-indigo-600 animate-spin" />
-    <p class="mt-4 text-sm font-medium text-slate-700">Preparando impresión...</p>
-  </div>
 </template>
 
 <script setup lang="ts">
@@ -433,8 +425,6 @@ const {
   saveDraft,
   sign,
   archive,
-  printReport,
-  isPrinting,
 } = useReportForm();
 
 // Route helpers
@@ -448,6 +438,11 @@ function handleBack(): void {
     const reportId = route.params.id as string;
     router.push({ name: "ReportView", params: { id: reportId } });
   }
+}
+
+function openPrintTab(): void {
+  const href = router.resolve({ name: "ReportPrint", params: { id: route.params.id } }).href;
+  window.open(href, "_blank", "noopener,noreferrer");
 }
 
 function calcAge(dob?: string): string {
@@ -683,14 +678,6 @@ function cancelArchive(): void {
   if (isArchiving.value) return;
   showArchiveModal.value = false;
   archiveError.value = "";
-}
-
-async function handlePrint(): Promise<void> {
-  try {
-    await printReport();
-  } catch (e: any) {
-    console.error("[ReportFillPage] print error:", e);
-  }
 }
 
 async function loadPatientData(patientId: string | number): Promise<void> {

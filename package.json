@@ -27,6 +27,7 @@
     "animejs": "^4.4.1",
     "html2pdf.js": "^0.14.0",
     "lucide-vue-next": "^1.0.0",
+    "pagedjs": "^0.4.3",
     "pinia": "^3.0.4",
     "primeicons": "^7.0.0",
     "sass": "^1.99.0",
