@@ -1,3 +1,8 @@
+@page {
+  size: A4;
+  margin: 20mm 20mm 25mm 20mm;
+}
+
 @media print {
   .app-sidebar,
   .topbar,
@@ -5,12 +10,18 @@
   .modal-header,
   .modal-footer,
   [class*="breadcrumb"],
-  .ds-modal-root {
+  .ds-modal-root,
+  .no-print {
     display: none !important;
   }
 
   .pagedjs_page {
     display: block !important;
     visibility: visible !important;
+  }
+
+  .print-output {
+    padding: 0 !important;
+    background: white;
   }
 }
