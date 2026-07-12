@@ -27,6 +27,8 @@ import vHasPermission from "@/shared/directives/v-has-permission";
   setTokenGetter(() => authService.storageGateway.get("access_token"));
 
   setUnauthorizedHandler(async () => {
+    // Only redirect if the current route actually requires auth
+    if (!router.currentRoute.value.meta?.requiresAuth) return;
     try {
       const { show } = useToast();
       show("Su sesión ha expirado", "error", 5000);

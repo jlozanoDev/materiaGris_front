@@ -74,6 +74,7 @@ const routes: RouteRecordRaw[] = [
   { path: "/terms", name: "Terms", component: () => import("@/modules/landing/presentation/pages/TermsPage.vue") },
   { path: "/forgot-password", name: "ForgotPassword", component: () => import("@/modules/auth/presentation/pages/ForgotPasswordPage.vue") },
   { path: "/reset-password", name: "ResetPassword", component: () => import("@/modules/auth/presentation/pages/ResetPasswordPage.vue") },
+  { path: "/slides", name: "Slides", component: () => import("@/modules/presentation/presentation/pages/SlidesPage.vue") },
 ];
 
 const router = createRouter({

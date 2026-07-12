@@ -23,3 +23,8 @@ Este repositorio tiene dos tipos de documentación claramente separados:
 | Cambio en implementación (componentes, stores, APIs) | `docs/tecnica/` |
 | Ambos | Ambas carpetas |
 | Nuevo módulo | Añadir entrada en este índice maestro |
+
+## Presentación del proyecto
+
+La aplicación incluye una presentación interactiva tipo slideshow en la ruta `/slides`.
+→ [Documentación de la presentación](presentacion/PRESENTACION.md)
