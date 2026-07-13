@@ -23,8 +23,6 @@ const emit = defineEmits<{
       <nav class="hidden md:flex gap-8">
         <RouterLink to="/welcome#modulos" class="text-sm font-medium transition-colors duration-150" style="color: #9690a8;">Plataforma</RouterLink>
         <RouterLink to="/welcome#workflow" class="text-sm font-medium transition-colors duration-150" style="color: #9690a8;">Cómo funciona</RouterLink>
-        <RouterLink to="/welcome" class="text-sm font-medium transition-colors duration-150" style="color: #9690a8;">Blog</RouterLink>
-        <RouterLink to="/welcome" class="text-sm font-medium transition-colors duration-150" style="color: #9690a8;">Documentación</RouterLink>
       </nav>
 
       <!-- Actions -->
