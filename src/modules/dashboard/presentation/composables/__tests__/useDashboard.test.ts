@@ -251,6 +251,30 @@ describe("useDashboard", () => {
       expect(dashboard.pendingReports.value).toEqual([]);
       expect(dashboard.systemMetrics.value).toEqual(mockMetrics);
     });
+
+    it("treats user with both admin and doctor permissions as admin", async () => {
+      const authStore = useAuthStore();
+      authStore.user = {
+        id: 2,
+        name: "Admin Doctor",
+        email: "admindoc@test.com",
+        permissions: { "admin.user.view": 1, "report.edit": 1 },
+      };
+
+      const mockMetrics = { totalUsers: 30 };
+      (provideGetSystemMetricsUseCase as any).mockReturnValue({
+        execute: vi.fn().mockResolvedValue(mockMetrics),
+      });
+
+      const dashboard = useDashboard();
+      await dashboard.fetchDashboard();
+
+      expect(dashboard.role.value).toBe("admin");
+      expect(dashboard.systemMetrics.value).toEqual(mockMetrics);
+      expect(dashboard.stats.value).toBeNull();
+      expect(dashboard.patients.value).toEqual([]);
+      expect(dashboard.pendingReports.value).toEqual([]);
+    });
   });
 
   describe("no-permission state", () => {

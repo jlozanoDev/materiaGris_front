@@ -15,7 +15,7 @@ vi.mock('@/core/store/auth', () => ({
     get user() { return mockAuthState.user },
     set user(v) { mockAuthState.user = v },
     fetchUser: mockFetchUser,
-    hasPermission: () => true,
+    hasPermission: (perm) => perm === 'report.edit',
   }),
 }))
 

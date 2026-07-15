@@ -62,8 +62,8 @@ export function useDashboard(): UseDashboardReturn {
   const showCitySelector: Ref<boolean> = ref(false);
 
   const role = computed<DashboardRole>(() => {
-    if (authStore.hasPermission("report.edit")) return "doctor";
     if (authStore.hasPermission("admin.user.view")) return "admin";
+    if (authStore.hasPermission("report.edit")) return "doctor";
     return "none";
   });
 
