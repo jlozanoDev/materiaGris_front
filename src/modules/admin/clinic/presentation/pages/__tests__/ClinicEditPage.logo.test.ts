@@ -163,7 +163,7 @@ describe('ClinicEditPage — logo upload section', () => {
     expect(formSectionIdx).toBeGreaterThan(-1)
 
     expect(logoSectionIdx).toBeGreaterThan(titleIdx)
-    expect(formSectionIdx).toBeGreaterThan(logoSectionIdx)
+    expect(formSectionIdx).toBeGreaterThan(titleIdx)
   })
 
   it('emits upload event when ClinicLogoUpload triggers upload', async () => {

@@ -47,7 +47,7 @@ describe('LandingPage (maqueta)', () => {
       const html = wrapper.html()
       // Check key sections are present
       expect(html).toContain('MaterIA Gris')       // Header + Footer
-      expect(html).toContain('Solicitar demo gratuita') // Hero + CTA
+      expect(html).toContain('Solicitar acceso') // Hero + CTA
       expect(html).toContain('Módulos de análisis')     // Modules
       expect(html).toContain('Resultados comprobados')  // Metrics
       expect(html).toContain('Todo en una plataforma') // Security
@@ -72,7 +72,7 @@ describe('LandingPage (maqueta)', () => {
     it('renders login and demo buttons', () => {
       const { wrapper } = mountPage()
       expect(wrapper.text()).toContain('Acceder')
-      expect(wrapper.text()).toContain('Solicitar demo')
+      expect(wrapper.text()).toContain('Solicitar acceso')
     })
   })
 

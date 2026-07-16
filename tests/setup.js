@@ -66,6 +66,9 @@ config.global.directives = {
 // Mock window.scrollTo for jsdom (used by vue-router)
 window.scrollTo = () => {}
 
+// Mock Element.scrollIntoView for jsdom (used by CustomSelect)
+Element.prototype.scrollIntoView = () => {}
+
 // Mock HTMLCanvasElement.getContext for jsdom (used by useParticleNetwork)
 HTMLCanvasElement.prototype.getContext = () => null
 

@@ -171,7 +171,7 @@ function positionDropdown(): void {
 function scrollToActive(): void {
   if (!dropdownRef.value || activeIdx.value < 0) return
   const el = dropdownRef.value.children[activeIdx.value] as HTMLElement
-  el?.scrollIntoView({ block: 'nearest' })
+  el?.scrollIntoView?.({ block: 'nearest' })
 }
 
 function onTriggerKeydown(e: KeyboardEvent): void {

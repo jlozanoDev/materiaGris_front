@@ -37,7 +37,7 @@ vi.mock('@/App.vue', () => ({
 vi.mock('@/core/router/index', () => ({
   default: {
     replace: vi.fn(),
-    currentRoute: { value: { meta: {}, fullPath: '/' } },
+    currentRoute: { value: { meta: { requiresAuth: true }, fullPath: '/' } },
     install: vi.fn(),
   },
 }))

@@ -58,7 +58,7 @@
                   @click="openPrintTab"
                 >
                   <i class="pi pi-print text-xs"></i>
-                  Imprimir
+                  Descargar PDF
                 </button>
 
                 <!-- Volver -->
